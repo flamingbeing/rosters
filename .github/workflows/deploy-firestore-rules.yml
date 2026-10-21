@@ -1,0 +1,61 @@
+# Deploys each app's firestore.rules to its Firebase project when the file changes on main (or by hand).
+# Off until the repo's rules-deployer service account exists: without the FIREBASE_SERVICE_ACCOUNT secret every step
+# is skipped and the run says so. Until then, rules changes are deployed from anawj-site or by hand.
+name: Deploy Firestore rules
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'nuh-roster/firestore.rules'
+      - 'nuh-junior-monthly/firestore.rules'
+      - 'ntf-roster/firestore.rules'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      roster: ${{ steps.filter.outputs.roster }}
+      junior: ${{ steps.filter.outputs.junior }}
+      ntf: ${{ steps.filter.outputs.ntf }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            roster: 'nuh-roster/firestore.rules'
+            junior: 'nuh-junior-monthly/firestore.rules'
+            ntf: 'ntf-roster/firestore.rules'
+
+  deploy:
+    needs: changes
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { dir: nuh-roster, project: nuh-roster, changed: roster }
+          - { dir: nuh-junior-monthly, project: nuh-junior-monthly, changed: junior }
+          - { dir: ntf-roster, project: ntf-roster, changed: ntf }
+    env:
+      SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+      GO: ${{ github.event_name == 'workflow_dispatch' || needs.changes.outputs[matrix.changed] == 'true' }}
+    steps:
+      - name: Off (no service account yet)
+        if: env.SA_KEY == ''
+        run: echo "FIREBASE_SERVICE_ACCOUNT is not set in this repo, so nothing is deployed."
+      - uses: actions/checkout@v4
+        if: env.SA_KEY != '' && env.GO == 'true'
+      - name: Deploy ${{ matrix.dir }}/firestore.rules to ${{ matrix.project }}
+        if: env.SA_KEY != '' && env.GO == 'true'
+        working-directory: ${{ matrix.dir }}
+        run: |
+          echo "$SA_KEY" > "$RUNNER_TEMP/sa.json"
+          export GOOGLE_APPLICATION_CREDENTIALS="$RUNNER_TEMP/sa.json"
+          echo '{"firestore":{"rules":"firestore.rules"}}' > firebase.json
+          npx --yes firebase-tools@13 deploy --only firestore:rules --project ${{ matrix.project }} --non-interactive

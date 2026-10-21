@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>NUH Junior Monthly</title>
+<meta name="description" content="Plan the NUH anaesthesia monthly junior roster with leave, requests, rules you edit and auto-fill.">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#f9f9fb">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Junior Monthly">
+<link rel="icon" href="icons/favicon-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="https://design.anawj.com/v1/tokens.css">
+<link rel="stylesheet" href="https://design.anawj.com/v1/app.css">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="css/rules.css">
+<script src="https://design.anawj.com/v1/app.js" defer></script>
+</head>
+<body class="a-app">
+<a class="skip" href="#main">Skip to the roster</a>
+<header class="a-bar a-bar--solid top" id="top">
+  <div class="a-band"><i></i><i></i><i></i><i></i></div>
+  <div class="top-row">
+    <a class="brand" href="#roster" aria-label="NUH Junior Monthly, home">
+      <span class="brand-mark" aria-hidden="true">NUH</span>
+      <span class="brand-text"><span class="brand-name">NUH Junior Monthly</span><span class="brand-dept" id="dept"></span></span>
+    </a>
+    <div class="ctx-row">
+      <div class="monthnav" role="group" aria-label="Month" data-tour="month">
+        <button type="button" class="icon-btn" id="prevm" aria-label="Previous month" title="Previous month ([)"></button>
+        <h1 class="month-title" id="month" aria-live="polite"></h1>
+        <button type="button" class="icon-btn" id="nextm" aria-label="Next month" title="Next month (])"></button>
+        <button type="button" class="btn btn-ghost btn-sm" id="today">Today</button>
+        <button type="button" class="btn btn-ghost btn-sm" id="lockm" aria-pressed="false" title="Lock this month so nothing in it can be changed by accident">Lock</button>
+      </div>
+      <div class="ctx-tools">
+        <a class="problems" id="problems" href="#check" aria-label="Problems" data-tour="problems"></a>
+        <button type="button" class="btn btn-primary" id="autofill" aria-label="Auto-fill" title="Auto-fill this month from the rules" data-tour="autofill"></button>
+      </div>
+    </div>
+    <div class="top-tools">
+      <button type="button" class="btn btn-ghost btn-sm" id="cloudbtn" hidden data-tour="cloud"></button>
+      <button type="button" class="icon-btn" id="undo" aria-label="Undo" title="Undo (Ctrl+Z)" disabled></button>
+      <button type="button" class="icon-btn" id="redo" aria-label="Redo" title="Redo (Ctrl+Shift+Z)" disabled></button>
+    </div>
+  </div>
+</header>
+<div class="shell">
+  <nav class="a-tabbar tabs" id="tabs" aria-label="Sections"></nav>
+  <div class="content">
+    <div id="demobar" class="demobar" hidden></div>
+    <div id="savebar" class="savebar" hidden></div>
+    <main id="main" class="main a-main a-main--wide" tabindex="-1"></main>
+  </div>
+</div>
+<nav class="a-tabbar bottombar" id="bottombar" aria-label="Sections"></nav>
+<div id="toasts" class="toasts" aria-live="polite"></div>
+<noscript><p class="noscript">NUH Junior Monthly needs JavaScript.</p></noscript>
+<script type="module" src="js/app.js"></script>
+</body>
+</html>

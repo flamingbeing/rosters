@@ -21,6 +21,12 @@ export default {
       // no such file, but a folder of that name: send the browser to the address with a "/" (as GitHub Pages does)
       const dir = await asset(env, url, file + '/index.html');
       if (dir.status === 200) return redirect(url, url.pathname + '/');
+      // ... or, for Firebase's sign-in helper pages only (ntfroster.anawj.com), a page of that name: /__/auth/handler
+      // is handler.html (as on GitHub Pages). Nothing else gets this, so no other address changes.
+      if (file.startsWith('__/auth/')) {
+        const page = await asset(env, url, file + '.html');
+        if (page.status === 200) res = page;
+      }
     }
     if (res.status === 404) return notFound();
     res = new Response(res.body, res);

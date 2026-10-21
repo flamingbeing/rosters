@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<script>
+// The roster lives at ntfroster.anawj.com (sign-in works only there). The same folder is still served at
+// anawj.com/ntf-roster/, so send visitors on from there (path, query and # kept); a no-op on ntfroster.anawj.com,
+// previews and localhost. A browser with a roster saved at the old address stays: what is saved belongs to its
+// address, so the page offers a backup first (window.NTF_MOVED_TO, the bar at the top).
+if (top === self && /^(www\.)?anawj\.com$/.test(location.hostname)) (function () {
+  var to = 'https://ntfroster.anawj.com/' + location.pathname.replace(/^\/ntf-roster\/?/, '') + location.search + location.hash;
+  var saved = false;
+  try { saved = !!localStorage.getItem('ntf-roster-v1') && !localStorage.getItem('ntf-roster-moved'); } catch (e) { /* no storage */ }
+  if (saved && !/[?&]demo\b/.test(location.search)) window.NTF_MOVED_TO = to;
+  else location.replace(to);
+})();
+</script>
+<title>NTF Roster</title>
+<meta name="description" content="Plan the NTF anaesthesia monthly duty roster with leave, requests, rules you edit and auto-fill.">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#002f6c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="NTF Roster">
+<link rel="icon" href="icons/favicon-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&display=swap">
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="css/rules.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to the roster</a>
+<div class="n-stripe" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+<div id="demobar" class="demobar" hidden></div>
+<div id="savebar" class="savebar" hidden></div>
+<header class="top" id="top">
+  <div class="top-row">
+    <a class="brand" href="#roster" aria-label="NTF Roster, home">
+      <span class="brand-mark" aria-hidden="true">NTF</span>
+      <span class="brand-text"><span class="brand-name">NTF Roster</span><span class="brand-dept" id="dept"></span></span>
+    </a>
+    <nav class="tabs" id="tabs" aria-label="Sections"></nav>
+    <div class="top-tools">
+      <button type="button" class="btn btn-ghost btn-sm" id="cloudbtn" hidden data-tour="cloud"></button>
+      <button type="button" class="icon-btn" id="undo" aria-label="Undo" title="Undo (Ctrl+Z)" disabled></button>
+      <button type="button" class="icon-btn" id="redo" aria-label="Redo" title="Redo (Ctrl+Shift+Z)" disabled></button>
+      <button type="button" class="icon-btn" id="help" aria-label="Help" title="Help: the tour, practice tasks, keyboard shortcuts" data-tour="help" data-tour-return="help"></button>
+    </div>
+  </div>
+  <div class="ctx-row">
+    <div class="monthnav" role="group" aria-label="Month" data-tour="month">
+      <button type="button" class="icon-btn" id="prevm" aria-label="Previous month" title="Previous month ([)"></button>
+      <h1 class="month-title" id="month" aria-live="polite"></h1>
+      <button type="button" class="icon-btn" id="nextm" aria-label="Next month" title="Next month (])"></button>
+      <button type="button" class="btn btn-ghost btn-sm" id="today">Today</button>
+      <button type="button" class="btn btn-ghost btn-sm" id="lockm" aria-pressed="false" title="Lock this month so nothing in it can be changed by accident">Lock</button>
+    </div>
+    <div class="pool-sw" id="poolsw" role="group" aria-label="Whose roster" data-tour="pool"></div>
+    <div class="ctx-tools">
+      <a class="problems" id="problems" href="#check" aria-label="Problems" data-tour="problems"></a>
+      <button type="button" class="btn btn-primary" id="autofill" title="Fill this month from the rules" data-tour="autofill"></button>
+    </div>
+  </div>
+</header>
+<main id="main" class="main" tabindex="-1"></main>
+<nav class="bottombar" id="bottombar" aria-label="Sections"></nav>
+<div id="toasts" class="toasts" aria-live="polite"></div>
+<noscript><p class="noscript">NTF Roster needs JavaScript.</p></noscript>
+<script type="module" src="js/app.js"></script>
+</body>
+</html>

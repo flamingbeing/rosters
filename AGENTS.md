@@ -26,8 +26,8 @@ repo; never copy anything from there into this repo, a PR or an issue (neutral p
 - ntfroster.anawj.com signs in through its own host: `__/auth/` (Firebase's helper pages) and `ntf-auth/firebase/init.json`
   are served there. The other two sign in on `<project>.firebaseapp.com`.
 - Each `sw.js` VERSION starts with its folder name and is stamped at deploy (`tools/stamp-versions.mjs`), never by hand.
-- Rules changes: `deploy-firestore-rules.yml` deploys them on merge once `FIREBASE_SERVICE_ACCOUNT` is set (off until
-  then). Test them first with `tools/test-rules.sh` (local emulator, needs Java).
+- Rules changes: `deploy-firestore-rules.yml` deploys them live on merge (keyless sign-in, GitHub's OIDC token). Test
+  them first with `tools/test-rules.sh` (local emulator, needs Java); a manual run deploys all three: ask the owner.
 
 ## Checks before merging
 

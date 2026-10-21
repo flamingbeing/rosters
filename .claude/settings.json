@@ -43,7 +43,8 @@
     ],
     "deny": [
       "Read(./__/**)",
-      "Read(**/vendor/**)"
+      "Read(**/vendor/**)",
+      "Read(./lib/**)"
     ]
   }
 }

@@ -1,0 +1,59 @@
+# The merge checklist from AGENTS.md, on every PR and every push to main: the repo check (with the Worker tests), every
+# app's unit tests, the proof-read, and each app's browser suites (one job each, side by side).
+name: Checks
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: checks-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Repo check
+        run: node tools/check.mjs
+      - name: Unit tests
+        run: for f in nuh-roster/test/*.test.mjs ntf-roster/test/*.test.mjs nuh-junior-monthly/test/*.test.mjs; do echo "== $f"; node "$f" || exit 1; done
+      - name: Proof-read (pages and documents)
+        run: node tools/proofread.mjs
+
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { name: NUH roster, cmd: "node nuh-roster/test/e2e.mjs" }
+          # speed budgets: timings vary, so perf fails only if a second run is over too
+          - { name: NTF roster, cmd: "node ntf-roster/test/e2e.mjs && node ntf-roster/test/tour.e2e.mjs && node ntf-roster/test/pool.e2e.mjs && (node ntf-roster/test/perf.e2e.mjs || node ntf-roster/test/perf.e2e.mjs)" }
+          - { name: NUH junior monthly, cmd: "node nuh-junior-monthly/test/e2e.mjs" }
+    name: browser (${{ matrix.name }})
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install a browser
+        run: |
+          npm install -g playwright@1.56.1
+          playwright install --with-deps chromium
+      - name: Test
+        run: |
+          export PLAYWRIGHT_PATH="$(npm root -g)/playwright/index.mjs"
+          (python3 -m http.server 8080 >/dev/null 2>&1 &)
+          sleep 1
+          ${{ matrix.cmd }}

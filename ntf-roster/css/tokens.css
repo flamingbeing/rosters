@@ -1,0 +1,161 @@
+/*
+  NUHS-style design tokens and base components.
+  Taken from the public stylesheet of https://www.nuhs.edu.sg/ (October 2026).
+  Unofficial: this mirrors the look, it is not an NUHS brand asset. Don't use the NUHS logo with it.
+
+  Use: <link rel="stylesheet" href="https://design.anawj.com/v1/tokens.css"> then the .n-* classes, or just the variables.
+  Light theme only, like the source site.
+*/
+
+:root {
+  color-scheme: light;
+
+  /* Brand */
+  --n-navy: #002f6c;        /* primary: headings, primary buttons, dark panels, footer */
+  --n-cyan: #00a9e0;        /* brand blue: active tab, selected item, underlines. Not for text on white */
+  --n-blue: #337ab7;        /* links and secondary buttons */
+  --n-blue-bright: #1c8ed7; /* full-width "gallery" band */
+  --n-orange: #e57200;      /* top stripe, first quick tile */
+  --n-red: #e4002b;         /* top stripe, alert button */
+  --n-stripe-blue: #178fd7; /* third quarter of the brand stripe. Not cyan: the site's stripe uses this blue */
+
+  /* Interaction */
+  --n-hover-light: #d7340b; /* link and outline-button hover on light backgrounds */
+  --n-hover-dark: #f7941d;  /* link and outline-button hover on navy */
+  --n-focus: #002f6c;       /* focus ring on light grounds (12.9:1). Cyan is only 2.7:1 on white; use it on navy only */
+  --n-navy-hover: #2c6597;  /* primary button hover */
+  --n-red-hover: #b41230;
+  --n-visited: #c249bc;
+
+  /* Neutrals and surfaces */
+  --n-ink: #333333;         /* body text */
+  --n-ink-strong: #000000;
+  --n-muted: #6e747c;
+  --n-line: #dddddd;
+  --n-line-input: #ced4da;
+  --n-bg: #ffffff;
+  --n-bg-grey: #eeeeee;     /* copyright strip */
+  --n-bg-blue: #d5e3ef;     /* events band, address strip */
+  --n-bg-beige: #e6dbce;    /* feature band */
+  --n-bg-periwinkle: #7d8cb3; /* feature band; also table headers */
+  --n-disabled-bg: #cecece;
+  --n-disabled-ink: #6e747c;
+
+  /* Alerts */
+  --n-alert-bg: #ffebeb;
+  --n-alert-line: #ffdadf;
+  --n-alert-ink: #5c0c1b;
+
+  /* Type: Open Sans, weights 300/400/600/700. Base 16px. */
+  --n-font: "Open Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --n-light: 300;
+  --n-regular: 400;
+  --n-semibold: 600;
+  --n-bold: 700;
+  --n-text-xs: 0.75rem;   /* 12 */
+  --n-text-sm: 0.875rem;  /* 14 */
+  --n-text-base: 1rem;    /* 16 */
+  --n-text-lg: 1.125rem;  /* 18 */
+  --n-text-xl: 1.25rem;   /* 20 */
+  --n-text-2xl: 1.5rem;   /* 24 */
+  --n-text-3xl: 1.875rem; /* 30 */
+  --n-text-4xl: 2.25rem;  /* 36 */
+  --n-text-5xl: 2.625rem; /* 42 */
+  --n-text-6xl: 3.75rem;  /* 60 */
+
+  /* Shape and space */
+  --n-radius: 5px;
+  --n-radius-sm: 3px;
+  --n-shadow-card: 2px 4px 6px 0 #e9e9e9;
+  --n-gutter: 1.5rem;
+  --n-container: 1320px;
+}
+
+/* Base */
+.n-page { margin: 0; background: var(--n-bg); color: var(--n-ink); font: var(--n-regular) var(--n-text-base)/1.5 var(--n-font); }
+.n-page h1 { font-size: var(--n-text-5xl); font-weight: var(--n-light); color: var(--n-navy); line-height: 1.2; }
+.n-page h2 { font-size: var(--n-text-3xl); font-weight: var(--n-light); color: var(--n-navy); line-height: 1.25; }
+.n-page h3 { font-size: var(--n-text-2xl); font-weight: var(--n-light); color: var(--n-navy); line-height: 1.3; }
+.n-page h4 { font-size: var(--n-text-xl); font-weight: var(--n-semibold); }
+.n-page h5 { font-size: var(--n-text-lg); font-weight: var(--n-semibold); color: var(--n-navy); }
+.n-page h6 { font-size: var(--n-text-base); font-weight: var(--n-semibold); color: var(--n-navy); }
+.n-page a { color: var(--n-blue); }
+.n-page a:hover { color: var(--n-hover-light); }
+.n-page :focus-visible { outline: 3px solid var(--n-focus); outline-offset: 2px; }
+.n-container { max-width: var(--n-container); margin: 0 auto; padding: 0 16px; }
+
+/* Brand stripe: four equal quarters, orange / red / blue / navy, above the header (as on nuhs.edu.sg) */
+.n-stripe { display: grid; grid-template-columns: repeat(4, 1fr); height: 6px; }
+.n-stripe > :nth-child(1) { background: var(--n-orange); }
+.n-stripe > :nth-child(2) { background: var(--n-red); }
+.n-stripe > :nth-child(3) { background: var(--n-stripe-blue); }
+.n-stripe > :nth-child(4) { background: var(--n-navy); }
+
+/* Buttons */
+.n-btn {
+  display: inline-flex; align-items: center; gap: 0.5em; cursor: pointer; text-decoration: none;
+  padding: 0.375rem 0.75rem; border: 1px solid transparent; border-radius: var(--n-radius);
+  font: var(--n-regular) var(--n-text-base)/1.5 var(--n-font);
+  background: var(--n-navy); color: #fff;
+}
+.n-btn:hover { background: var(--n-navy-hover); color: #fff; }
+.n-btn:focus-visible { outline: 3px solid var(--n-focus); outline-offset: 2px; }
+.n-btn:disabled { background: var(--n-disabled-bg); color: var(--n-disabled-ink); cursor: not-allowed; }
+.n-btn--secondary { background: var(--n-blue); }
+.n-btn--secondary:hover { background: var(--n-navy-hover); }
+.n-btn--alert { background: var(--n-red); }
+.n-btn--alert:hover { background: var(--n-red-hover); }
+/* The "View More" / "See more" button: thin outline, small text, inherits colour from its band */
+.n-btn--outline { background: transparent; color: currentColor; border-color: currentColor; font-size: var(--n-text-sm); padding: 0.3em 0.7em; }
+.n-btn--outline:hover { background: transparent; color: var(--n-hover-light); border-color: var(--n-hover-light); }
+.n-dark .n-btn--outline:hover { color: var(--n-hover-dark); border-color: var(--n-hover-dark); }
+
+/* Surfaces. .n-dark flips text and hover colours for navy / bright-blue panels */
+.n-dark { background: var(--n-navy); color: #fff; }
+.n-dark a, .n-dark h2, .n-dark h3, .n-dark h5, .n-dark h6 { color: #fff; }
+.n-dark a:hover { color: var(--n-hover-dark); }
+.n-dark :focus-visible, .n-dark .n-btn:focus-visible { outline-color: var(--n-cyan); }
+.n-band-blue { background: var(--n-bg-blue); }
+.n-band-beige { background: var(--n-bg-beige); }
+.n-band-periwinkle { background: var(--n-bg-periwinkle); color: #fff; }
+.n-band-bright { background: var(--n-blue-bright); color: #fff; }
+
+/* Quick-action tile: line icon + label, coloured bar underneath */
+.n-tile, .n-page .n-tile {
+  display: flex; align-items: center; gap: 12px; padding: 16px 8px 14px;
+  color: var(--n-ink); text-decoration: none; border-bottom: 4px solid var(--n-tile, var(--n-blue));
+}
+.n-page .n-tile:hover { color: var(--n-hover-light); }
+.n-tile svg { width: 40px; height: 40px; flex: none; stroke: currentColor; fill: none; stroke-width: 1.4; }
+
+/* Side menu on navy: large light items, cyan block for the active one */
+.n-menu { list-style: none; margin: 0; padding: 0; }
+.n-menu a { display: flex; align-items: center; gap: 8px; padding: 14px 16px; font-size: var(--n-text-xl); font-weight: var(--n-light); color: #fff; text-decoration: none; border-bottom: 1px solid rgba(255, 255, 255, .3); }
+.n-menu a::after { content: "›"; font-weight: var(--n-semibold); }
+.n-menu a[aria-current] { background: var(--n-cyan); color: var(--n-navy); border-bottom-color: transparent; }
+
+/* Dated news list */
+.n-news h3 { font-size: var(--n-text-lg); font-weight: var(--n-light); padding-bottom: 8px; border-bottom: 1px solid currentColor; margin: 0 0 16px; }
+.n-news time { display: block; font-size: var(--n-text-sm); font-weight: var(--n-bold); }
+.n-news p { margin: 0 0 16px; font-size: var(--n-text-sm); }
+
+/* Event card: image on top, title, date. No border or shadow */
+.n-card img, .n-card .n-card__media { display: block; width: 100%; aspect-ratio: 5 / 3; object-fit: cover; }
+.n-card h4 { font-size: var(--n-text-base); font-weight: var(--n-regular); margin: 12px 0 4px; }
+.n-card time { font-size: var(--n-text-sm); }
+
+/* Section header: light title on the left, outline button on the right */
+.n-section-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 24px; }
+.n-section-head h2 { margin: 0; font-weight: var(--n-semibold); color: var(--n-blue); }
+
+/* Alert */
+.n-alert { padding: 1.5rem; background: var(--n-alert-bg); border: 1px solid var(--n-alert-line); color: var(--n-alert-ink); }
+
+/* Form field */
+.n-input { padding: 0.375rem 0.75rem; border: 1px solid var(--n-line-input); border-radius: var(--n-radius); font: inherit; color: #212529; background: #fff; }
+.n-input:focus { outline: 3px solid var(--n-focus); outline-offset: 1px; border-color: var(--n-navy); }
+
+/* Tabs: cyan underline on the active tab */
+.n-tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--n-line); overflow-x: auto; }
+.n-tabs button { border: 0; background: none; padding: 8px 14px; font: inherit; color: var(--n-ink); border-bottom: 3px solid transparent; cursor: pointer; white-space: nowrap; }
+.n-tabs button[aria-selected="true"] { border-bottom-color: var(--n-cyan); font-weight: var(--n-semibold); }

@@ -9,11 +9,16 @@
 //                                             root add a few extra folders)
 //      or { moved: { '/old/': 'https://example.org/new/' } }  (apps now on another site: each path forwards there)
 export const SITES = {
-  'example.example.com': { root: 'example/' },
+  'nuhroster.anawj.com': { root: 'nuh-roster/' },
+  // NTF anaesthesia monthly duty roster (its own data, so its own host). /__/auth/ and /__/firebase/ are Firebase's
+  // sign-in helper pages on this host (authDomain ntfroster.anawj.com): ntf-auth/ holds its init.json.
+  'ntfroster.anawj.com': { root: 'ntf-roster/', prefixes: { '/__/auth/': '__/auth/', '/__/firebase/': 'ntf-auth/firebase/' } },
+  // NUH junior monthly roster helper (cardiac and ICU calls into the department's Google Sheet; its own data)
+  'nuhjuniormonthly.anawj.com': { root: 'nuh-junior-monthly/' },
 };
 
-// Folders every host serves as they are (shared files, no data), e.g. ['/shared/']
-export const SHARED = [];
+// Folders every host serves as they are (shared files, no data): /lib/ holds the one copy of exceljs the three apps use.
+export const SHARED = ['/lib/'];
 
 const LOCAL = /^(localhost|127\.0\.0\.1|\[::1\])$/;
 

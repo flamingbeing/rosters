@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Roster quick guide</title>
+<style>
+  :root { --navy: #002f6c; --ink: #222; --muted: #595e65; --line: #d8dde3; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #fff; color: var(--ink); font: 14px/1.45 Arial, Helvetica, sans-serif; }
+  .band { height: 6px; background: linear-gradient(90deg, #e57200 0 25%, #e4002b 25% 50%, #178fd7 50% 75%, #002f6c 75% 100%); }
+  main { max-width: 760px; margin: 0 auto; padding: 16px; }
+  h1 { color: var(--navy); font-size: 22px; margin: 8px 0 4px; }
+  h2 { color: var(--navy); font-size: 16px; margin: 16px 0 6px; border-bottom: 2px solid var(--navy); padding-bottom: 2px; }
+  .sub { color: var(--muted); margin: 0 0 8px; }
+  ol.steps { padding-left: 22px; margin: 0; }
+  ol.steps li { margin: 4px 0; }
+  table { border-collapse: collapse; width: 100%; }
+  th, td { text-align: left; vertical-align: top; padding: 3px 8px 3px 0; border-bottom: 1px solid var(--line); }
+  th { white-space: nowrap; color: var(--navy); width: 1%; }
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 0 20px; }
+  .print { margin: 12px 0; }
+  button { font: inherit; padding: 6px 14px; border: 1px solid var(--navy); background: var(--navy); color: #fff; border-radius: 4px; cursor: pointer; }
+  a { color: var(--navy); }
+  @media (max-width: 600px) { .cols { grid-template-columns: 1fr; } }
+  @media print {
+    @page { size: A4; margin: 10mm; }
+    body { font-size: 11px; } main { max-width: none; padding: 0; } .print { display: none; }
+    h1 { font-size: 18px; } h2 { font-size: 13px; margin-top: 10px; }
+  }
+</style>
+</head>
+<body>
+<div class="band"></div>
+<main>
+  <h1>NUH anaesthesia roster: quick guide</h1>
+  <p class="sub">One page to keep beside the OT computer. The app: nuhroster.anawj.com · Practice (made-up staff, nothing real touched): nuhroster.anawj.com/?demo</p>
+  <div class="print"><button onclick="print()">Print this page</button> <a href="./">Back to the roster</a></div>
+
+  <h2>Each morning, for tomorrow</h2>
+  <ol class="steps">
+    <li><b>Monthly rosters</b>: check they're loaded for this month and next (✓ chips). Leave, MC and post call come from them.</li>
+    <li><b>Cases</b>: "Do it all" with the admin team's draft. It reads the running rooms, case notes and leave, then makes the roster.</li>
+    <li><b>Roster</b>: fix each <b>Problem</b> with its button (Take off, Fill empty gaps, Swap for someone suitable). "Check" items are worth a look.</li>
+    <li><b>Premeds</b>: a junior who wasn't around yesterday needs premed cover.</li>
+    <li><b>Send it out</b>: Download (Excel, PDF, image for WhatsApp, or the image in 2 parts) or Save for the team. After a late change, "Send image with the changes".</li>
+  </ol>
+
+  <h2>Changing things</h2>
+  <div class="cols">
+    <ol class="steps">
+      <li>Tap a name for its box: leaving time, (L), comment, Move or swap.</li>
+      <li>+ adds someone (best fits first); × takes them off.</li>
+      <li>Several days of leave or admin: Monthly › Today, tap them, "Same until".</li>
+    </ol>
+    <ol class="steps" start="4">
+      <li><b>Undo</b> (Ctrl+Z) takes back anything until you change the date.</li>
+      <li>Names in red aren't on the staff list: "Fix names" remembers the spelling.</li>
+      <li>Staff check their own day on <b>My day</b>, and can add it to their calendar.</li>
+    </ol>
+  </div>
+
+  <h2>What the marks mean</h2>
+  <div class="cols">
+    <table><tbody>
+      <tr><th>&amp;</th><td>Double covering (two rooms)</td></tr>
+      <tr><th>Name (C)</th><td>Ad hoc cover from a nearby room</td></tr>
+      <tr><th>C-OT13</th><td>Covers OT 13 when its person leaves</td></tr>
+      <tr><th>L-4pm</th><td>Leaves at 4pm</td></tr>
+      <tr><th>(L)</th><td>Liver standby: no complex lists</td></tr>
+      <tr><th>-mtg 3pm</th><td>A comment (also in the comments box)</td></tr>
+    </tbody></table>
+    <table><tbody>
+      <tr><th>(RA) (P) (SR)…</th><td>A junior's posting this week</td></tr>
+      <tr><th>(AOH)</th><td>On the AOH list that day</td></tr>
+      <tr><th>Green name</th><td>Baby MO: never left alone</td></tr>
+      <tr><th>Purple name</th><td>Locum</td></tr>
+      <tr><th>Red room</th><td>A remote case</td></tr>
+      <tr><th>☾ / •</th><td>Monthly: overnight duty / fills Calls and clinics</td></tr>
+    </tbody></table>
+  </div>
+  <p class="sub" style="margin-top:12px">More in the app: <b>Key and help</b> at the bottom of every page.</p>
+</main>
+</body>
+</html>

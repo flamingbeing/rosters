@@ -5,6 +5,8 @@
 
 const VERSION = 'nuh-roster-v1';
 const SDK = 'https://www.gstatic.com/firebasejs/10.12.2/';
+// the NUHS design kit lives on another host; SHELL caches it at install, and this answers it from that cache offline
+const KIT = 'https://design.anawj.com/v1/';
 const SDK_FILES = ['firebase-app.js', 'firebase-auth.js', 'firebase-firestore.js'].map(f => SDK + f);
 // the big vendor files (Excel, PDF) are cached the first time they're used, not on install
 const SHELL = [
@@ -39,7 +41,7 @@ self.addEventListener('fetch', e => {
   const req = e.request;
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
-  if (req.url.startsWith(SDK)) {
+  if (req.url.startsWith(SDK) || req.url.startsWith(KIT)) {
     e.respondWith(caches.open(VERSION).then(async c => (await c.match(req.url)) || fetch(req).then(res => {
       if (res.ok) c.put(req.url, res.clone());
       return res;

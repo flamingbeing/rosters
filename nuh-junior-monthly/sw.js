@@ -6,6 +6,8 @@
 
 const VERSION = 'nuh-junior-monthly-v1';
 const SDK = 'https://www.gstatic.com/firebasejs/10.12.2/';
+// the NUHS design kit lives on another host; SHELL caches it at install, and this answers it from that cache offline
+const KIT = 'https://design.anawj.com/v1/';
 const SHELL = [
   './', 'index.html', 'style.css', 'css/rules.css', 'manifest.webmanifest',
   'https://design.anawj.com/v1/tokens.css', 'https://design.anawj.com/v1/app.css', 'https://design.anawj.com/v1/app.js',
@@ -40,7 +42,7 @@ self.addEventListener('fetch', e => {
   // "Get the latest version" checks for signal with cache: 'no-store': straight to the network
   if (req.cache === 'no-store') return;
   const url = new URL(req.url);
-  if (req.url.startsWith(SDK)) {
+  if (req.url.startsWith(SDK) || req.url.startsWith(KIT)) {
     e.respondWith(caches.open(VERSION).then(async c => (await c.match(req.url)) || fetch(req).then(res => {
       if (res.ok) c.put(req.url, res.clone());
       return res;

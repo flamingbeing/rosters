@@ -33,10 +33,10 @@ Part of [NOTES.md](../NOTES.md). Useful to any app in the repo that deals with N
   - Postings rotate, so juniors who aren't on the staff list are skipped by default when importing the contact list.
   - Postings change by the week (Monday to Sunday) and are planned for the year: Monthly › Rotations. A junior can be moved for a single day from their person box ("Posting today").
 - **Short names** are how the leave and post call lists write people:
-  - surname first: "Koh Yi Wen" → "Koh YW"
-  - one given name after the surname: "Lim Xinyi" → "Xinyi"
-  - common, mostly English, given name first: initial and surname, "Rebecca Chua Hui Min" → "R Chua", "Rebecca Victoria Lau Rui Xin" → "R Lau"
-  - anything else: the first name, "Anjali Varma" → "Anjali"
+  - surname first: "Ong Jia Hui" → "Ong JH"
+  - one given name after the surname: "Teo Wanling" → "Wanling"
+  - common, mostly English, given name first: initial and surname, "Grace Ho Li Ting" → "G Ho", "Grace Amelia Seah Pei Shan" → "G Seah"
+  - anything else: the first name, "Meera Kapoor" → "Meera"
 
 ## The daily roster sheet
 

@@ -27,7 +27,7 @@ Firestore indexes every field of a map, and a month's days (days × people × co
 document. `cells` is now saved as one JSON string (`cloud.js` `cellsFromDoc` reads either form; the rules accept a map or a string
 up to 900,000 characters). More shows Team sharing first, with Save to team and Pull from team.
 
-How to add a rule type: as in `ntf-roster/NOTES.md` ("How to add a new rule type"); the engine is the same file.
+How to add a rule type: as in `ntf-roster/docs/rules.md` ("How to add a new rule type"); the engine is the same file.
 
 ## Earlier saves (16 Oct 2026)
 

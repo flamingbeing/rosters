@@ -123,7 +123,7 @@ export function matchesCodes(state, s, staffId, codes, eff?) -> bool   // handle
 ## Rules (`rules.js`, A)
 
 Every rule is plain data. The owner adds, edits, disables and deletes rules in the app; the checker and the solver
-read them. **Adding a new rule type later = one entry in `RULE_TYPES` + a unit test** (document this in NOTES.md).
+read them. **Adding a new rule type later = one entry in `RULE_TYPES` + a unit test** (document this in docs/rules.md).
 
 ```js
 Rule = {

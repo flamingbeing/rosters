@@ -40,7 +40,7 @@ await tab(page, 'Roster');
 const gen = await page.$('button:has-text("Generate roster")');
 if (gen) { await gen.click(); await page.waitForTimeout(600); }
 const tourSel = await page.evaluate(async () => {
-  const src = await (await fetch('js/app.js')).text();
+  const src = await (await fetch('js/ui-tour.js')).text();
   return [...src.matchAll(/\{ (?:tab: '(\w+)', )?sel: '([^']+)'/g)].map(m => [m[1] || '', m[2]]);
 });
 ok(tourSel.length >= 6, 'tour steps found');

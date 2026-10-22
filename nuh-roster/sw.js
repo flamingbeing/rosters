@@ -17,7 +17,7 @@ const SHELL = [
   'js/ui-core.js', 'js/ui-practice.js', 'js/ui-screen.js', 'js/ui-tour.js', 'js/ui-staff.js', 'js/ui-cases.js', 'js/ui-roster.js',
   'js/ui-tags.js', 'js/ui-person.js', 'js/ui-general.js', 'js/ui-monthly.js', 'js/ui-myday.js', 'js/ui-rotations.js', 'js/ui-today.js',
   'js/ui-premed.js', 'js/ui-problems.js', 'js/ui-export.js', 'js/ui-settings.js', 'js/ui-team.js',
-  'icons/icon-192.png', 'icons/icon-512.png', 'icons/maskable-512.png', 'icons/apple-touch-icon.png', 'icons/favicon-32.png',
+  'icons/icon-192.png', 'icons/icon-512.png', 'icons/maskable-512.png', 'icons/apple-touch-icon.png', 'icons/favicon-32.png', 'icons/icon.svg',
 ];
 
 self.addEventListener('install', e => {

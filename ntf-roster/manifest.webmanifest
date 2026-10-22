@@ -2,6 +2,7 @@
   "name": "NTF Roster",
   "short_name": "NTF Roster",
   "description": "The NTF anaesthesia monthly duty roster: calls, PM shifts, leave and requests, checked against the department's rules.",
+  "id": "./",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

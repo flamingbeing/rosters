@@ -1,7 +1,8 @@
 {
   "name": "NUH Junior Monthly",
   "short_name": "NUH Junior Monthly",
-  "description": "The NTF anaesthesia monthly duty roster: calls, PM shifts, leave and requests, checked against the department's rules.",
+  "description": "The NUH junior monthly roster: cardiac and ICU calls into the department's sheet.",
+  "id": "./",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

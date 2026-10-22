@@ -2,6 +2,7 @@
   "name": "NUH Roster",
   "short_name": "Roster",
   "description": "The NUH anaesthesia daily roster, and your own day.",
+  "id": "./",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

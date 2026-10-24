@@ -310,7 +310,7 @@ await go(page, '#more');
 await page.waitForSelector('.more-foot .appver');
 ok(await page.isVisible('.more-foot button:has-text("Not updating? Get the latest version")'), 'More ends with "Get the latest version"');
 await page.waitForFunction(() => /^App version /.test(document.querySelector('.more-foot .appver-line')?.textContent || ''), null, { timeout: 15000 });
-ok(/^App version (v1|\d{4}-\d{2}-\d{2} \([0-9a-f]+\))$/.test(await page.textContent('.more-foot .appver-line')), 'More shows the app version from the cache name');
+ok(/^App version (v\d+|\d{4}-\d{2}-\d{2} \([0-9a-f]+\))$/.test(await page.textContent('.more-foot .appver-line')), 'More shows the app version from the cache name');
 ok(await page.evaluate(() => { const r = document.querySelector('.more'); return r.lastElementChild.classList.contains('more-foot'); }), 'the version lines are the last thing on More');
 await shot(page, 'more');
 await axe(page, 'more (desktop)');

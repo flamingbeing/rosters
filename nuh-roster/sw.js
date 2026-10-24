@@ -1,16 +1,17 @@
-// Offline app shell for the NUH roster (the logbook's pattern): the app opens with poor or no signal, and My day
-// shows the last roster this phone loaded. VERSION is stamped at deploy with a hash of the app's files
-// (tools/stamp-versions.mjs), so an update is offered ("Update available: Reload") whenever they change; don't bump
-// it by hand. Firebase traffic always goes to the network; its SDK files (versioned) are cached here.
+// Offline app shell for NUH roster, on the shared update module (app-update 0.1.0: sw-core.js does the work; its README has
+// the rules): the app opens with poor or no signal, and My day shows the last roster this phone loaded. guide.html is a SHELL page of its own. The deploy stamps VERSION and MANIFEST (tools/stamp-versions.mjs: a hash of the app's files,
+// and one per SHELL file so a phone fetches only the changed ones); never change them by hand. Change the v<N> only when
+// this file's own logic changes.
+// - Install: every SHELL file or nothing. A new version takes over at once and the open page reloads once (register.js).
+// - Pages come from the folder ('./'), whatever the query or hash. Firebase traffic always goes to the network; its SDK
+//   files (versioned) are kept once fetched (the core's default rule), and so are the big vendor files (Excel, fonts of
+//   the design tokens: same-origin files, refreshed in the background) and the design kit's /v1/ files.
+// - sw.js itself is never cached ("Get the latest version" checks for signal with it).
 
-const VERSION = 'nuh-roster-v1';
-const SDK = 'https://www.gstatic.com/firebasejs/10.12.2/';
-// the NUHS design kit lives on another host; SHELL caches it at install, and this answers it from that cache offline
-const KIT = 'https://design.anawj.com/v1/';
-const SDK_FILES = ['firebase-app.js', 'firebase-auth.js', 'firebase-firestore.js'].map(f => SDK + f);
+const VERSION = 'nuh-roster-v2';
 // the big vendor files (Excel, PDF) are cached the first time they're used, not on install
 const SHELL = [
-  './', 'index.html', 'style.css', 'manifest.webmanifest', 'guide.html',
+  './', 'style.css', 'manifest.webmanifest', 'guide.html',
   'https://design.anawj.com/v1/tokens.css', 'https://design.anawj.com/v1/app.css', 'https://design.anawj.com/v1/app.js',
   'js/app.js', 'js/engine.js', 'js/layout.js', 'js/xlsxio.js', 'js/monthly.js', 'js/rotations.js', 'js/cloud.js', 'js/firebase-config.js',
   'js/demo.js', 'js/pdfout.js', 'js/pngout.js', 'js/ics.js', 'js/store.js', 'js/help.js',
@@ -18,55 +19,18 @@ const SHELL = [
   'js/ui-tags.js', 'js/ui-person.js', 'js/ui-general.js', 'js/ui-monthly.js', 'js/ui-myday.js', 'js/ui-rotations.js', 'js/ui-today.js',
   'js/ui-premed.js', 'js/ui-problems.js', 'js/ui-export.js', 'js/ui-settings.js', 'js/ui-team.js',
   'icons/icon-192.png', 'icons/icon-512.png', 'icons/maskable-512.png', 'icons/apple-touch-icon.png', 'icons/favicon-32.png', 'icons/icon.svg',
+  // the page side of app-update (one exact version), so the app opens offline
+  'https://core.anawj.com/update/0.1.0/register.js',
 ];
+const MANIFEST = {};
 
-self.addEventListener('install', e => {
-  // one missing file must not stop the whole install, so cache each on its own
-  e.waitUntil(caches.open(VERSION).then(c => Promise.all([
-    ...SHELL.map(u => c.add(new Request(u, { cache: 'reload' })).catch(() => {})),
-    ...SDK_FILES.map(u => c.add(new Request(u, { mode: 'cors' })).catch(() => {})),
-  ])));
-});
-
-// The page asks a waiting worker to take over when the user taps "Reload".
-self.addEventListener('message', e => { if (e.data === 'skipWaiting') self.skipWaiting(); });
-
-self.addEventListener('activate', e => {
-  e.waitUntil((async () => {
-    for (const k of await caches.keys()) if (k.startsWith('nuh-roster-') && k !== VERSION) await caches.delete(k); // other apps keep theirs
-    await self.clients.claim();
-  })());
-});
-
-const NEVER = /(^|\.)(googleapis\.com|gstatic\.com|firebaseio\.com|firebaseapp\.com|google\.com)$/;
-
-self.addEventListener('fetch', e => {
-  const req = e.request;
-  if (req.method !== 'GET') return;
-  const url = new URL(req.url);
-  if (req.url.startsWith(SDK) || req.url.startsWith(KIT)) {
-    e.respondWith(caches.open(VERSION).then(async c => (await c.match(req.url)) || fetch(req).then(res => {
-      if (res.ok) c.put(req.url, res.clone());
-      return res;
-    })));
-    return;
-  }
-  if (url.origin !== self.location.origin || NEVER.test(url.hostname)) return;
-  if (url.pathname.includes('/__/')) return; // Firebase auth helper pages
-  e.respondWith((async () => {
-    const cache = await caches.open(VERSION);
-    // navigations: the cached shell, whatever the query (?demo) or hash (#myday); keyed by the folder ('./')
-    const key = req.mode === 'navigate' && !url.pathname.endsWith('guide.html') ? './' : req;
-    const hit = await cache.match(key, { ignoreSearch: req.mode === 'navigate' });
-    if (hit) return hit;
-    try {
-      const res = await fetch(req);
-      if (res.ok && res.type === 'basic') cache.put(key, res.clone());
-      return res;
-    } catch (err) {
-      const shell = req.mode === 'navigate' && await cache.match('./');
-      if (shell) return shell;
-      throw err;
-    }
-  })());
+importScripts('https://core.anawj.com/update/0.1.0/sw-core.js');
+AppUpdate.init({
+  app: 'nuh-roster', version: VERSION, shell: SHELL, manifest: MANIFEST,
+  never: [/\/sw\.js$/],
+  runtime: [
+    { name: 'kit', match: 'https://design.anawj.com/v1/', strategy: 'stale-while-revalidate', max: 40 },
+    { name: 'pinned', match: /^https:\/\/core\.anawj\.com\/(sync|update)\/\d+\.\d+\.\d+\//, strategy: 'cache-first', max: 40 },
+    { name: 'files', match: url => url.origin === self.location.origin && /\.(m?js|css|json|png|svg|jpe?g|webp|ico|woff2?|ttf|webmanifest)$/i.test(url.pathname), strategy: 'stale-while-revalidate', max: 60 },
+  ],
 });

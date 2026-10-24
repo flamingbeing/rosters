@@ -134,7 +134,7 @@ export function renderSettings() {
 function appVersion() {
   const ver = h('div', { id: 'appver' }), msg = h('span', { role: 'status' });
   if (window.caches) caches.keys().then(ks => {
-    const k = ks.find(x => x.startsWith('nuh-roster-')); if (!k) return;
+    const k = ks.filter(x => x.startsWith('nuh-roster-') && !x.startsWith('nuh-roster-rt-')).sort().at(-1); if (!k) return;   // not the runtime caches
     const v = k.slice('nuh-roster-'.length), d = /^(\d{4}-\d{2}-\d{2})-([0-9a-f]+)$/.exec(v);
     ver.textContent = 'App version ' + (d ? `${d[1]} (${d[2]})` : v);
   }).catch(() => {});

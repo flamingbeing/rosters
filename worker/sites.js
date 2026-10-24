@@ -5,9 +5,10 @@
 import { resolve, api } from './routes.js';
 import * as junior from './junior.js';
 import * as roster from './roster.js';
+import * as ntf from './ntf.js';
 
 // host -> that app's claims routes
-const APPS = { 'nuhjuniormonthly.anawj.com': junior, 'nuhroster.anawj.com': roster };
+const APPS = { 'nuhjuniormonthly.anawj.com': junior, 'nuhroster.anawj.com': roster, 'ntfroster.anawj.com': ntf };
 
 const NOINDEX = 'noindex, nofollow';
 

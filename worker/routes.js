@@ -23,6 +23,7 @@ const CLAIMS = ['/api/claims', '/api/members/sync'];
 export const API = {
   'nuhjuniormonthly.anawj.com': CLAIMS,
   'nuhroster.anawj.com': CLAIMS,
+  'ntfroster.anawj.com': CLAIMS,
 };
 export const api = (host, pathname) => {
   host = String(host || '').toLowerCase().replace(/:\d+$/, '');

@@ -126,10 +126,15 @@ await t('rosterer saves team and month together', assertSucceeds(runTransaction(
 await t('rosterer cannot add a member', assertFails(setDoc(doc(ros, 'members', 'new@example.com'), { role: 'rosterer', name: 'New' })));
 await t('viewer cannot make themselves rosterer', assertFails(setDoc(doc(view, 'members', VIEWER), { role: 'rosterer', name: 'Viewer' })));
 await t('stranger cannot add themselves', assertFails(setDoc(doc(stranger, 'members', 'someone@example.com'), { role: 'viewer', name: 'Me' })));
-await t('admin adds a viewer', assertSucceeds(setDoc(doc(adm, 'members', 'new@example.com'), { role: 'viewer', name: 'New' })));
-await t('admin makes them a rosterer', assertSucceeds(setDoc(doc(adm, 'members', 'new@example.com'), { role: 'rosterer', name: 'New' })));
+await t('admin adds a viewer', assertSucceeds(setDoc(doc(adm, 'members', 'new@example.com'), { role: 'viewer', name: 'New', v: 1 })));
+await t('a new entry starts at v 1', assertFails(setDoc(doc(adm, 'members', 'new2@example.com'), { role: 'viewer', name: 'New', v: 5 })));
+await t('a role change without a new v is refused', assertFails(setDoc(doc(adm, 'members', 'new@example.com'), { role: 'rosterer', name: 'New', v: 1 })));
+await t('a role change may not skip a v', assertFails(setDoc(doc(adm, 'members', 'new@example.com'), { role: 'rosterer', name: 'New', v: 3 })));
+await t('admin makes them a rosterer', assertSucceeds(setDoc(doc(adm, 'members', 'new@example.com'), { role: 'rosterer', name: 'New', v: 2 })));
+await t('a rename keeps v', assertFails(setDoc(doc(adm, 'members', 'new@example.com'), { role: 'rosterer', name: 'Renamed', v: 3 })));
+await t('v must be a number', assertFails(setDoc(doc(adm, 'members', 'new2@example.com'), { role: 'viewer', name: 'New', v: '1' })));
 await t('admin cannot add a mistyped role', assertFails(setDoc(doc(adm, 'members', 'new2@example.com'), { role: 'Rosterer', name: 'New' })));
-await t('admin links a member to a staff record', assertSucceeds(setDoc(doc(adm, 'members', 'new@example.com'), { role: 'viewer', name: 'New', staffId: 's1' })));
+await t('admin links a member to a staff record', assertSucceeds(setDoc(doc(adm, 'members', 'new@example.com'), { role: 'viewer', name: 'New', staffId: 's1', v: 3 })));
 await t('staffId must be short text', assertFails(setDoc(doc(adm, 'members', 'new@example.com'), { role: 'viewer', name: 'New', staffId: 12 })));
 await t('name must be short', assertFails(setDoc(doc(adm, 'members', 'new@example.com'), { role: 'viewer', name: 'x'.repeat(101) })));
 await t('admin cannot add extra fields', assertFails(setDoc(doc(adm, 'members', 'new2@example.com'), { role: 'viewer', name: 'New', admin: true })));
@@ -163,6 +168,28 @@ await t('admin lists requests', assertSucceeds(getDocs(collection(adm, 'accessRe
 await t("rosterer cannot clear someone's request", assertFails(deleteDoc(doc(ros, 'accessRequests', 'waiting@example.com'))));
 await t('admin clears a request', assertSucceeds(deleteDoc(doc(adm, 'accessRequests', 'waiting@example.com'))));
 await t('stranger withdraws their own request', assertSucceeds(deleteDoc(doc(stranger, 'accessRequests', 'someone@example.com'))));
+
+// roles from claims (set by the Worker's /api/claims): the claim decides, the members entry is the fallback
+const claimed = (email, role, extra = {}) => env.authenticatedContext('c-' + email, { email, email_verified: true, g: { _: role }, v: 1, ...extra }).firestore();
+const now = Math.floor(Date.now() / 1000);
+await env.withSecurityRulesDisabled(async ctx => {
+  await setDoc(doc(ctx.firestore(), 'revoked', 'c-gone@example.com'), { at: 1 });
+  await setDoc(doc(ctx.firestore(), 'revoked', 'g-' + VIEWER), { at: 1 });
+  await setDoc(doc(ctx.firestore(), 'members', 'gone@example.com'), { role: 'viewer', name: 'Gone', v: 2 });
+});
+await t('a viewer claim reads with no members entry', assertSucceeds(getDoc(doc(claimed('claim@example.com', 'viewer'), 'months', '2026-11'))));
+await t('a rosterer claim saves the team', assertSucceeds(setDoc(doc(claimed('claim@example.com', 'rosterer'), 'team', 'main'), team('claim@example.com', { updatedAt: 5 }))));
+await t('a viewer claim wins over a rosterer entry', assertFails(setDoc(doc(claimed(ROSTERER, 'viewer'), 'team', 'main'), team(ROSTERER))));
+await t('an unknown claim role reads only', assertFails(setDoc(doc(claimed('claim@example.com', 'boss'), 'team', 'main'), team('claim@example.com'))));
+await t('a claim whose access has ended is refused', assertFails(getDoc(doc(claimed('claim@example.com', 'viewer', { x: now - 60 }), 'team', 'main'))));
+await t('a claim with access until later reads', assertSucceeds(getDoc(doc(claimed('claim@example.com', 'viewer', { x: now + 3600 }), 'team', 'main'))));
+await t('a revoked account is refused despite its claim', assertFails(getDoc(doc(claimed('gone@example.com', 'viewer'), 'team', 'main'))));
+await t('a revoked account is refused on the members entry too', assertFails(getDoc(doc(view, 'team', 'main'))));
+await t('a revoked account still reads its own entry (to see the new v)', assertSucceeds(getDoc(doc(claimed('gone@example.com', 'viewer'), 'members', 'gone@example.com'))));
+await t('an admin claim cannot change the members list without an admin entry', assertFails(setDoc(doc(claimed('claim@example.com', 'admin'), 'members', 'x@example.com'), { role: 'viewer', name: 'X', v: 1 })));
+await t('an admin claim lists access requests', assertSucceeds(getDocs(collection(claimed('claim@example.com', 'admin'), 'accessRequests'))));
+await t('nobody reads revoked/', assertFails(getDoc(doc(claimed('gone@example.com', 'admin'), 'revoked', 'c-gone@example.com'))));
+await t('nobody writes revoked/', assertFails(deleteDoc(doc(claimed('gone@example.com', 'admin'), 'revoked', 'c-gone@example.com'))));
 
 await env.cleanup();
 if (fail) { console.log(`${fail} of ${n} NTF roster rules checks failed`); process.exit(1); }

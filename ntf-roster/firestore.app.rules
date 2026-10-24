@@ -1,0 +1,150 @@
+rules_version = '2';
+
+// NTF Roster (Firebase project ntf-roster). Edit this file, then build firestore.rules (it adds app-devkit's
+// rules/common.rules where the "devkit:common" line is): node .devkit/tools/build-rules.mjs ntf-roster/firestore.app.rules.
+// Deployed by .github/workflows/deploy-firestore-rules.yml on merge to main (when firestore.rules changes).
+// Tests: tools/test-rules.sh (test/rules.emulator.mjs and test/rules.kit.emulator.mjs).
+// Only signed-in Google accounts listed in /members can read anything; admins and rosterers write, viewers only read.
+// Every write is stamped with the signed-in account's email, and saved copies (versions) never change.
+//
+// Roles: the token's claim g._ when the Worker has set one (/api/claims), else members/{email}.role (older pages, or
+// before the Worker has its service account). A removed or demoted member is refused at once through revoked/{uid}.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // devkit:common
+
+    // a claim is only set for a verified email (the Worker checks), so a claim counts as verified too
+    function signedIn() {
+      return request.auth != null && (role('_') != '' || request.auth.token.email_verified == true);
+    }
+    function email() {
+      return request.auth.token.email.lower();
+    }
+    function memberPath() {
+      return /databases/$(database)/documents/members/$(email());
+    }
+    // the role in this account's members entry ('' when there is none): one lookup
+    function docRole() {
+      return request.auth.token.email_verified == true && exists(memberPath()) ? get(memberPath()).data.get('role', '') : '';
+    }
+    // the claim when there is one, else the members entry (written inline: a function argument would always be read)
+    function myRole() {
+      return role('_') != '' ? role('_') : docRole();
+    }
+    // a members entry with any role (a mistyped role still reads), access not ended, not revoked
+    function member() {
+      return signedIn() && myRole() != '' && live() && notRevoked();
+    }
+    function admin() {
+      return member() && myRole() == 'admin';
+    }
+    // only admins and rosterers change the roster; viewers (and a missing or mistyped role) only read
+    function editor() {
+      return member() && myRole() in ['admin', 'rosterer'];
+    }
+    // changing the members list checks the entry itself, never a (possibly older) claim
+    function docAdmin() {
+      return signedIn() && docRole() == 'admin' && notRevoked();
+    }
+    // the person a write is stamped with is the one signed in: { email, name } only, the email theirs (the name is
+    // their own words, so the app shows the email beside it)
+    function stampedBy(field) {
+      return request.resource.data.get(field, {}) is map
+        && request.resource.data.get(field, {}).keys().hasOnly(['email', 'name'])
+        && request.resource.data.get(field, {}).get('email', '') == email()
+        && request.resource.data.get(field, {}).get('name', '') is string
+        && request.resource.data.get(field, {}).get('name', '').size() <= 100;
+    }
+    // a save time (Date.now() milliseconds) no later than 10 minutes from now, so a copy can't be dated in the future
+    // and sort first for ever (versions can't be changed or deleted)
+    function notFuture(field) {
+      return request.resource.data.get(field, 0) is int
+        && request.resource.data.get(field, 0) <= request.time.toMillis() + 600000;
+    }
+    function shortText(field, max) {
+      return request.resource.data.get(field, '') is string && request.resource.data.get(field, '').size() <= max;
+    }
+    // v: the entry's version, bumped by one when the role changes (pages compare it with their claim's v)
+    function validMember() {
+      return request.resource.data.keys().hasOnly(['role', 'name', 'staffId', 'v'])
+        && request.resource.data.role in ['admin', 'rosterer', 'viewer']
+        && shortText('name', 100) && shortText('staffId', 40)
+        && request.resource.data.get('v', 0) is int;
+    }
+    function newMemberV() {
+      return request.resource.data.get('v', 0) == 1;
+    }
+    function nextMemberV() {
+      return request.resource.data.get('v', 0) == resource.data.get('v', 0)
+          + (request.resource.data.role == resource.data.get('role', '') ? 0 : 1);
+    }
+    function validMonth(m) {
+      return m.matches('^[0-9]{4}-(0[1-9]|1[0-2])$')
+        && request.resource.data.month == m
+        && (request.resource.data.cells is map || (request.resource.data.cells is string && request.resource.data.cells.size() <= 900000))
+        && request.resource.data.get('status', 'draft') in ['draft', 'published']
+        && shortText('publishedAt', 40) && shortText('note', 2000)
+        && validLocks();
+    }
+    // each roster's lock on the month: { junior, senior }, each '' (open) or when it was locked
+    function validLocks() {
+      return !('locks' in request.resource.data)
+        || (request.resource.data.locks is map && request.resource.data.locks.keys().hasOnly(['junior', 'senior'])
+          && request.resource.data.locks.get('junior', '') is string && request.resource.data.locks.get('junior', '').size() <= 40
+          && request.resource.data.locks.get('senior', '') is string && request.resource.data.locks.get('senior', '').size() <= 40);
+    }
+
+    match /members/{memberEmail} {
+      // anyone signed in may check their own entry; members see the list; admins manage it
+      allow get: if signedIn() && memberEmail == email();
+      allow list, get: if member();
+      allow create: if docAdmin() && validMember() && newMemberV() && memberEmail == memberEmail.lower()
+        && memberEmail.matches('^[^@/ ]+@[^@/ ]+$');
+      // an admin can't demote or remove themselves, so the team always keeps one
+      allow update: if docAdmin() && validMember() && nextMemberV() && (memberEmail != email() || request.resource.data.role == 'admin');
+      allow delete: if docAdmin() && memberEmail != email();
+    }
+
+    // people asking to join: they file and see their own request only; admins see and clear them
+    match /accessRequests/{requestEmail} {
+      allow get, delete: if signedIn() && requestEmail == email();
+      allow create, update: if signedIn() && requestEmail == email()
+        && request.resource.data.keys().hasOnly(['email', 'name', 'requestedAt'])
+        && request.resource.data.email == email()
+        && request.resource.data.name is string && request.resource.data.name.size() <= 100;
+      allow list, get, delete: if admin();
+    }
+
+    // team/main: staff, groups, tags, duty codes, rules and their log, settings. The only team document.
+    match /team/{doc} {
+      allow read: if member();
+      allow create, update: if editor() && doc == 'main' && stampedBy('updatedBy') && notFuture('updatedAt')
+        && request.resource.data.keys().hasOnly(['settings', 'groups', 'tags', 'staff', 'duties', 'rules', 'rulesLog', 'aps', 'updatedAt', 'updatedBy']);
+      allow delete: if false;
+
+      // a copy of each save, to go back to: permanent
+      match /versions/{version} {
+        allow read: if member();
+        allow create: if editor() && doc == 'main' && stampedBy('savedBy') && notFuture('savedAt')
+          && request.resource.data.keys().hasOnly(['team', 'savedAt', 'savedBy']);
+        allow update, delete: if false;
+      }
+    }
+
+    // months/{YYYY-MM}: that month's cells and its status
+    match /months/{m} {
+      allow read: if member();
+      allow create, update: if editor() && validMonth(m) && stampedBy('updatedBy') && notFuture('updatedAt')
+        && request.resource.data.keys().hasOnly(['month', 'cells', 'status', 'publishedAt', 'note', 'locks', 'updatedAt', 'updatedBy']);
+      allow delete: if admin();
+
+      // a copy of each save: permanent
+      match /versions/{version} {
+        allow read: if member();
+        allow create: if editor() && validMonth(m) && stampedBy('savedBy') && notFuture('savedAt')
+          && request.resource.data.keys().hasOnly(['month', 'cells', 'status', 'publishedAt', 'note', 'locks', 'savedAt', 'savedBy']);
+        allow update, delete: if false;
+      }
+    }
+  }
+}

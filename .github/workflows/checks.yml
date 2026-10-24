@@ -16,13 +16,11 @@ concurrency:
 
 jobs:
   unit:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
+      - uses: flamingbeing/app-devkit/setup-node@v1
       - name: Repo check
         run: node tools/check.mjs
       - name: Unit tests
@@ -44,19 +42,13 @@ jobs:
     name: browser (${{ matrix.name }})
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: flamingbeing/app-devkit/setup-node@v1
+      - name: Install Playwright
+        run: npm install -g playwright@1.56.1
+      - uses: flamingbeing/app-devkit/setup-browser@v1
         with:
-          node-version: 22
-      - name: Cache Playwright browsers
-        id: pw-cache
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/ms-playwright
-          key: pw-1.56.1-${{ runner.os }}-ubuntu24
-      - name: Install a browser
-        run: |
-          npm install -g playwright@1.56.1
-          playwright install chromium
+          playwright-version: '1.56.1'
+          devkit-dir: ''
       - name: Test
         run: |
           export PLAYWRIGHT_PATH="$(npm root -g)/playwright/index.mjs"

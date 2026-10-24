@@ -131,6 +131,22 @@ restriction" (same day, following days, between two people, and ready-made ones)
   against the Ministry of Manpower list before relying on them ("Load Singapore public holidays" uses them).
 - The cloud's merge by pool is tested in unit tests and the emulator only, not yet with two people saving live.
 
+## Roles and the rules kit (25 Oct 2026)
+
+- Rules: edit `firestore.app.rules`, then build the committed `firestore.rules` with app-devkit's
+  `tools/build-rules.mjs` (it pastes in the kit's `rules/common.rules`; the kit is pinned at `v1.4.0` in the Checks
+  `rules` job, which fails on a stale build).
+- Roles: the token's claim `g._` when there is one, else `members/{email}.role` (older pages, or while the Worker has no
+  service account). Reads cost 1 lookup on claims (`revoked/{uid}`), 2 on the members entry. Changes to the members
+  list always check the admin's entry, never the claim.
+- Worker (`worker/ntf.js` on `worker/members.js`, this host only): `POST /api/claims` puts the role on the account
+  (the page calls it after sign-in and when its entry's `v` is ahead, then refreshes its token); `POST /api/members/sync`
+  (admins, after a change) writes `revoked/{uid}` for a removed or lowered member, so their older claim is refused at
+  once. Without the secrets `NTF_SA_EMAIL` and `NTF_SA_KEY` both answer 503 and everything runs on the members entry.
+- `members/{email}.v`: 1 when added, one more on each role change (rules-checked; older entries without one count as 0).
+- Tests: `node ntf-roster/test/claims.test.mjs`; `bash tools/test-rules.sh` (`test/rules.emulator.mjs`, the kit's
+  shared suite `test/rules.kit.emulator.mjs`, the Worker end to end in `worker/test/ntf.emulator.mjs`).
+
 ## More detail (all public, code facts only)
 
 | File | Sections |

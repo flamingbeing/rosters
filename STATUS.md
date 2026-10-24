@@ -6,8 +6,8 @@
 
 ## Waiting on the owner
 - nuh-roster claims: a service account in its Firebase project (Auth user admin + Firestore write), its email and key
-  as the Worker secrets `ROSTER_SA_EMAIL` and `ROSTER_SA_KEY` (Cloudflare, Worker `rosters`). nuh-junior-monthly's
-  (`JUNIOR_SA_*`) are set.
+  as the Worker secrets `ROSTER_SA_EMAIL` and `ROSTER_SA_KEY` (Cloudflare, Worker `rosters`); the same for ntf-roster
+  (`NTF_SA_EMAIL`, `NTF_SA_KEY`). nuh-junior-monthly's (`JUNIOR_SA_*`) are set.
 - Connect this repo in Workers Builds and move the three custom domains here (the owner has the link).
 
 ## Next (in order)
@@ -15,6 +15,8 @@
 2. anawj-site drops the three hosts and its copies.
 
 ## Recently done
+- 25 Oct 2026: ntf-roster on the rules kit too (`worker/ntf.js`); all three apps now take role claims. Its Worker
+  secrets `NTF_SA_EMAIL`/`NTF_SA_KEY` are still to add (until then its routes answer 503 and the members entry serves).
 - 25 Oct 2026: nuh-roster on the rules kit too (same shape as nuh-junior-monthly; `worker/members.js` now holds the
   claims routes for both, one small file per app). Its Worker secrets `ROSTER_SA_EMAIL`/`ROSTER_SA_KEY` are still to
   add (until then its routes answer 503 and the members entry serves).

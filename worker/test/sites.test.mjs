@@ -40,9 +40,9 @@ test('only GET and HEAD', async () => {
   assert.equal((await get('https://nuhroster.anawj.com/', 'POST')).status, 405);
 });
 
-test('the claims routes: 503 on the junior monthly and NUH roster hosts until their secrets are set; 404 on NTF', async () => {
+test('the claims routes: 503 on each app host until its secrets are set; 404 elsewhere', async () => {
   for (const p of ['/api/claims', '/api/members/sync']) {
-    for (const h of ['nuhjuniormonthly', 'nuhroster']) {
+    for (const h of ['nuhjuniormonthly', 'nuhroster', 'ntfroster']) {
       const r = await get(`https://${h}.anawj.com${p}`, 'POST');
       assert.equal(r.status, 503, h + p);
       assert.equal(r.headers.get('Cache-Control'), 'no-store');
@@ -50,9 +50,8 @@ test('the claims routes: 503 on the junior monthly and NUH roster hosts until th
     // one app's secrets never switch on another's routes
     assert.equal((await worker.fetch(new Request('https://nuhroster.anawj.com' + p, { method: 'POST' }),
       { ...env, JUNIOR_SA_EMAIL: 'x', JUNIOR_SA_KEY: 'y' })).status, 503, 'roster ignores junior secrets ' + p);
-    for (const h of ['ntfroster']) {
-      assert.equal((await get(`https://${h}.anawj.com${p}`, 'POST')).status, 405, h + p);
-      assert.equal((await get(`https://${h}.anawj.com${p}`)).status, 404, h + p);
-    }
+    assert.equal((await worker.fetch(new Request('https://ntfroster.anawj.com' + p, { method: 'POST' }),
+      { ...env, ROSTER_SA_EMAIL: 'x', ROSTER_SA_KEY: 'y' })).status, 503, 'ntf ignores roster secrets ' + p);
+    assert.equal((await get(`https://other.example${p}`, 'POST')).status, 405, 'other host ' + p);
   }
 });

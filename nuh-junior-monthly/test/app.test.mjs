@@ -766,4 +766,12 @@ const ids = (s, rule) => evalM(s).violations.filter(v => v.ruleId === rule);
   ok(confirmedNote('Predicted from the roster guide: confirm or change.') === '' && confirmedNote('The guide: very hard to keep; real rosters break it often (1 in 3 cardiac calls). Predicted from the roster guide: confirm or change.') === 'The guide: very hard to keep; real rosters break it often (1 in 3 cardiac calls).', 'To confirm: confirming removes that sentence and keeps the rest of the note');
   ok(!M.defaultState().rules.some(r => isPredicted({ note: confirmedNote(r.note) })), 'To confirm: no default note still reads as predicted once confirmed');
 }
+// role claims (cloud.js): when to ask the Worker again, and the members entry's v
+{
+  ok(C.claimsBehind({ role: 'viewer', v: 1 }, {}) && C.claimsBehind({ role: 'viewer' }, { email: 'a@b' }), 'claims: a member with no claim asks');
+  ok(!C.claimsBehind({ role: 'viewer', v: 2 }, { g: { _: 'viewer' }, v: 2 }) && !C.claimsBehind({ role: 'viewer' }, { g: { _: 'viewer' }, v: 0 }), 'claims: an up-to-date claim does not ask');
+  ok(C.claimsBehind({ role: 'viewer', v: 3 }, { g: { _: 'rosterer' }, v: 2 }), 'claims: an entry ahead of the claim asks');
+  ok(C.claimsBehind(null, { g: { _: 'viewer' }, v: 1 }) && !C.claimsBehind(null, {}), 'claims: removed with a claim asks (to clear it); never a member does not');
+  ok(C.nextV(null, 'viewer') === 1 && C.nextV({ role: 'viewer', v: 4 }, 'viewer') === 4 && C.nextV({ role: 'viewer', v: 4 }, 'admin') === 5 && C.nextV({ role: 'viewer' }, 'admin') === 1, 'members: v starts at 1 and goes up by one on a role change');
+}
 console.log(`nuh-junior-monthly: ${n} checks passed`);

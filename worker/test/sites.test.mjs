@@ -39,3 +39,15 @@ test('sign-in helper pages on the NTF host only (handler is handler.html)', asyn
 test('only GET and HEAD', async () => {
   assert.equal((await get('https://nuhroster.anawj.com/', 'POST')).status, 405);
 });
+
+test('the claims routes: 503 on the junior monthly host until its secrets are set; 404 on the other two', async () => {
+  for (const p of ['/api/claims', '/api/members/sync']) {
+    const r = await get('https://nuhjuniormonthly.anawj.com' + p, 'POST');
+    assert.equal(r.status, 503, p);
+    assert.equal(r.headers.get('Cache-Control'), 'no-store');
+    for (const h of ['nuhroster', 'ntfroster']) {
+      assert.equal((await get(`https://${h}.anawj.com${p}`, 'POST')).status, 405, h + p);
+      assert.equal((await get(`https://${h}.anawj.com${p}`)).status, 404, h + p);
+    }
+  }
+});

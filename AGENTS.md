@@ -30,6 +30,9 @@ repo; never copy anything from there into this repo, a PR or an issue (neutral p
   `core.anawj.com/update/<x.y.z>/`): every SHELL file must exist and answer without a redirect (install is all or nothing).
 - Rules changes: `deploy-firestore-rules.yml` deploys them live on merge (keyless sign-in, GitHub's OIDC token). Test
   them first with `tools/test-rules.sh` (local emulator, needs Java); a manual run deploys all three: ask the owner.
+  nuh-junior-monthly's rules are built: edit `firestore.app.rules` and rebuild (its NOTES.md "Roles and the rules kit").
+- `worker/claims.js` and `worker/custom-token.js` are app-devkit copies (version line on top): never edit them here;
+  take a new kit version instead (Checks diffs them against the pinned kit).
 
 ## Checks before merging
 

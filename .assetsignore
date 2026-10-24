@@ -8,3 +8,4 @@ node_modules
 *.md
 wrangler.jsonc
 package.json
+.devkit

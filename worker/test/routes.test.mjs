@@ -2,7 +2,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import { resolve, SITES } from '../routes.js';
+import { resolve, SITES, api } from '../routes.js';
 
 test('each host serves its own app at the root', () => {
   assert.deepEqual(resolve('nuhroster.anawj.com', '/'), { file: 'nuh-roster/' });
@@ -47,4 +47,15 @@ test('every folder in SITES and SHARED exists', () => {
     for (const f of [s.root, ...Object.values(s.prefixes || {})].filter(Boolean))
       assert.ok(fs.existsSync(new URL(`../../${f}`, import.meta.url)), `${host}: ${f}`);
   assert.ok(fs.existsSync(new URL('../../lib/exceljs.min.js', import.meta.url)), 'lib/exceljs.min.js');
+});
+
+test('the claims routes answer on the junior monthly host only', () => {
+  for (const p of ['/api/claims', '/api/members/sync']) {
+    assert.equal(api('nuhjuniormonthly.anawj.com', p), p);
+    assert.equal(api('NUHJUNIORMONTHLY.anawj.com:443', p), p);
+    assert.equal(api('nuhroster.anawj.com', p), null);
+    assert.equal(api('ntfroster.anawj.com', p), null);
+    assert.equal(api('localhost', p), null);
+  }
+  assert.equal(api('nuhjuniormonthly.anawj.com', '/api/other'), null);
 });

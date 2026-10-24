@@ -7,9 +7,9 @@ const env = await initializeTestEnvironment({ projectId: 'demo-roster', firestor
 const ADMIN = 'admin@example.com', ROSTERER = 'rosterer@example.com', VIEWER = 'viewer@example.com', ODD = 'odd@example.com', NOROLE = 'norole@example.com';
 await env.withSecurityRulesDisabled(async ctx => {
   const db = ctx.firestore();
-  await setDoc(doc(db, 'members', ADMIN), { role: 'admin', name: 'Admin' });
-  await setDoc(doc(db, 'members', ROSTERER), { role: 'rosterer', name: 'Rosterer' });
-  await setDoc(doc(db, 'members', VIEWER), { role: 'viewer', name: 'Viewer' });
+  await setDoc(doc(db, 'members', ADMIN), { role: 'admin', name: 'Admin', v: 1 });
+  await setDoc(doc(db, 'members', ROSTERER), { role: 'rosterer', name: 'Rosterer', v: 1 });
+  await setDoc(doc(db, 'members', VIEWER), { role: 'viewer', name: 'Viewer', v: 1 });
   await setDoc(doc(db, 'members', ODD), { role: 'Viewer', name: 'Mistyped role' });
   await setDoc(doc(db, 'members', NOROLE), { name: 'No role' });
   await setDoc(doc(db, 'rosters', '2026-10-14'), { date: '2026-10-14', day: {}, roster: {}, updatedAt: 1, updatedBy: { email: ROSTERER, name: 'R' } });
@@ -72,14 +72,18 @@ await t('viewer reads staff-list versions', assertSucceeds(getDocs(collection(vi
 // members
 await t('rosterer cannot add a member', assertFails(setDoc(doc(ros, 'members', 'new@example.com'), { role: 'rosterer', name: 'New' })));
 await t('viewer cannot make themselves rosterer', assertFails(setDoc(doc(view, 'members', VIEWER), { role: 'rosterer', name: 'Viewer' })));
-await t('admin adds a viewer', assertSucceeds(setDoc(doc(adm, 'members', 'new@example.com'), { role: 'viewer', name: 'New' })));
-await t('admin cannot add a mistyped role', assertFails(setDoc(doc(adm, 'members', 'new2@example.com'), { role: 'Rosterer', name: 'New' })));
-await t('admin links a member to a staff record', assertSucceeds(setDoc(doc(adm, 'members', 'new@example.com'), { role: 'viewer', name: 'New', staffId: 'p12' })));
-await t('staffId must be short text', assertFails(setDoc(doc(adm, 'members', 'new@example.com'), { role: 'viewer', name: 'New', staffId: 12 })));
-await t('admin cannot add extra fields', assertFails(setDoc(doc(adm, 'members', 'new2@example.com'), { role: 'viewer', name: 'New', admin: true })));
-await t('admin cannot add an upper-case email id', assertFails(setDoc(doc(adm, 'members', 'New3@example.com'), { role: 'viewer', name: 'New' })));
-await t('admin cannot demote themselves', assertFails(setDoc(doc(adm, 'members', ADMIN), { role: 'rosterer', name: 'Admin' })));
-await t('admin renames themselves', assertSucceeds(setDoc(doc(adm, 'members', ADMIN), { role: 'admin', name: 'Admin Two' })));
+await t('admin adds a viewer', assertSucceeds(setDoc(doc(adm, 'members', 'new@example.com'), { role: 'viewer', name: 'New', v: 1 })));
+await t('admin cannot add a mistyped role', assertFails(setDoc(doc(adm, 'members', 'new2@example.com'), { role: 'Rosterer', name: 'New', v: 1 })));
+await t('admin links a member to a staff record', assertSucceeds(setDoc(doc(adm, 'members', 'new@example.com'), { role: 'viewer', name: 'New', staffId: 'p12', v: 1 })));
+await t('staffId must be short text', assertFails(setDoc(doc(adm, 'members', 'new@example.com'), { role: 'viewer', name: 'New', staffId: 12, v: 1 })));
+await t('admin cannot add extra fields', assertFails(setDoc(doc(adm, 'members', 'new2@example.com'), { role: 'viewer', name: 'New', admin: true, v: 1 })));
+await t('admin cannot add an upper-case email id', assertFails(setDoc(doc(adm, 'members', 'New3@example.com'), { role: 'viewer', name: 'New', v: 1 })));
+await t('admin cannot demote themselves', assertFails(setDoc(doc(adm, 'members', ADMIN), { role: 'rosterer', name: 'Admin', v: 2 })));
+await t('admin renames themselves', assertSucceeds(setDoc(doc(adm, 'members', ADMIN), { role: 'admin', name: 'Admin Two', v: 1 })));
+await t('a new entry starts at v 1', assertFails(setDoc(doc(adm, 'members', 'new4@example.com'), { role: 'viewer', name: 'New' })));
+await t('a role change without a v bump is refused', assertFails(setDoc(doc(adm, 'members', 'new@example.com'), { role: 'rosterer', name: 'New', staffId: 'p12', v: 1 })));
+await t('a role change bumps v by one', assertSucceeds(setDoc(doc(adm, 'members', 'new@example.com'), { role: 'rosterer', name: 'New', staffId: 'p12', v: 2 })));
+await t('v must be a whole number', assertFails(setDoc(doc(adm, 'members', 'new@example.com'), { role: 'rosterer', name: 'New', v: '2' })));
 await t('admin cannot remove themselves', assertFails(deleteDoc(doc(adm, 'members', ADMIN))));
 await t('admin removes someone else', assertSucceeds(deleteDoc(doc(adm, 'members', 'new@example.com'))));
 await t('members list members', assertSucceeds(getDocs(collection(view, 'members'))));
@@ -94,6 +98,29 @@ await t('request with extra fields', assertFails(setDoc(doc(stranger, 'accessReq
 await t('request with a long name', assertFails(setDoc(doc(stranger, 'accessRequests', 'someone@example.com'), req('someone@example.com', { name: 'x'.repeat(101) }))));
 await t('rosterer cannot list requests', assertFails(getDocs(collection(ros, 'accessRequests'))));
 await t('admin lists requests', assertSucceeds(getDocs(collection(adm, 'accessRequests'))));
+
+// roles from claims (set by the Worker's /api/claims): the claim decides, the members entry is the fallback
+const claimed = (email, role, extra = {}) => env.authenticatedContext('c-' + email, { email, email_verified: true, g: { _: role }, v: 1, ...extra }).firestore();
+const now = Math.floor(Date.now() / 1000);
+await env.withSecurityRulesDisabled(async ctx => {
+  await setDoc(doc(ctx.firestore(), 'revoked', 'c-gone@example.com'), { at: 1 });
+  await setDoc(doc(ctx.firestore(), 'revoked', 'g-' + VIEWER), { at: 1 });
+  await setDoc(doc(ctx.firestore(), 'members', 'gone@example.com'), { role: 'viewer', name: 'Gone', v: 2 });
+});
+await t('a viewer claim reads with no members entry', assertSucceeds(getDoc(doc(claimed('claim@example.com', 'viewer'), 'rosters', '2026-10-14'))));
+await t('a rosterer claim saves a roster', assertSucceeds(setDoc(doc(claimed('claim@example.com', 'rosterer'), 'rosters', '2026-10-20'), roster('2026-10-20', 'claim@example.com'))));
+await t('a viewer claim wins over a rosterer entry', assertFails(setDoc(doc(claimed(ROSTERER, 'viewer'), 'team', 'main'), team(ROSTERER))));
+await t('an unknown claim role reads only', assertFails(setDoc(doc(claimed('claim@example.com', 'boss'), 'team', 'main'), team('claim@example.com'))));
+await t('a claim whose access has ended is refused', assertFails(getDoc(doc(claimed('claim@example.com', 'viewer', { x: now - 60 }), 'team', 'main'))));
+await t('a claim with access until later reads', assertSucceeds(getDoc(doc(claimed('claim@example.com', 'viewer', { x: now + 3600 }), 'team', 'main'))));
+await t('a revoked account is refused despite its claim', assertFails(getDoc(doc(claimed('gone@example.com', 'viewer'), 'team', 'main'))));
+await t('a revoked account is refused on the members entry too', assertFails(getDoc(doc(view, 'team', 'main'))));
+await t('a revoked account still reads its own entry (to see the new v)', assertSucceeds(getDoc(doc(claimed('gone@example.com', 'viewer'), 'members', 'gone@example.com'))));
+await t('an admin claim cannot change the members list without an admin entry', assertFails(setDoc(doc(claimed('claim@example.com', 'admin'), 'members', 'x@example.com'), { role: 'viewer', name: 'X', v: 1 })));
+await t('an admin claim lists access requests', assertSucceeds(getDocs(collection(claimed('claim@example.com', 'admin'), 'accessRequests'))));
+await t('an admin claim deletes a roster', assertSucceeds(deleteDoc(doc(claimed('claim@example.com', 'admin'), 'rosters', '2026-10-20'))));
+await t('nobody reads revoked/', assertFails(getDoc(doc(claimed('gone@example.com', 'admin'), 'revoked', 'c-gone@example.com'))));
+await t('nobody writes revoked/', assertFails(deleteDoc(doc(claimed('gone@example.com', 'admin'), 'revoked', 'c-gone@example.com'))));
 
 await env.cleanup();
 if (fail) { console.log(`${fail} of ${n} roster rules checks failed`); process.exit(1); }

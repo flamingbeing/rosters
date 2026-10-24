@@ -1,0 +1,117 @@
+rules_version = '2';
+
+// NUH roster (Firebase project nuh-roster). Edit this file, then build firestore.rules (it adds app-devkit's
+// rules/common.rules where the "devkit:common" line is): node .devkit/tools/build-rules.mjs nuh-roster/firestore.app.rules.
+// Deployed by .github/workflows/deploy-firestore-rules.yml on merge to main (when firestore.rules changes).
+// Tests: tools/test-rules.sh (test/rules.emulator.mjs and test/rules.kit.emulator.mjs).
+// Only signed-in Google accounts listed in /members can read or write anything.
+//
+// Roles: the token's claim g._ when the Worker has set one (/api/claims), else members/{email}.role (older pages, or
+// before the Worker has its service account). A removed or demoted member is refused at once through revoked/{uid}.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // devkit:common
+
+    // a claim is only set for a verified email (the Worker checks), so a claim counts as verified too
+    function signedIn() {
+      return request.auth != null && (role('_') != '' || request.auth.token.email_verified == true);
+    }
+    function email() {
+      return request.auth.token.email.lower();
+    }
+    function memberPath() {
+      return /databases/$(database)/documents/members/$(email());
+    }
+    // the role in this account's members entry ('' when there is none): one lookup
+    function docRole() {
+      return request.auth.token.email_verified == true && exists(memberPath()) ? get(memberPath()).data.get('role', '') : '';
+    }
+    // the claim when there is one, else the members entry (written inline: a function argument would always be read)
+    function myRole() {
+      return role('_') != '' ? role('_') : docRole();
+    }
+    // a members entry with any role (a mistyped role still reads), access not ended, not revoked
+    function member() {
+      return signedIn() && myRole() != '' && live() && notRevoked();
+    }
+    function admin() {
+      return member() && myRole() == 'admin';
+    }
+    // only admins and rosterers change anything; viewers (and a missing or mistyped role) only read
+    function editor() {
+      return member() && myRole() in ['admin', 'rosterer'];
+    }
+    // changing the members list checks the entry itself, never a (possibly older) claim
+    function docAdmin() {
+      return signedIn() && docRole() == 'admin' && notRevoked();
+    }
+    // the person a write is stamped with is the one signed in
+    function stampedBy(field) {
+      return request.resource.data.get(field, {}).get('email', '') == email();
+    }
+    // v: the entry's version, bumped by one when the role changes (pages compare it with their claim's v)
+    function validMember() {
+      return request.resource.data.keys().hasOnly(['role', 'name', 'staffId', 'v'])
+        && request.resource.data.role in ['admin', 'rosterer', 'viewer']
+        && request.resource.data.get('name', '') is string && request.resource.data.get('name', '').size() <= 100
+        && request.resource.data.get('staffId', '') is string && request.resource.data.get('staffId', '').size() <= 40
+        && request.resource.data.get('v', 0) is int;
+    }
+    function newMemberV() {
+      return request.resource.data.get('v', 0) == 1;
+    }
+    function nextMemberV() {
+      return request.resource.data.get('v', 0) == resource.data.get('v', 0)
+          + (request.resource.data.role == resource.data.get('role', '') ? 0 : 1);
+    }
+
+    match /members/{memberEmail} {
+      // anyone signed in may check their own entry; members see the list; admins manage it
+      allow get: if signedIn() && memberEmail == email();
+      allow list, get: if member();
+      allow create: if docAdmin() && validMember() && newMemberV() && memberEmail == memberEmail.lower();
+      // an admin can't demote or remove themselves, so the team always keeps one
+      allow update: if docAdmin() && validMember() && nextMemberV() && (memberEmail != email() || request.resource.data.role == 'admin');
+      allow delete: if docAdmin() && memberEmail != email();
+    }
+
+    // people asking to join: they can file and see their own request; admins see and clear them
+    match /accessRequests/{requestEmail} {
+      allow get: if signedIn() && requestEmail == email();
+      allow create, update: if signedIn() && requestEmail == email()
+        && request.resource.data.email == email()
+        && request.resource.data.keys().hasOnly(['email', 'name', 'requestedAt'])
+        && request.resource.data.name is string && request.resource.data.name.size() <= 100;
+      allow list, get, delete: if admin();
+      allow delete: if signedIn() && requestEmail == email();
+    }
+
+    // team/main (staff, rooms, settings), team/monthly, team/rotations
+    match /team/{doc} {
+      allow read: if member();
+      allow create, update: if editor() && doc in ['main', 'monthly', 'rotations'] && stampedBy('updatedBy');
+      allow delete: if admin();
+
+      // each save of the staff list keeps a copy, like the rosters' history: permanent
+      match /versions/{version} {
+        allow read: if member();
+        allow create: if editor() && doc == 'main' && stampedBy('savedBy');
+        allow update, delete: if false;
+      }
+    }
+
+    match /rosters/{date} {
+      allow read: if member();
+      allow create, update: if editor() && date.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && request.resource.data.date == date && stampedBy('updatedBy');
+      allow delete: if admin();
+
+      // history entries are permanent
+      match /versions/{version} {
+        allow read: if member();
+        allow create: if editor() && stampedBy('savedBy');
+        allow update, delete: if false;
+      }
+    }
+  }
+}

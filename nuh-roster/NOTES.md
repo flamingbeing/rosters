@@ -46,3 +46,20 @@ Setup steps (first admin, deploy) are in [README.md](README.md). What is happeni
   depends on the day (free seniors, who is on leave) must not assume a fixed outcome: start from "Reset this day" and
   allow for randomness (14 Oct: Fix 3 problems failed every PR when the day was short of a senior; #491).
 - Real sample files (rosters, the contact list, HMS PDFs) must stay out of the repo.
+- `node nuh-roster/test/claims.test.mjs`: when the page asks the Worker for its role claim, and the members entry's `v`.
+- Rules: `bash tools/test-rules.sh` (`test/rules.emulator.mjs`, the kit's shared suite `test/rules.kit.emulator.mjs`,
+  and the Worker's claims routes end to end in `worker/test/roster.emulator.mjs`), in the Checks `rules` job.
+
+## Roles and the rules kit (25 Oct 2026)
+
+- Rules: edit `firestore.app.rules`, then build the committed `firestore.rules` with app-devkit's
+  `tools/build-rules.mjs` (it pastes in the kit's `rules/common.rules`; the kit is pinned at `v1.4.0` in the Checks
+  `rules` job, which fails on a stale build).
+- Roles: the token's claim `g._` when there is one, else `members/{email}.role` (older pages, or while the Worker has no
+  service account). Reads cost 1 lookup on claims (`revoked/{uid}`), 2 on the members entry. Changes to the members
+  list always check the admin's entry, never the claim.
+- Worker (`worker/roster.js` on `worker/members.js`, this host only): `POST /api/claims` puts the role on the account
+  (the page calls it after sign-in and when its entry's `v` is ahead, then refreshes its token); `POST /api/members/sync`
+  (admins, after a change) writes `revoked/{uid}` for a removed or lowered member, so their older claim is refused at
+  once. Without the secrets `ROSTER_SA_EMAIL` and `ROSTER_SA_KEY` both answer 503 and everything runs on the members entry.
+- `members/{email}.v`: 1 when added, one more on each role change (rules-checked; older entries without one count as 0).

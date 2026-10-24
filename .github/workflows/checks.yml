@@ -29,8 +29,9 @@ jobs:
         run: node tools/proofread.mjs
 
   rules:
-    # Firestore rules in the emulators (tools/test-rules.sh): every app's own checks, and for nuh-junior-monthly the
-    # rules kit's shared suite, the claims Worker end to end, a stale built firestore.rules, and unchanged kit copies.
+    # Firestore rules in the emulators (tools/test-rules.sh): every app's own checks, and for nuh-junior-monthly and
+    # nuh-roster the rules kit's shared suite, the claims Worker end to end, a stale built firestore.rules, and unchanged
+    # kit copies.
     # The kit is pinned exactly: firestore.rules is built from its common.rules.
     runs-on: ubuntu-24.04
     timeout-minutes: 15

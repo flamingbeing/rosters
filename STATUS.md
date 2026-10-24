@@ -5,8 +5,9 @@
   cut-over; this repo's Worker takes them over on its first deploy.
 
 ## Waiting on the owner
-- nuh-junior-monthly claims: a service account in its Firebase project (Auth user admin + Firestore write), its email
-  and key as the Worker secrets `JUNIOR_SA_EMAIL` and `JUNIOR_SA_KEY` (Cloudflare, Worker `rosters`).
+- nuh-roster claims: a service account in its Firebase project (Auth user admin + Firestore write), its email and key
+  as the Worker secrets `ROSTER_SA_EMAIL` and `ROSTER_SA_KEY` (Cloudflare, Worker `rosters`). nuh-junior-monthly's
+  (`JUNIOR_SA_*`) are set.
 - Connect this repo in Workers Builds and move the three custom domains here (the owner has the link).
 
 ## Next (in order)
@@ -14,6 +15,9 @@
 2. anawj-site drops the three hosts and its copies.
 
 ## Recently done
+- 25 Oct 2026: nuh-roster on the rules kit too (same shape as nuh-junior-monthly; `worker/members.js` now holds the
+  claims routes for both, one small file per app). Its Worker secrets `ROSTER_SA_EMAIL`/`ROSTER_SA_KEY` are still to
+  add (until then its routes answer 503 and the members entry serves).
 - 25 Oct 2026: nuh-junior-monthly on app-devkit's rules kit (v1.4.0): role claims through `/api/claims` on its host,
   removals and demotions cut off through `revoked/`, the members entry as fallback; a Checks `rules` job runs every app's
   rules tests. The Worker's service account for it is still to add (until then the routes answer 503).

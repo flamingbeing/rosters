@@ -1,17 +1,22 @@
 // The Cloudflare Worker for this repo's addresses. It serves the repo's files (the static assets, bound as ASSETS)
 // and decides which folder an address may see (routes.js). No storage; the only non-file answers are the claims routes
-// of routes.js API (worker/junior.js).
+// of routes.js API (each app's claims file, below; worker/members.js).
 // wrangler.jsonc: "run_worker_first" sends every request here.
 import { resolve, api } from './routes.js';
 import * as junior from './junior.js';
+import * as roster from './roster.js';
+
+// host -> that app's claims routes
+const APPS = { 'nuhjuniormonthly.anawj.com': junior, 'nuhroster.anawj.com': roster };
 
 const NOINDEX = 'noindex, nofollow';
 
 export default {
   async fetch(request, env) {
-    const route = api(new URL(request.url).hostname, new URL(request.url).pathname);
-    if (route === '/api/claims') return junior.claims(request, junior.setup(env));
-    if (route === '/api/members/sync') return junior.membersSync(request, junior.setup(env));
+    const { hostname, pathname } = new URL(request.url);
+    const route = api(hostname, pathname), app = route && APPS[hostname];   // URL hostnames are lower case, no port
+    if (route === '/api/claims') return app.claims(request, app.setup(env));
+    if (route === '/api/members/sync') return app.membersSync(request, app.setup(env));
     if (request.method !== 'GET' && request.method !== 'HEAD') return new Response('Method not allowed', { status: 405, headers: { Allow: 'GET, HEAD' } });
     const url = new URL(request.url);
     const r = resolve(url.hostname, url.pathname);

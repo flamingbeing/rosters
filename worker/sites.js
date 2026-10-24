@@ -1,12 +1,17 @@
 // The Cloudflare Worker for this repo's addresses. It serves the repo's files (the static assets, bound as ASSETS)
-// and decides which folder an address may see (routes.js). No data, no storage: just files.
+// and decides which folder an address may see (routes.js). No storage; the only non-file answers are the claims routes
+// of routes.js API (worker/junior.js).
 // wrangler.jsonc: "run_worker_first" sends every request here.
-import { resolve } from './routes.js';
+import { resolve, api } from './routes.js';
+import * as junior from './junior.js';
 
 const NOINDEX = 'noindex, nofollow';
 
 export default {
   async fetch(request, env) {
+    const route = api(new URL(request.url).hostname, new URL(request.url).pathname);
+    if (route === '/api/claims') return junior.claims(request, junior.setup(env));
+    if (route === '/api/members/sync') return junior.membersSync(request, junior.setup(env));
     if (request.method !== 'GET' && request.method !== 'HEAD') return new Response('Method not allowed', { status: 405, headers: { Allow: 'GET, HEAD' } });
     const url = new URL(request.url);
     const r = resolve(url.hostname, url.pathname);

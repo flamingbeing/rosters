@@ -17,6 +17,15 @@ export const SITES = {
   'nuhjuniormonthly.anawj.com': { root: 'nuh-junior-monthly/' },
 };
 
+// Worker routes (not files) per host: only these hosts answer them (worker/junior.js); elsewhere they are plain 404s.
+export const API = {
+  'nuhjuniormonthly.anawj.com': ['/api/claims', '/api/members/sync'],
+};
+export const api = (host, pathname) => {
+  host = String(host || '').toLowerCase().replace(/:\d+$/, '');
+  return (API[host] || []).includes(pathname) ? pathname : null;
+};
+
 // Folders every host serves as they are (shared files, no data): /lib/ holds the one copy of exceljs the three apps use.
 export const SHARED = ['/lib/'];
 

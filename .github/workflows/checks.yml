@@ -28,6 +28,28 @@ jobs:
       - name: Proof-read (pages and documents)
         run: node tools/proofread.mjs
 
+  rules:
+    # Firestore rules in the emulators (tools/test-rules.sh): every app's own checks, and for nuh-junior-monthly the
+    # rules kit's shared suite, the claims Worker end to end, a stale built firestore.rules, and unchanged kit copies.
+    # The kit is pinned exactly: firestore.rules is built from its common.rules.
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: flamingbeing/app-devkit/setup-node@v1
+      - uses: flamingbeing/app-devkit/setup-emulators@v1.4.0
+        with:
+          emulators: firestore,auth
+          devkit-dir: .devkit
+      - name: The Worker's kit copies are unchanged
+        run: for f in claims.js custom-token.js; do diff -u ".devkit/worker/$f" "worker/$f" || exit 1; done
+      - name: Rules tests
+        run: |
+          mkdir -p ~/.cache/anawj-rules
+          npm install --silent --no-audit --no-fund --prefix ~/.cache/anawj-rules @firebase/rules-unit-testing firebase
+          ln -s "$(command -v firebase)" ~/.cache/anawj-rules/node_modules/.bin/firebase
+          bash tools/test-rules.sh
+
   browser:
     runs-on: ubuntu-24.04  # Playwright 1.56 has no Chromium for 26.04 (ubuntu-latest)
     timeout-minutes: 20

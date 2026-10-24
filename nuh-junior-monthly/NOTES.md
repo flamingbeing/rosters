@@ -59,11 +59,27 @@ the scripts that read them are in the owner's private notes.
   tab-separated text to paste at that top-left cell. Cells whose meaning didn't change go back exactly as typed;
   seniors' rows come back untouched; the list of changed cells is shown. Import again just before pasting if others edit.
 
+## Roles and the rules kit (25 Oct 2026)
+
+- Rules: edit `firestore.app.rules`, then build the committed `firestore.rules` with app-devkit's
+  `tools/build-rules.mjs` (it pastes in the kit's `rules/common.rules`; the kit is pinned at `v1.4.0` in the Checks
+  `rules` job, which fails on a stale build).
+- Roles: the token's claim `g._` when there is one, else `members/{email}.role` (older pages, or while the Worker has no
+  service account). Reads cost 1 lookup on claims (`revoked/{uid}`), 2 on the members entry. Changes to the members
+  list always check the admin's entry, never the claim.
+- Worker (`worker/junior.js`, this host only): `POST /api/claims` puts the role on the account (the page calls it after
+  sign-in and when its entry's `v` is ahead, then refreshes its token); `POST /api/members/sync` (admins, after a change)
+  writes `revoked/{uid}` for a removed or lowered member, so their older claim is refused at once. Without the secrets
+  `JUNIOR_SA_EMAIL` and `JUNIOR_SA_KEY` both answer 503 and everything runs on the members entry.
+- `members/{email}.v`: 1 when added, one more on each role change (rules-checked).
+
 ## Tests
 
 `node nuh-junior-monthly/test/app.test.mjs` (rules, PPC, auto-fill, sheet round trip) and
 `node nuh-junior-monthly/test/e2e.mjs` (static server on port 8080: every tab on desktop and phone, axe, Postings,
-Auto-fill). Both run in the Checks workflow.
+Auto-fill). Both run in the Checks workflow. Rules: `bash tools/test-rules.sh` (`test/rules.emulator.mjs`, the kit's
+shared suite `test/rules.kit.emulator.mjs`, and the Worker's claims routes end to end in `worker/test/junior.emulator.mjs`),
+in the Checks `rules` job.
 
 ## More detail (all public, code facts only)
 

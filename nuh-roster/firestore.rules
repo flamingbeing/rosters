@@ -1,44 +1,115 @@
+// Built by app-devkit tools/build-rules.mjs from firestore.app.rules and rules/common.rules. Edit those, then rebuild.
 rules_version = '2';
 
-// Deployed by .github/workflows/deploy-firestore-rules.yml on merge to main. Tests: tools/test-rules.sh.
+// NUH roster (Firebase project nuh-roster). Edit this file, then build firestore.rules (it adds app-devkit's
+// rules/common.rules where the "devkit:common" line is): node .devkit/tools/build-rules.mjs nuh-roster/firestore.app.rules.
+// Deployed by .github/workflows/deploy-firestore-rules.yml on merge to main (when firestore.rules changes).
+// Tests: tools/test-rules.sh (test/rules.emulator.mjs and test/rules.kit.emulator.mjs).
 // Only signed-in Google accounts listed in /members can read or write anything.
+//
+// Roles: the token's claim g._ when the Worker has set one (/api/claims), else members/{email}.role (older pages, or
+// before the Worker has its service account). A removed or demoted member is refused at once through revoked/{uid}.
 service cloud.firestore {
   match /databases/{database}/documents {
+    // app-devkit rules/common.rules 1.3.0. Shared helpers, pasted in by tools/build-rules.mjs; do not edit the copy.
+    // Claims (a cache of the app's role docs, never the source of truth; all optional):
+    //   g  { <groupId>: <role> }  the user's role per group; a single-group app uses the key '_'
+    //   x  unix seconds           access ends then (absent = no end)
+    //   v  int                    claims version, bumped when the role docs change
+    //   m  string                 sign-in method; written for the record, never read by rules
+    // No email in authorisation. Lookups: only notRevoked() reads a document (1); the rest reads the token.
+
+    function isSignedIn() { return request.auth != null; }
+
+    // The user's role in group gid, or '' (no claim, other group, signed out).
+    function role(gid) { return isSignedIn() ? request.auth.token.get('g', {}).get(gid, '') : ''; }
+
+    function inGroup(gid) { return role(gid) != ''; }
+
+    function hasRole(gid, roles) { return inGroup(gid) && role(gid) in roles; }
+
+    // Not past the claim's access end. A malformed x fails closed.
+    function live() {
+      return isSignedIn() && (!('x' in request.auth.token) || request.time < timestamp.value(request.auth.token.x * 1000));
+    }
+
+    // One lookup: revoked/{uid} is written by the app's server when a member is removed, deleted when claims are re-issued.
+    // Keep revoked/ closed to clients (no match block for it).
+    function notRevoked() { return isSignedIn() && !exists(/databases/$(database)/documents/revoked/$(request.auth.uid)); }
+
+    // The usual gate: role in the list, access not ended, not revoked (the lookup runs only when the role fits).
+    function can(gid, roles) { return hasRole(gid, roles) && live() && notRevoked(); }
+
+    // Migration form while old clients have no claims: the claim when present, else the role from the app's own doc.
+    // Arguments are evaluated first, so a get() passed as docRole is read even when the claim decides. To skip that read,
+    // write the same form inline: role(gid) != '' ? role(gid) : get(...).data.role (see the multi-group example).
+    function roleOrDoc(gid, docRole) { return role(gid) != '' ? role(gid) : docRole; }
+
+    // Server stamps (writes): stamped() requires serverAt == request.time; stampOk() also accepts no serverAt (old clients).
+    function stamped() { return request.resource.data.get('serverAt', null) == request.time; }
+    function stampOk() { return !('serverAt' in request.resource.data) || request.resource.data.serverAt == request.time; }
+
+    // a claim is only set for a verified email (the Worker checks), so a claim counts as verified too
     function signedIn() {
-      return request.auth != null && request.auth.token.email_verified == true;
+      return request.auth != null && (role('_') != '' || request.auth.token.email_verified == true);
     }
     function email() {
       return request.auth.token.email.lower();
     }
+    function memberPath() {
+      return /databases/$(database)/documents/members/$(email());
+    }
+    // the role in this account's members entry ('' when there is none): one lookup
+    function docRole() {
+      return request.auth.token.email_verified == true && exists(memberPath()) ? get(memberPath()).data.get('role', '') : '';
+    }
+    // the claim when there is one, else the members entry (written inline: a function argument would always be read)
+    function myRole() {
+      return role('_') != '' ? role('_') : docRole();
+    }
+    // a members entry with any role (a mistyped role still reads), access not ended, not revoked
     function member() {
-      return signedIn() && exists(/databases/$(database)/documents/members/$(email()));
+      return signedIn() && myRole() != '' && live() && notRevoked();
     }
     function admin() {
-      return member() && get(/databases/$(database)/documents/members/$(email())).data.role == 'admin';
+      return member() && myRole() == 'admin';
     }
     // only admins and rosterers change anything; viewers (and a missing or mistyped role) only read
     function editor() {
-      return member() && get(/databases/$(database)/documents/members/$(email())).data.get('role', '') in ['admin', 'rosterer'];
+      return member() && myRole() in ['admin', 'rosterer'];
+    }
+    // changing the members list checks the entry itself, never a (possibly older) claim
+    function docAdmin() {
+      return signedIn() && docRole() == 'admin' && notRevoked();
     }
     // the person a write is stamped with is the one signed in
     function stampedBy(field) {
       return request.resource.data.get(field, {}).get('email', '') == email();
     }
+    // v: the entry's version, bumped by one when the role changes (pages compare it with their claim's v)
     function validMember() {
-      return request.resource.data.keys().hasOnly(['role', 'name', 'staffId'])
+      return request.resource.data.keys().hasOnly(['role', 'name', 'staffId', 'v'])
         && request.resource.data.role in ['admin', 'rosterer', 'viewer']
         && request.resource.data.get('name', '') is string && request.resource.data.get('name', '').size() <= 100
-        && request.resource.data.get('staffId', '') is string && request.resource.data.get('staffId', '').size() <= 40;
+        && request.resource.data.get('staffId', '') is string && request.resource.data.get('staffId', '').size() <= 40
+        && request.resource.data.get('v', 0) is int;
+    }
+    function newMemberV() {
+      return request.resource.data.get('v', 0) == 1;
+    }
+    function nextMemberV() {
+      return request.resource.data.get('v', 0) == resource.data.get('v', 0)
+          + (request.resource.data.role == resource.data.get('role', '') ? 0 : 1);
     }
 
     match /members/{memberEmail} {
       // anyone signed in may check their own entry; members see the list; admins manage it
       allow get: if signedIn() && memberEmail == email();
       allow list, get: if member();
-      allow create: if admin() && validMember() && memberEmail == memberEmail.lower();
+      allow create: if docAdmin() && validMember() && newMemberV() && memberEmail == memberEmail.lower();
       // an admin can't demote or remove themselves, so the team always keeps one
-      allow update: if admin() && validMember() && (memberEmail != email() || request.resource.data.role == 'admin');
-      allow delete: if admin() && memberEmail != email();
+      allow update: if docAdmin() && validMember() && nextMemberV() && (memberEmail != email() || request.resource.data.role == 'admin');
+      allow delete: if docAdmin() && memberEmail != email();
     }
 
     // people asking to join: they can file and see their own request; admins see and clear them

@@ -17,9 +17,12 @@ export const SITES = {
   'nuhjuniormonthly.anawj.com': { root: 'nuh-junior-monthly/' },
 };
 
-// Worker routes (not files) per host: only these hosts answer them (worker/junior.js); elsewhere they are plain 404s.
+// Worker routes (not files) per host: only these hosts answer them (each app's claims file, worker/sites.js APPS);
+// elsewhere they are plain 404s.
+const CLAIMS = ['/api/claims', '/api/members/sync'];
 export const API = {
-  'nuhjuniormonthly.anawj.com': ['/api/claims', '/api/members/sync'],
+  'nuhjuniormonthly.anawj.com': CLAIMS,
+  'nuhroster.anawj.com': CLAIMS,
 };
 export const api = (host, pathname) => {
   host = String(host || '').toLowerCase().replace(/:\d+$/, '');

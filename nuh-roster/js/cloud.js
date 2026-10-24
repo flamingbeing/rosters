@@ -1,9 +1,14 @@
 // Shared storage for the rostering team: Google sign-in and Cloud Firestore (Firebase).
 // Only used when firebase-config.js has a project configured. Access is limited by
 // firestore.rules to people listed in the "members" collection.
+// Roles: after sign-in, and whenever this account's members entry has a newer v than its token, the page asks the Worker
+// (/api/claims) to put the role on the account, then refreshes its token: the rules then read the role from the token
+// (fewer document reads). If that fails (Worker not set up yet, offline, another address), nothing changes: the rules
+// read the members entry, as before.
 //
 // Data:
-//   members/{email}            { role: 'admin' | 'rosterer' | 'viewer', name, staffId? } (viewers only read)
+//   members/{email}            { role: 'admin' | 'rosterer' | 'viewer', name, staffId?, v } (viewers only read; v goes up
+//                              by one when the role changes)
 //   team/main                  { settings, staff, roomTemplate, updatedAt, updatedBy }
 //   rosters/{date}             { date, day, roster, updatedAt, updatedBy }
 //   rosters/{date}/versions/*  { day, roster, savedAt, savedBy }   (never changed once written)
@@ -13,7 +18,8 @@ import { FIREBASE_CONFIG } from './firebase-config.js';
 
 const SDK = 'https://www.gstatic.com/firebasejs/10.12.2/';
 // demo mode (?demo) never signs in or touches the team's data
-export const enabled = !!(FIREBASE_CONFIG && FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.projectId) && !new URLSearchParams(location.search).has('demo');
+export const enabled = !!(FIREBASE_CONFIG && FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.projectId)
+  && typeof location !== 'undefined' && !new URLSearchParams(location.search).has('demo');
 
 let fb = null;
 async function sdk() {
@@ -50,10 +56,53 @@ export async function signOut() {
   await A.signOut(auth);
 }
 
+// This account's members entry, or null. Also brings the token's role claim up to date when the entry is newer (quietly;
+// see the top of this file).
 export async function membership(email) {
   const { db, F } = await sdk();
   const snap = await F.getDoc(F.doc(db, 'members', email.toLowerCase()));
-  return snap.exists() ? snap.data() : null;
+  const entry = snap.exists() ? snap.data() : null;
+  await syncClaims(entry);
+  return entry;
+}
+
+// The Worker's claims routes answer on the app's own address only; anywhere else (local tests, previews) they are skipped.
+const CLAIMS_HOST = 'nuhroster.anawj.com';
+const onClaimsHost = () => typeof location !== 'undefined' && location.hostname === CLAIMS_HOST;
+let claimsAsked = '';   // uid:v last asked for, so a failing Worker is asked once per page, not on every check
+
+// Does the token need asking again? Yes when the entry's v is ahead of the claim's, or a member has no claim yet.
+export function claimsBehind(entry, tokenClaims = {}) {
+  if (!entry) return !!(tokenClaims.g && tokenClaims.g._);   // removed: clear the old claim
+  const v = Number.isInteger(entry.v) ? entry.v : 0;
+  return !(tokenClaims.g && tokenClaims.g._) || !(Number(tokenClaims.v) >= v);
+}
+
+async function syncClaims(entry) {
+  if (!onClaimsHost()) return;
+  try {
+    const { auth } = await sdk();
+    const u = auth.currentUser;
+    if (!u) return;
+    const { claims } = await u.getIdTokenResult();
+    const key = `${u.uid}:${entry ? entry.v ?? 0 : '-'}`;
+    if (!claimsBehind(entry, claims) || claimsAsked === key) return;
+    claimsAsked = key;
+    const r = await fetch('/api/claims', { method: 'POST', headers: { Authorization: 'Bearer ' + await u.getIdToken() } });
+    if (r.ok) await u.getIdToken(true);
+  } catch (e) { console.warn('claims not updated', e); }
+}
+
+// After an admin adds, changes or removes someone: the Worker cuts off that person's older claim at once.
+async function tellWorker(email) {
+  if (!onClaimsHost()) return;
+  try {
+    const { auth } = await sdk();
+    const u = auth.currentUser;
+    if (!u) return;
+    await fetch('/api/members/sync', { method: 'POST', headers: { Authorization: 'Bearer ' + await u.getIdToken(), 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }) });
+  } catch (e) { console.warn('members sync failed', e); }
 }
 
 // ---- team list ----
@@ -208,10 +257,23 @@ export async function listMembers() {
 // staffId: who this account is on the staff list (set by an admin), so My day doesn't have to guess from the name.
 export async function setMember(email, role, name = '', staffId = '') {
   const { db, F } = await sdk();
-  await F.setDoc(F.doc(db, 'members', email.trim().toLowerCase()), { role, name, ...(staffId ? { staffId } : {}) });
+  const id = email.trim().toLowerCase();
+  const doc = { role, name, ...(staffId ? { staffId } : {}) };
+  // v: 1 for a new entry, one more when the role changes (the rules check it)
+  const ref = F.doc(db, 'members', id);
+  await F.runTransaction(db, async tx => {
+    const old = await tx.get(ref);
+    doc.v = nextV(old.exists() ? old.data() : null, role);
+    tx.set(ref, doc);
+  });
+  await tellWorker(id);
 }
+
+export const nextV = (old, role) => !old ? 1 : (Number.isInteger(old.v) ? old.v : 0) + (old.role === role ? 0 : 1);
 
 export async function removeMember(email) {
   const { db, F } = await sdk();
-  await F.deleteDoc(F.doc(db, 'members', email.toLowerCase()));
+  const id = email.toLowerCase();
+  await F.deleteDoc(F.doc(db, 'members', id));
+  await tellWorker(id);
 }

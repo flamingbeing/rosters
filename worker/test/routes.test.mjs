@@ -49,13 +49,14 @@ test('every folder in SITES and SHARED exists', () => {
   assert.ok(fs.existsSync(new URL('../../lib/exceljs.min.js', import.meta.url)), 'lib/exceljs.min.js');
 });
 
-test('the claims routes answer on the junior monthly host only', () => {
+test('the claims routes answer on the junior monthly and NUH roster hosts only', () => {
   for (const p of ['/api/claims', '/api/members/sync']) {
     assert.equal(api('nuhjuniormonthly.anawj.com', p), p);
     assert.equal(api('NUHJUNIORMONTHLY.anawj.com:443', p), p);
-    assert.equal(api('nuhroster.anawj.com', p), null);
+    assert.equal(api('nuhroster.anawj.com', p), p);
     assert.equal(api('ntfroster.anawj.com', p), null);
     assert.equal(api('localhost', p), null);
   }
   assert.equal(api('nuhjuniormonthly.anawj.com', '/api/other'), null);
+  assert.equal(api('nuhroster.anawj.com', '/api/other'), null);
 });

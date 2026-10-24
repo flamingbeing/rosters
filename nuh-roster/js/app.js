@@ -1,8 +1,8 @@
 // NUH roster: boot. Loads the saved roster (ui-core.js), opens the first screen, and wires the page-wide buttons,
 // error reporting and the offline app shell. The screens live in ui-*.js (the logbook's layout).
-import { DEMO, h, hooks, state, toast } from './ui-core.js';
+import { DEMO, hooks, state, toast } from './ui-core.js';
 import { applyScenario, SCENARIOS } from './ui-practice.js';
-import { barHost, downloadEverything, render, renderStoreBar } from './ui-screen.js';
+import { downloadEverything, render, renderStoreBar } from './ui-screen.js';
 import { startTour, TOUR_KEY } from './ui-tour.js';
 import { maybeWhatsNew, setLastRows, showKey, showShortcuts, undo } from './ui-roster.js';
 import { closeTagEditor } from './ui-tags.js';
@@ -39,22 +39,13 @@ function crashed(err) {
 }
 addEventListener('error', e => { if (e.error) crashed(e.error); });
 addEventListener('unhandledrejection', e => crashed(e.reason));
-// Offline app shell (sw.js): the app opens with poor signal. A new version installs alongside and is offered here.
+// Offline app shell (sw.js): the app opens with poor signal. The shared update module (app-update register.js) checks
+// for a new version on every return to the tab and every 3 h; a new one takes over at once and the page reloads once.
+// Loaded with import(), so a blocked core.anawj.com never stops the app; offline it comes from the saved copy.
 (function registerSW() {
   if (!('serviceWorker' in navigator) || location.protocol === 'file:' || window.ROSTER_MOVED_TO || /^(www\.)?anawj\.com$/.test(location.hostname)) return; // not at the old address (it redirects)
-  let reloading = false, wantReload = false;
-  const hadController = !!navigator.serviceWorker.controller; // the first install takes control quietly
-  navigator.serviceWorker.addEventListener('controllerchange', () => { if (reloading || !(hadController || wantReload)) return; reloading = true; location.reload(); });
-  navigator.serviceWorker.register('sw.js').then(reg => {
-    const offer = w => {
-      if (document.getElementById('update-bar')) return;
-      barHost().prepend(h('div', { id: 'update-bar', class: 'demo-bar', role: 'status' }, h('b', {}, 'Update available'), h('span', { class: 'grow' }),
-        h('button', { class: 'small primary', onclick: () => { document.getElementById('update-bar')?.remove(); wantReload = true; w.postMessage('skipWaiting'); } }, 'Reload')));
-    };
-    if (reg.waiting && navigator.serviceWorker.controller) offer(reg.waiting);
-    reg.addEventListener('updatefound', () => { const w = reg.installing; w?.addEventListener('statechange', () => { if (w.state === 'installed' && navigator.serviceWorker.controller) offer(w); }); });
-    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') reg.update().catch(() => {}); });
-  }).catch(err => console.warn('Service worker not registered', err));
+  import('https://core.anawj.com/update/0.1.0/register.js').then(m => m.register({ app: 'nuh-roster', sw: 'sw.js' }))
+    .catch(err => console.warn('Service worker not registered', err));
 })();
 document.getElementById('keyBtn')?.addEventListener('click', showKey);
 // Phones: keep the bottom-sheet person box above the on-screen keyboard, and the field being typed in visible.

@@ -848,9 +848,9 @@ async function start() {
     else if (wantTour || !seen) G.takeTour(app);
   }
 
-  // Offline app shell (sw.js): offer the new version when one has downloaded.
+  // Offline app shell (sw.js): a new version takes over at once and the page reloads once (version.js).
   import('./version.js')
-    .then(m => m.registerSW({ onUpdate: apply => toast('Update available', { action: { label: 'Reload', fn: apply }, ms: 0 }) }))
+    .then(m => m.registerSW())
     .catch(e => console.warn('version.js not loaded', e));
 }
 

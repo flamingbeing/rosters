@@ -318,7 +318,8 @@ What the code adds to the contract above. Keep this list in step with the code.
   `app.rules` (rules.js), `app.isDemo`, `app.tab`; `window.ntfApp` points at it (for the browser test and console).
   `sheet()` also takes `className` and `onClose(reason)`; an action's `fn(close)` returning `false` keeps the sheet
   open. `confirm(msg, { ok, danger })`. `toast(..., { ms: 0 })` stays until dismissed. The shell registers `sw.js`
-  through `version.js`'s `registerSW()` and offers "Update available: Reload" as a toast.
+  through `version.js`'s `registerSW()` (app-update's register.js): a new version takes over at once and the page
+  reloads once, no toast.
 - **Views**: mounted with `mount(host, app)` inside `.view-<tab> > .view-host`; `update(state, info)` gets
   `info.label`/`info.source` after a store change, `info.month` after a month switch, `info.resize` when the phone
   layout flips; an optional `route(params)` takes new hash params without remounting. With no staff, Roster, Day and

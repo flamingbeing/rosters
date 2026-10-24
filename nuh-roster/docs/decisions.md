@@ -56,8 +56,8 @@ Part of [NOTES.md](../NOTES.md).
   as", saved as `members/{email}.staffId`), else the name picked in this browser, else a guess from the member's name,
   which My day flags ("Matched to … Not you? Pick your name").
 - Installable and offline (13 Oct): `manifest.webmanifest` (shortcut: My day), icons in `icons/`, and `sw.js` (the
-  logbook's pattern: shell cache-first, Firebase SDK cached, big vendor files cached on first use, "Update available:
-  Reload" bar). Its VERSION base is `nuh-roster-v1`; the deploy stamps it, so PRs leave it alone. Not registered at the
+  logbook's pattern: shell cache-first, Firebase SDK cached, big vendor files cached on first use; since 24 Oct 2026 on the shared
+  app-update module: a new version takes over at once and the page reloads once, no bar). Its VERSION base is `nuh-roster-v1`; the deploy stamps it, so PRs leave it alone. Not registered at the
   old anawj.com address. Offline, the app opens and My day shows the last roster this phone loaded.
 - App version (14 Oct): the bottom of Settings shows "App version <date> (<hash>)" from the `nuh-roster-` cache name and
   "Not updating? Get the latest version": with signal it unregisters the service worker, deletes only `nuh-roster-` caches

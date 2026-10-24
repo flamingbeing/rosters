@@ -25,7 +25,9 @@ repo; never copy anything from there into this repo, a PR or an issue (neutral p
   that breaks these pages goes to `/v2/` there.
 - ntfroster.anawj.com signs in through its own host: `__/auth/` (Firebase's helper pages) and `ntf-auth/firebase/init.json`
   are served there. The other two sign in on `<project>.firebaseapp.com`.
-- Each `sw.js` VERSION starts with its folder name and is stamped at deploy (`tools/stamp-versions.mjs`), never by hand.
+- Each `sw.js` VERSION starts with its folder name and is stamped at deploy (`tools/stamp-versions.mjs`, which also
+  writes MANIFEST), never by hand. The logic is the shared update module (app-update, exact pin
+  `core.anawj.com/update/<x.y.z>/`): every SHELL file must exist and answer without a redirect (install is all or nothing).
 - Rules changes: `deploy-firestore-rules.yml` deploys them live on merge (keyless sign-in, GitHub's OIDC token). Test
   them first with `tools/test-rules.sh` (local emulator, needs Java); a manual run deploys all three: ask the owner.
 

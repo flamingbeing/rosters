@@ -109,7 +109,7 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--a-tint); width
 @media (min-width: 601px) and (max-width: 899px) { .date-row { justify-content: flex-start; } .date-pick { flex: 0 1 auto; } }
 @media print { .datebar { display: none; } }
 
-/* banners under the bar: Practice, Update available, moved, backup, storage */
+/* banners under the bar: Practice, moved, backup, storage */
 .bars { max-width: 1400px; margin: 0 auto; padding: 0 16px; }
 .bars:empty { display: none; }
 .demo-bar {

@@ -58,8 +58,9 @@ jobs:
       matrix:
         include:
           - { name: NUH roster, cmd: "node nuh-roster/test/e2e.mjs" }
-          # speed budgets: timings vary, so perf fails only if a second run is over too
-          - { name: NTF roster, cmd: "node ntf-roster/test/e2e.mjs && node ntf-roster/test/tour.e2e.mjs && node ntf-roster/test/pool.e2e.mjs && (node ntf-roster/test/perf.e2e.mjs || node ntf-roster/test/perf.e2e.mjs)" }
+          # two shards of about a minute each; speed budgets: timings vary, so perf fails only if a second run is over too
+          - { name: NTF roster (1/2), cmd: "node ntf-roster/test/e2e.mjs && node ntf-roster/test/tour.e2e.mjs" }
+          - { name: NTF roster (2/2), cmd: "node ntf-roster/test/pool.e2e.mjs && (node ntf-roster/test/perf.e2e.mjs || node ntf-roster/test/perf.e2e.mjs)" }
           - { name: NUH junior monthly, cmd: "node nuh-junior-monthly/test/e2e.mjs" }
     name: browser (${{ matrix.name }})
     steps:

@@ -7,6 +7,7 @@ import { startTour, TOUR_KEY } from './ui-tour.js';
 import { maybeWhatsNew, setLastRows, showKey, showShortcuts, undo } from './ui-roster.js';
 import { closeTagEditor } from './ui-tags.js';
 import { openOnTheRightDay } from './ui-myday.js';
+import { canReload, onUnsentChange } from './unsent.js';
 
 Object.assign(hooks, { renderStoreBar, undo });
 
@@ -40,12 +41,18 @@ function crashed(err) {
 addEventListener('error', e => { if (e.error) crashed(e.error); });
 addEventListener('unhandledrejection', e => crashed(e.reason));
 // Offline app shell (sw.js): the app opens with poor signal. The shared update module (app-update register.js) checks
-// for a new version on every return to the tab and every 3 h; a new one takes over at once and the page reloads once.
+// for a new version on every return to the tab and every 3 h; a new one takes over at once and the page reloads once, but only when `canReload` says nobody is mid-edit.
 // Loaded with import(), so a blocked core.anawj.com never stops the app; offline it comes from the saved copy.
 (function registerSW() {
   if (!('serviceWorker' in navigator) || location.protocol === 'file:' || window.ROSTER_MOVED_TO || /^(www\.)?anawj\.com$/.test(location.hostname)) return; // not at the old address (it redirects)
-  import('https://core.anawj.com/update/0.1.0/register.js').then(m => m.register({ app: 'nuh-roster', sw: 'sw.js' }))
-    .catch(err => console.warn('Service worker not registered', err));
+  import('https://core.anawj.com/update/0.2.0/register.js').then(m => {
+    // a new version takes over only when nobody is typing, no sheet is open and no save is waiting to be sent
+    m.register({ app: 'nuh-roster', sw: 'sw.js', canReload: () => canReload(() => false) });
+    const later = () => setTimeout(m.retryUpdate, 400);
+    document.addEventListener('focusout', later);
+    document.addEventListener('close', later, true);
+    onUnsentChange(later);
+  }).catch(err => console.warn('Service worker not registered', err));
 })();
 document.getElementById('keyBtn')?.addEventListener('click', showKey);
 // Phones: keep the bottom-sheet person box above the on-screen keyboard, and the field being typed in visible.

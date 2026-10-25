@@ -1,0 +1,1763 @@
+{
+ "F": {
+  "SHIFT": 1,
+  "LEAVE": 2,
+  "OTHER": 4,
+  "REQ": 8,
+  "X": 16,
+  "ANY": 32,
+  "PRESENT": 64,
+  "POSTING": 128
+ },
+ "types": {
+  "cover": {
+   "label": "Cover each day",
+   "icon": "👥",
+   "scope": "day",
+   "help": "How many people must (or may) be on a duty each day.",
+   "example": "Each day: exactly 2 juniors on Call",
+   "soft_only": false,
+   "params": "f8f4bc53b390a0b5",
+   "defaults": {
+    "codes": [],
+    "min": 1,
+    "max": null
+   },
+   "fresh": "2369335de1cb5e09",
+   "words": "Each day: at least 1 person on …"
+  },
+  "limit": {
+   "label": "Limit per person",
+   "icon": "🔢",
+   "scope": "person",
+   "help": "How many times each person may (or must) do a duty per week, month or any run of days.",
+   "example": "Juniors: at most 7 Call a month (scaled by FTE)",
+   "soft_only": false,
+   "params": "257d9cb92fb2a76a",
+   "defaults": {
+    "codes": [],
+    "period": "month",
+    "window": 7,
+    "min": null,
+    "max": 4,
+    "fte": false,
+    "prorate": false
+   },
+   "fresh": "e05ad773b49c81c3",
+   "words": "Everyone: at most 4 … a month"
+  },
+  "sequence": {
+   "label": "Day-after rules",
+   "icon": "⏭️",
+   "scope": "person",
+   "help": "What may or must follow (or come before) a duty: gaps between calls, no call before leave.",
+   "example": "After Call: no Call for the next 2 days",
+   "soft_only": false,
+   "params": "efc256cea5712bd7",
+   "defaults": {
+    "ifCodes": [],
+    "thenCodes": [],
+    "mode": "forbid",
+    "from": 1,
+    "to": 1,
+    "thenDay": ""
+   },
+   "fresh": "b99deaba56b19c26",
+   "words": "After …: no … the next day"
+  },
+  "sameDay": {
+   "label": "Same-day combinations",
+   "icon": "🚫",
+   "scope": "person",
+   "help": "Codes that can't go together on one day (leave and a shift), or one that needs another.",
+   "example": "Never leave and any shift on the same day",
+   "soft_only": false,
+   "params": "b3ea1c022c866c4e",
+   "defaults": {
+    "codesA": [],
+    "codesB": [],
+    "mode": "forbid"
+   },
+   "fresh": "494b88028afd51b3",
+   "words": "Never … and … on the same day"
+  },
+  "together": {
+   "label": "Pairing between people",
+   "icon": "🤝",
+   "scope": "day",
+   "help": "Who can't be on together (two Baby MOs), or who needs someone else on with them.",
+   "example": "Baby MO on Call: at least 1 of senior residents or ACs on Call too",
+   "soft_only": false,
+   "params": "eb6321d4223da41c",
+   "defaults": {
+    "codes": [],
+    "other": {
+     "groups": [],
+     "tags": [],
+     "staff": [],
+     "exclude": []
+    },
+    "otherCodes": [],
+    "mode": "needs",
+    "min": 1
+   },
+   "fresh": "b817698dea56c6c0",
+   "words": "Everyone on …: needs another person on … too"
+  },
+  "maxRun": {
+   "label": "Consecutive days",
+   "icon": "📅",
+   "scope": "person",
+   "help": "The longest run of days in a row someone may have a duty.",
+   "example": "Everyone: at most 5 days in a row of any shift",
+   "soft_only": false,
+   "params": "7d4becd715bf2b1e",
+   "defaults": {
+    "codes": [],
+    "max": 5
+   },
+   "fresh": "eabf4bf451f5dc85",
+   "words": "Everyone: at most 5 days in a row of …"
+  },
+  "requests": {
+   "label": "Honour requests",
+   "icon": "🙋",
+   "scope": "person",
+   "help": "Give people what they asked for (Cr, Pr, Wr) and keep them off what they asked not to do (Nc, NP, Nw).",
+   "example": "No call (Nc): no Call that day",
+   "soft_only": false,
+   "params": "a5f054566b74a3dd",
+   "defaults": {
+    "request": "Cr",
+    "codes": [
+     "C"
+    ],
+    "mode": "want",
+    "span": "day"
+   },
+   "fresh": "d84541fd33661fe0",
+   "words": "No call (X): give Cardiac that day"
+  },
+  "spread": {
+   "label": "Share fairly",
+   "icon": "⚖️",
+   "scope": "global",
+   "help": "Spread a duty evenly: weekends and public holidays count extra. Always soft.",
+   "example": "Share Call fairly among juniors (weekends x2, holidays x2)",
+   "soft_only": true,
+   "params": "5af788001cbfcb45",
+   "defaults": {
+    "codes": [],
+    "period": "month",
+    "scheme": "offdays",
+    "offBonus": 0.5,
+    "eveBonus": 0.5,
+    "weekendWeight": 2,
+    "holidayWeight": 2,
+    "tolerance": 1,
+    "among": [],
+    "carry": 0,
+    "carryMonths": 4,
+    "alert": 0,
+    "alertPct": 0,
+    "byGroup": "no"
+   },
+   "fresh": "d304ffb34fa56515",
+   "words": "Share … fairly among everyone (a day off adds 0.5 and so does the day before one: Fri 1.5, Sat 2, Sun 1.5)"
+  },
+  "eligible": {
+   "label": "Only these people",
+   "icon": "🎫",
+   "scope": "person",
+   "help": "Restrict a duty to some people (OT consultant: seniors only).",
+   "example": "Only seniors may do OT consultant",
+   "soft_only": false,
+   "params": "2d2d612492fb7162",
+   "defaults": {
+    "codes": []
+   },
+   "fresh": "e6778d11fb21de8e",
+   "words": "Only everyone may do …"
+  },
+  "noCallsUntil": {
+   "label": "No calls until their date",
+   "icon": "🚫",
+   "scope": "person",
+   "help": "People with a \"No calls until\" date (People › edit a person) take no calls before it: baby MOs until they pass the test, very new people.",
+   "example": "No calls before the date set on each person",
+   "soft_only": false,
+   "params": "0f5bf1e0ac4abc9d",
+   "defaults": {
+    "codes": []
+   },
+   "fresh": "895ba9cac76e25f9",
+   "words": "No … before the \"no calls until\" date set on each person"
+  },
+  "postingStart": {
+   "label": "Start of a posting",
+   "icon": "🚪",
+   "scope": "person",
+   "help": "No calls in the first days of a posting: a block of days in a row on the same posting, however it started.",
+   "example": "New to ICU: no ICU call in the first 3 days in ICU (calls from day 4)",
+   "soft_only": false,
+   "params": "78812b1872ef03b3",
+   "defaults": {
+    "codes": [],
+    "posting": "",
+    "days": 1
+   },
+   "fresh": "f3d690735a55b12b",
+   "words": "no … in the first day of  (from day 2)"
+  },
+  "standing": {
+   "label": "Standing duty",
+   "icon": "📌",
+   "scope": "person",
+   "help": "Someone always does a duty on certain days unless they are away (APS every weekday).",
+   "example": "Pain (APS): Acute pain service every day (weekdays)",
+   "soft_only": false,
+   "params": "2d2d612492fb7162",
+   "defaults": {
+    "codes": []
+   },
+   "fresh": "8fe1a23a7789f0f5",
+   "words": "Everyone: … every day unless away"
+  }
+ },
+ "rules": [
+  {
+   "id": "r-c3-cover",
+   "words": "Each day: exactly 1 person on Cardiac call",
+   "invalid": [],
+   "norm": "9501e2ccaaf34a47"
+  },
+  {
+   "id": "r-c3-onc",
+   "words": "Cardiac call only with Cardiac, Cardiac echo week or Cardiac perfusion week on the same day",
+   "invalid": [],
+   "norm": "1ed37a0e596f75d1"
+  },
+  {
+   "id": "r-c3-echo",
+   "words": "Never Cardiac call and Cardiac echo week or Cardiac perfusion week on the same day",
+   "invalid": [],
+   "norm": "75a916411112507b"
+  },
+  {
+   "id": "r-c3-next",
+   "words": "After Cardiac call: Cardiac, Cardiac echo week or Cardiac perfusion week the next day",
+   "invalid": [],
+   "norm": "e2ca2361b128b01b"
+  },
+  {
+   "id": "r-c3-gap",
+   "words": "After Cardiac call: no Cardiac call the next day",
+   "invalid": [],
+   "norm": "d40f4ab6034b2be7"
+  },
+  {
+   "id": "r-c3-eod",
+   "words": "After Cardiac call: no Cardiac call 2 days later",
+   "invalid": [
+    "Weight must be 1 to 100"
+   ],
+   "norm": "987be4bc1411b50e"
+  },
+  {
+   "id": "r-c3-d1",
+   "words": "no Cardiac call in the first day of Cardiac (from day 2)",
+   "invalid": [],
+   "norm": "2d8bfdaad4c1edb5"
+  },
+  {
+   "id": "r-c3-fair",
+   "words": "Share Cardiac call fairly among people on Cardiac (a day off adds 0.5 and so does the day before one: Fri 1.5, Sat 2, Sun 1.5; 50% of the last 4 months' difference carries over)",
+   "invalid": [],
+   "norm": "d8808ea5825485c6"
+  },
+  {
+   "id": "r-c3-sat",
+   "words": "Everyone: at most 1 Cardiac call a month on Sat",
+   "invalid": [],
+   "norm": "392e1a3f0251a7a6"
+  },
+  {
+   "id": "r-r1b-cover",
+   "words": "Each day: exactly 1 person on ICU call (SICU)",
+   "invalid": [],
+   "norm": "52912d8d53680728"
+  },
+  {
+   "id": "r-r1b-on",
+   "words": "ICU call (SICU) only with Surgical ICU on the same day",
+   "invalid": [],
+   "norm": "f2d3a962d9abe68c"
+  },
+  {
+   "id": "r-r1b-next",
+   "words": "After ICU call (SICU): Surgical ICU the next day",
+   "invalid": [],
+   "norm": "0d1e55c5af92ef1c"
+  },
+  {
+   "id": "r-r1b-gap",
+   "words": "After ICU call (SICU): no ICU call (SICU) the next day",
+   "invalid": [],
+   "norm": "e6e3d6608a88b9a4"
+  },
+  {
+   "id": "r-r1b-gap4",
+   "words": "After ICU call (SICU): no ICU call (SICU) 3 days later",
+   "invalid": [],
+   "norm": "6e6da8501e7a8070"
+  },
+  {
+   "id": "r-r1b-d1",
+   "words": "no ICU call (SICU) in the first day of Surgical ICU (from day 2)",
+   "invalid": [
+    "Weight must be 1 to 100"
+   ],
+   "norm": "29db42d9a7f1184b"
+  },
+  {
+   "id": "r-r1b-new",
+   "words": "New to ICU (only Rotating residents (RR) or MOPEX): no ICU call (SICU) in the first 3 days of Surgical ICU (from day 4)",
+   "invalid": [],
+   "norm": "a5439e6c23eac468"
+  },
+  {
+   "id": "r-r1b-new-res",
+   "words": "New to ICU (only Senior residents (R), Residents year 3 (RES3), Residents year 2 (RES2), Residents year 1 (RES1), NHG cardiac residents (NHG), Resident physicians (RP), Locums (LOC) or Fellows): no ICU call (SICU) in the first 3 days of Surgical ICU (from day 4)",
+   "invalid": [],
+   "norm": "66a8867c71ca8500"
+  },
+  {
+   "id": "r-r1b-rr",
+   "words": "Ortho / HRM resident: no ICU call (SICU) in the first 7 days of Surgical ICU (from day 8)",
+   "invalid": [],
+   "norm": "8af795330c474b8c"
+  },
+  {
+   "id": "r-r1b-super",
+   "words": "Supernumerary in ICU: at most 0 ICU call (SICU) a month",
+   "invalid": [],
+   "norm": "60143c9588c2c4df"
+  },
+  {
+   "id": "r-r1b-fellow",
+   "words": "Fellows: at most 2 ICU call (SICU) a month on weekends",
+   "invalid": [],
+   "norm": "1f61999197791618"
+  },
+  {
+   "id": "r-r1b-fair",
+   "words": "Share ICU call (SICU) fairly among people on Surgical ICU (a day off adds 0.5 and so does the day before one: Fri 1.5, Sat 2, Sun 1.5; 50% of the last 4 months' difference carries over)",
+   "invalid": [],
+   "norm": "64d4660174327f49"
+  },
+  {
+   "id": "r-r1b-sat",
+   "words": "Everyone: at most 2 ICU call (SICU) a month on Sat",
+   "invalid": [],
+   "norm": "33d911e8af8c7482"
+  },
+  {
+   "id": "r-req-load",
+   "words": "Everyone: at most 4 Call request, Call request: must have (e.g. needs the call money), Call request: nice to have or 4 more a month",
+   "invalid": [],
+   "norm": "c7b39913ea87d0c8"
+  },
+  {
+   "id": "r-req-npload",
+   "words": "Everyone: at most 2 No premed a month",
+   "invalid": [],
+   "norm": "745137a55b7e8035"
+  },
+  {
+   "id": "r-pool-1",
+   "words": "Each day: at most 1 person from Strong MO1 or Weak MO1 on Call request, Call request: must have (e.g. needs the call money) or Call request: nice to have",
+   "invalid": [],
+   "norm": "29fa689e83649e1f"
+  },
+  {
+   "id": "r-pool-2",
+   "words": "Each day: at most 1 person from Strong MO2 or Weak MO2 on Call request, Call request: must have (e.g. needs the call money) or Call request: nice to have",
+   "invalid": [],
+   "norm": "bcdd42cd0dcccb7a"
+  },
+  {
+   "id": "r-pool-3",
+   "words": "Each day: at most 1 person from Strong MO2 or Weak MO3 on Call request, Call request: must have (e.g. needs the call money) or Call request: nice to have",
+   "invalid": [],
+   "norm": "fe4b4a14cec1071a"
+  },
+  {
+   "id": "r-mo-nogo",
+   "words": "Never Obstetric night float, Obstetric day float, Obstetric call or 12 more and MO1 call, MO2 call or MO3 call on the same day",
+   "invalid": [],
+   "norm": "526d58478faf9b10"
+  },
+  {
+   "id": "r-mo-weak",
+   "words": "Each day: at most 1 person from Weak MO1, Weak MO2 or Weak MO3 on MO1 call, MO2 call or MO3 call",
+   "invalid": [],
+   "norm": "7ff28a3c1ea52a78"
+  },
+  {
+   "id": "r-mo-satfri",
+   "words": "After MO1 call, MO2 call or MO3 call: no MO1 call, MO2 call or MO3 call 6 days later (Sat)",
+   "invalid": [],
+   "norm": "c40c4a489627d764"
+  },
+  {
+   "id": "r-mo-icusat1",
+   "words": "After ICU call (SICU): no MO1 call, MO2 call or MO3 call for the next 2 days (only on a Saturday)",
+   "invalid": [],
+   "norm": "cdc734d952e3b791"
+  },
+  {
+   "id": "r-mo-icusat2",
+   "words": "After ICU call (SICU): no MO1 call, MO2 call or MO3 call from day 6 to day 7 (only on a Saturday)",
+   "invalid": [],
+   "norm": "8e4c39eb636275f6"
+  },
+  {
+   "id": "r-mo-fss",
+   "words": "Fri to Sun call cap: at most 2 calls a month on Sun, Fri, Sat",
+   "invalid": [],
+   "norm": "d589da3a79a4e125"
+  },
+  {
+   "id": "r-mo-pool-r1",
+   "words": "Strong MO1 or Weak MO1: Call request (R): give MO1 call that day",
+   "invalid": [],
+   "norm": "540f07aebfd582db"
+  },
+  {
+   "id": "r-mo-pool-rh1",
+   "words": "Strong MO1 or Weak MO1: Call request: must have (e.g. needs the call money) (R!): give MO1 call that day",
+   "invalid": [],
+   "norm": "0bdc4b2ad4897b2b"
+  },
+  {
+   "id": "r-mo-pool-r2",
+   "words": "Strong MO2 or Weak MO2: Call request (R): give MO2 call that day",
+   "invalid": [],
+   "norm": "f518852be06b94b0"
+  },
+  {
+   "id": "r-mo-pool-rh2",
+   "words": "Strong MO2 or Weak MO2: Call request: must have (e.g. needs the call money) (R!): give MO2 call that day",
+   "invalid": [],
+   "norm": "7ab9a49926f61934"
+  },
+  {
+   "id": "r-mo-pool-r3",
+   "words": "Strong MO3 or Weak MO3: Call request (R): give MO3 call that day",
+   "invalid": [],
+   "norm": "68aa198b0848ddec"
+  },
+  {
+   "id": "r-mo-pool-rh3",
+   "words": "Strong MO3 or Weak MO3: Call request: must have (e.g. needs the call money) (R!): give MO3 call that day",
+   "invalid": [],
+   "norm": "0bc842b556b35de2"
+  },
+  {
+   "id": "r-mo-res",
+   "words": "Residents year 1 (RES1), Residents year 2 (RES2) or Residents year 3 (RES3): 3 to 5 MO1 call, MO2 call or MO3 call a month",
+   "invalid": [],
+   "norm": "24d5704ca8f536d4"
+  },
+  {
+   "id": "r-mo-fellow",
+   "words": "Fellows: 1 to 2 MO1 call, MO2 call or MO3 call a month",
+   "invalid": [],
+   "norm": "311d415d78a4b988"
+  },
+  {
+   "id": "r-mo-mopex",
+   "words": "MOPEX: exactly 1 MO1 call, MO2 call or MO3 call a month",
+   "invalid": [],
+   "norm": "0b976878c1b1736e"
+  },
+  {
+   "id": "r-leave",
+   "words": "Never leave and any call or shift on the same day",
+   "invalid": [],
+   "norm": "196069d8c15543e7"
+  },
+  {
+   "id": "r-postcall",
+   "words": "Never post call (PC) or Post call (carried over from last month) and any call or shift on the same day",
+   "invalid": [],
+   "norm": "ac92fde06fd1b50a"
+  },
+  {
+   "id": "r-ppc",
+   "words": "Never the day off after an ICU post call (PPC) and any call or shift on the same day",
+   "invalid": [
+    "Weight must be 1 to 100"
+   ],
+   "norm": "88088d208819fcac"
+  },
+  {
+   "id": "r-notroster",
+   "words": "Never Not on the roster and any call or shift on the same day",
+   "invalid": [],
+   "norm": "ee4b56c13df1b316"
+  },
+  {
+   "id": "r-preleave",
+   "words": "After any call: no leave the next day",
+   "invalid": [],
+   "norm": "405e0b0c9f4a9a25"
+  },
+  {
+   "id": "r-req-x",
+   "words": "No call (X): no call that day",
+   "invalid": [],
+   "norm": "24786595776fdaef"
+  },
+  {
+   "id": "r-req-xh",
+   "words": "No call: must have (e.g. going on holiday) (X!): no call that day",
+   "invalid": [
+    "Weight must be 1 to 100"
+   ],
+   "norm": "85c288a39bb71b97"
+  },
+  {
+   "id": "r-req-xl",
+   "words": "No call: nice to have (e.g. clearing leave) (X?): no call that day",
+   "invalid": [],
+   "norm": "772ed8cfbb46ab70"
+  },
+  {
+   "id": "r-req-xx",
+   "words": "Call blocked by the planner (XX): no call that day",
+   "invalid": [
+    "Weight must be 1 to 100"
+   ],
+   "norm": "7177f90db45633a4"
+  },
+  {
+   "id": "r-req-r",
+   "words": "Call request (R): give any call that day",
+   "invalid": [],
+   "norm": "486bea3f7ffae5bd"
+  },
+  {
+   "id": "r-req-rh",
+   "words": "Call request: must have (e.g. needs the call money) (R!): give any call that day",
+   "invalid": [],
+   "norm": "68ae4fee5c31b5ab"
+  },
+  {
+   "id": "r-req-rl",
+   "words": "Call request: nice to have (R?): give any call that day",
+   "invalid": [],
+   "norm": "b777a0ab27366434"
+  },
+  {
+   "id": "r-req-np",
+   "words": "No premed (NP): no Premed duty, Premed 1 (Sunday), Premed 2 (Sunday) or 4 more that day",
+   "invalid": [],
+   "norm": "f880a55f43032949"
+  },
+  {
+   "id": "r-sat2",
+   "words": "Everyone: at most 2 calls a month on Sat",
+   "invalid": [],
+   "norm": "f86ba467a3fd369b"
+  },
+  {
+   "id": "r-sat-run",
+   "words": "After any call: no any call 7 days later (Sat)",
+   "invalid": [],
+   "norm": "595201ec24a8459f"
+  },
+  {
+   "id": "r-sun-fri",
+   "words": "After any call: no any call from day 5 to day 6 (Sun)",
+   "invalid": [],
+   "norm": "19ff37bb4ef6ac80"
+  },
+  {
+   "id": "r-livot",
+   "words": "Never Liver transplant OT and any call on the same day",
+   "invalid": [],
+   "norm": "d83f8f92b3dee8d9"
+  },
+  {
+   "id": "r-og-eod",
+   "words": "After Obstetric call: no Obstetric call 2 days later",
+   "invalid": [],
+   "norm": "e83c995a40475c82"
+  },
+  {
+   "id": "r-nocalls",
+   "words": "No call before the \"no calls until\" date set on each person",
+   "invalid": [],
+   "norm": "8c299045497cf916"
+  },
+  {
+   "id": "r-baby",
+   "words": "Baby MO: at most 0 calls a month",
+   "invalid": [],
+   "norm": "a45ba98ba243a48d"
+  },
+  {
+   "id": "r-r1-cover",
+   "words": "Each day: exactly 1 person on MO1 call",
+   "invalid": [],
+   "norm": "47a0a1a52a484866"
+  },
+  {
+   "id": "r-r2-cover",
+   "words": "Each day: exactly 1 person on MO2 call",
+   "invalid": [],
+   "norm": "1e20515645dd3f7e"
+  },
+  {
+   "id": "r-r3-cover",
+   "words": "Each day: exactly 1 person on MO3 call",
+   "invalid": [],
+   "norm": "a2b45e6f25714004"
+  },
+  {
+   "id": "r-r1-who",
+   "words": "Only MO1 call level may do MO1 call",
+   "invalid": [],
+   "norm": "a116926061e172a4"
+  },
+  {
+   "id": "r-r2-who",
+   "words": "Only MO1 call level or MO2 call level may do MO2 call",
+   "invalid": [],
+   "norm": "7644906a0948942e"
+  },
+  {
+   "id": "r-r3-who",
+   "words": "Only MO2 call level or MO3 call level may do MO3 call",
+   "invalid": [],
+   "norm": "a46f798b18845f7c"
+  },
+  {
+   "id": "r-gap",
+   "words": "After MO1 call, MO2 call or MO3 call: no any call for the next 2 days",
+   "invalid": [],
+   "norm": "061a31df71930093"
+  },
+  {
+   "id": "r-fair",
+   "words": "Share MO1 call, MO2 call or MO3 call fairly among everyone (a day off adds 0.5 and so does the day before one: Fri 1.5, Sat 2, Sun 1.5)",
+   "invalid": [],
+   "norm": "0575f96d1fde032c"
+  },
+  {
+   "id": "r-c3-cover",
+   "words": "Each day: exactly 1 person on Cardiac call",
+   "invalid": [],
+   "norm": "9501e2ccaaf34a47"
+  },
+  {
+   "id": "r-c3-onc",
+   "words": "Cardiac call only with Cardiac, Cardiac echo week or Cardiac perfusion week on the same day",
+   "invalid": [],
+   "norm": "1ed37a0e596f75d1"
+  },
+  {
+   "id": "r-c3-echo",
+   "words": "Never Cardiac call and Cardiac echo week or Cardiac perfusion week on the same day",
+   "invalid": [],
+   "norm": "75a916411112507b"
+  },
+  {
+   "id": "r-c3-next",
+   "words": "After Cardiac call: Cardiac, Cardiac echo week or Cardiac perfusion week the next day",
+   "invalid": [],
+   "norm": "e2ca2361b128b01b"
+  },
+  {
+   "id": "r-c3-gap",
+   "words": "After Cardiac call: no Cardiac call the next day",
+   "invalid": [],
+   "norm": "d40f4ab6034b2be7"
+  },
+  {
+   "id": "r-c3-eod",
+   "words": "After Cardiac call: no Cardiac call 2 days later",
+   "invalid": [
+    "Weight must be 1 to 100"
+   ],
+   "norm": "987be4bc1411b50e"
+  },
+  {
+   "id": "r-c3-d1",
+   "words": "no Cardiac call in the first day of Cardiac (from day 2)",
+   "invalid": [],
+   "norm": "2d8bfdaad4c1edb5"
+  },
+  {
+   "id": "r-c3-fair",
+   "words": "Share Cardiac call fairly among people on Cardiac (a day off adds 0.5 and so does the day before one: Fri 1.5, Sat 2, Sun 1.5; 50% of the last 4 months' difference carries over)",
+   "invalid": [],
+   "norm": "d8808ea5825485c6"
+  },
+  {
+   "id": "r-c3-sat",
+   "words": "Everyone: at most 1 Cardiac call a month on Sat",
+   "invalid": [],
+   "norm": "392e1a3f0251a7a6"
+  },
+  {
+   "id": "r-r1b-cover",
+   "words": "Each day: exactly 1 person on ICU call (SICU)",
+   "invalid": [],
+   "norm": "52912d8d53680728"
+  },
+  {
+   "id": "r-r1b-on",
+   "words": "ICU call (SICU) only with Surgical ICU on the same day",
+   "invalid": [],
+   "norm": "f2d3a962d9abe68c"
+  },
+  {
+   "id": "r-r1b-next",
+   "words": "After ICU call (SICU): Surgical ICU the next day",
+   "invalid": [],
+   "norm": "0d1e55c5af92ef1c"
+  },
+  {
+   "id": "r-r1b-gap",
+   "words": "After ICU call (SICU): no ICU call (SICU) the next day",
+   "invalid": [],
+   "norm": "e6e3d6608a88b9a4"
+  },
+  {
+   "id": "r-r1b-gap4",
+   "words": "After ICU call (SICU): no ICU call (SICU) 3 days later",
+   "invalid": [],
+   "norm": "6e6da8501e7a8070"
+  },
+  {
+   "id": "r-r1b-d1",
+   "words": "no ICU call (SICU) in the first day of Surgical ICU (from day 2)",
+   "invalid": [
+    "Weight must be 1 to 100"
+   ],
+   "norm": "29db42d9a7f1184b"
+  },
+  {
+   "id": "r-r1b-new",
+   "words": "New to ICU (only Rotating residents (RR) or MOPEX): no ICU call (SICU) in the first 3 days of Surgical ICU (from day 4)",
+   "invalid": [],
+   "norm": "a5439e6c23eac468"
+  },
+  {
+   "id": "r-r1b-new-res",
+   "words": "New to ICU (only Senior residents (R), Residents year 3 (RES3), Residents year 2 (RES2), Residents year 1 (RES1), NHG cardiac residents (NHG), Resident physicians (RP), Locums (LOC) or Fellows): no ICU call (SICU) in the first 3 days of Surgical ICU (from day 4)",
+   "invalid": [],
+   "norm": "66a8867c71ca8500"
+  },
+  {
+   "id": "r-r1b-rr",
+   "words": "Ortho / HRM resident: no ICU call (SICU) in the first 7 days of Surgical ICU (from day 8)",
+   "invalid": [],
+   "norm": "8af795330c474b8c"
+  },
+  {
+   "id": "r-r1b-super",
+   "words": "Supernumerary in ICU: at most 0 ICU call (SICU) a month",
+   "invalid": [],
+   "norm": "60143c9588c2c4df"
+  },
+  {
+   "id": "r-r1b-fellow",
+   "words": "Fellows: at most 2 ICU call (SICU) a month on weekends",
+   "invalid": [],
+   "norm": "1f61999197791618"
+  },
+  {
+   "id": "r-r1b-fair",
+   "words": "Share ICU call (SICU) fairly among people on Surgical ICU (a day off adds 0.5 and so does the day before one: Fri 1.5, Sat 2, Sun 1.5; 50% of the last 4 months' difference carries over)",
+   "invalid": [],
+   "norm": "64d4660174327f49"
+  },
+  {
+   "id": "r-r1b-sat",
+   "words": "Everyone: at most 2 ICU call (SICU) a month on Sat",
+   "invalid": [],
+   "norm": "33d911e8af8c7482"
+  },
+  {
+   "id": "r-req-load",
+   "words": "Everyone: at most 4 Call request, Call request: must have (e.g. needs the call money), Call request: nice to have or 4 more a month",
+   "invalid": [],
+   "norm": "c7b39913ea87d0c8"
+  },
+  {
+   "id": "r-req-npload",
+   "words": "Everyone: at most 2 No premed a month",
+   "invalid": [],
+   "norm": "745137a55b7e8035"
+  },
+  {
+   "id": "r-pool-1",
+   "words": "Each day: at most 1 person from Strong MO1 or Weak MO1 on Call request, Call request: must have (e.g. needs the call money) or Call request: nice to have",
+   "invalid": [],
+   "norm": "29fa689e83649e1f"
+  },
+  {
+   "id": "r-pool-2",
+   "words": "Each day: at most 1 person from Strong MO2 or Weak MO2 on Call request, Call request: must have (e.g. needs the call money) or Call request: nice to have",
+   "invalid": [],
+   "norm": "bcdd42cd0dcccb7a"
+  },
+  {
+   "id": "r-pool-3",
+   "words": "Each day: at most 1 person from Strong MO2 or Weak MO3 on Call request, Call request: must have (e.g. needs the call money) or Call request: nice to have",
+   "invalid": [],
+   "norm": "fe4b4a14cec1071a"
+  },
+  {
+   "id": "r-mo-nogo",
+   "words": "Never Obstetric night float, Obstetric day float, Obstetric call or 12 more and MO1 call, MO2 call or MO3 call on the same day",
+   "invalid": [],
+   "norm": "526d58478faf9b10"
+  },
+  {
+   "id": "r-mo-weak",
+   "words": "Each day: at most 1 person from Weak MO1, Weak MO2 or Weak MO3 on MO1 call, MO2 call or MO3 call",
+   "invalid": [],
+   "norm": "7ff28a3c1ea52a78"
+  },
+  {
+   "id": "r-mo-satfri",
+   "words": "After MO1 call, MO2 call or MO3 call: no MO1 call, MO2 call or MO3 call 6 days later (Sat)",
+   "invalid": [],
+   "norm": "c40c4a489627d764"
+  },
+  {
+   "id": "r-mo-icusat1",
+   "words": "After ICU call (SICU): no MO1 call, MO2 call or MO3 call for the next 2 days (only on a Saturday)",
+   "invalid": [],
+   "norm": "cdc734d952e3b791"
+  },
+  {
+   "id": "r-mo-icusat2",
+   "words": "After ICU call (SICU): no MO1 call, MO2 call or MO3 call from day 6 to day 7 (only on a Saturday)",
+   "invalid": [],
+   "norm": "8e4c39eb636275f6"
+  },
+  {
+   "id": "r-mo-fss",
+   "words": "Fri to Sun call cap: at most 2 calls a month on Sun, Fri, Sat",
+   "invalid": [],
+   "norm": "d589da3a79a4e125"
+  },
+  {
+   "id": "r-mo-pool-r1",
+   "words": "Strong MO1 or Weak MO1: Call request (R): give MO1 call that day",
+   "invalid": [],
+   "norm": "540f07aebfd582db"
+  },
+  {
+   "id": "r-mo-pool-rh1",
+   "words": "Strong MO1 or Weak MO1: Call request: must have (e.g. needs the call money) (R!): give MO1 call that day",
+   "invalid": [],
+   "norm": "0bdc4b2ad4897b2b"
+  },
+  {
+   "id": "r-mo-pool-r2",
+   "words": "Strong MO2 or Weak MO2: Call request (R): give MO2 call that day",
+   "invalid": [],
+   "norm": "f518852be06b94b0"
+  },
+  {
+   "id": "r-mo-pool-rh2",
+   "words": "Strong MO2 or Weak MO2: Call request: must have (e.g. needs the call money) (R!): give MO2 call that day",
+   "invalid": [],
+   "norm": "7ab9a49926f61934"
+  },
+  {
+   "id": "r-mo-pool-r3",
+   "words": "Strong MO3 or Weak MO3: Call request (R): give MO3 call that day",
+   "invalid": [],
+   "norm": "68aa198b0848ddec"
+  },
+  {
+   "id": "r-mo-pool-rh3",
+   "words": "Strong MO3 or Weak MO3: Call request: must have (e.g. needs the call money) (R!): give MO3 call that day",
+   "invalid": [],
+   "norm": "0bc842b556b35de2"
+  },
+  {
+   "id": "r-mo-res",
+   "words": "Residents year 1 (RES1), Residents year 2 (RES2) or Residents year 3 (RES3): 3 to 5 MO1 call, MO2 call or MO3 call a month",
+   "invalid": [],
+   "norm": "24d5704ca8f536d4"
+  },
+  {
+   "id": "r-mo-fellow",
+   "words": "Fellows: 1 to 2 MO1 call, MO2 call or MO3 call a month",
+   "invalid": [],
+   "norm": "311d415d78a4b988"
+  },
+  {
+   "id": "r-mo-mopex",
+   "words": "MOPEX: exactly 1 MO1 call, MO2 call or MO3 call a month",
+   "invalid": [],
+   "norm": "0b976878c1b1736e"
+  },
+  {
+   "id": "r-leave",
+   "words": "Never leave and any call or shift on the same day",
+   "invalid": [],
+   "norm": "196069d8c15543e7"
+  },
+  {
+   "id": "r-postcall",
+   "words": "Never post call (PC) or Post call (carried over from last month) and any call or shift on the same day",
+   "invalid": [],
+   "norm": "ac92fde06fd1b50a"
+  },
+  {
+   "id": "r-ppc",
+   "words": "Never the day off after an ICU post call (PPC) and any call or shift on the same day",
+   "invalid": [
+    "Weight must be 1 to 100"
+   ],
+   "norm": "88088d208819fcac"
+  },
+  {
+   "id": "r-notroster",
+   "words": "Never Not on the roster and any call or shift on the same day",
+   "invalid": [],
+   "norm": "ee4b56c13df1b316"
+  },
+  {
+   "id": "r-preleave",
+   "words": "After any call: no leave the next day",
+   "invalid": [],
+   "norm": "405e0b0c9f4a9a25"
+  },
+  {
+   "id": "r-req-x",
+   "words": "No call (X): no call that day",
+   "invalid": [],
+   "norm": "24786595776fdaef"
+  },
+  {
+   "id": "r-req-xh",
+   "words": "No call: must have (e.g. going on holiday) (X!): no call that day",
+   "invalid": [
+    "Weight must be 1 to 100"
+   ],
+   "norm": "85c288a39bb71b97"
+  },
+  {
+   "id": "r-req-xl",
+   "words": "No call: nice to have (e.g. clearing leave) (X?): no call that day",
+   "invalid": [],
+   "norm": "772ed8cfbb46ab70"
+  },
+  {
+   "id": "r-req-xx",
+   "words": "Call blocked by the planner (XX): no call that day",
+   "invalid": [
+    "Weight must be 1 to 100"
+   ],
+   "norm": "7177f90db45633a4"
+  },
+  {
+   "id": "r-req-r",
+   "words": "Call request (R): give any call that day",
+   "invalid": [],
+   "norm": "486bea3f7ffae5bd"
+  },
+  {
+   "id": "r-req-rh",
+   "words": "Call request: must have (e.g. needs the call money) (R!): give any call that day",
+   "invalid": [],
+   "norm": "68ae4fee5c31b5ab"
+  },
+  {
+   "id": "r-req-rl",
+   "words": "Call request: nice to have (R?): give any call that day",
+   "invalid": [],
+   "norm": "b777a0ab27366434"
+  },
+  {
+   "id": "r-req-np",
+   "words": "No premed (NP): no Premed duty, Premed 1 (Sunday), Premed 2 (Sunday) or 4 more that day",
+   "invalid": [],
+   "norm": "f880a55f43032949"
+  },
+  {
+   "id": "r-sat2",
+   "words": "Everyone: at most 2 calls a month on Sat",
+   "invalid": [],
+   "norm": "f86ba467a3fd369b"
+  },
+  {
+   "id": "r-sat-run",
+   "words": "After any call: no any call 7 days later (Sat)",
+   "invalid": [],
+   "norm": "595201ec24a8459f"
+  },
+  {
+   "id": "r-sun-fri",
+   "words": "After any call: no any call from day 5 to day 6 (Sun)",
+   "invalid": [],
+   "norm": "19ff37bb4ef6ac80"
+  },
+  {
+   "id": "r-livot",
+   "words": "Never Liver transplant OT and any call on the same day",
+   "invalid": [],
+   "norm": "d83f8f92b3dee8d9"
+  },
+  {
+   "id": "r-og-eod",
+   "words": "After Obstetric call: no Obstetric call 2 days later",
+   "invalid": [],
+   "norm": "e83c995a40475c82"
+  },
+  {
+   "id": "r-nocalls",
+   "words": "No call before the \"no calls until\" date set on each person",
+   "invalid": [],
+   "norm": "8c299045497cf916"
+  },
+  {
+   "id": "r-baby",
+   "words": "Baby MO: at most 0 calls a month",
+   "invalid": [],
+   "norm": "a45ba98ba243a48d"
+  },
+  {
+   "id": "r-r1-cover",
+   "words": "Each day: exactly 1 person on MO1 call",
+   "invalid": [],
+   "norm": "47a0a1a52a484866"
+  },
+  {
+   "id": "r-r2-cover",
+   "words": "Each day: exactly 1 person on MO2 call",
+   "invalid": [],
+   "norm": "1e20515645dd3f7e"
+  },
+  {
+   "id": "r-r3-cover",
+   "words": "Each day: exactly 1 person on MO3 call",
+   "invalid": [],
+   "norm": "a2b45e6f25714004"
+  },
+  {
+   "id": "r-r1-who",
+   "words": "Only MO1 call level may do MO1 call",
+   "invalid": [],
+   "norm": "a116926061e172a4"
+  },
+  {
+   "id": "r-r2-who",
+   "words": "Only MO1 call level or MO2 call level may do MO2 call",
+   "invalid": [],
+   "norm": "7644906a0948942e"
+  },
+  {
+   "id": "r-r3-who",
+   "words": "Only MO2 call level or MO3 call level may do MO3 call",
+   "invalid": [],
+   "norm": "a46f798b18845f7c"
+  },
+  {
+   "id": "r-gap",
+   "words": "After MO1 call, MO2 call or MO3 call: no any call for the next 2 days",
+   "invalid": [],
+   "norm": "061a31df71930093"
+  },
+  {
+   "id": "r-fair",
+   "words": "Share MO1 call, MO2 call or MO3 call fairly among everyone (a day off adds 0.5 and so does the day before one: Fri 1.5, Sat 2, Sun 1.5)",
+   "invalid": [],
+   "norm": "0575f96d1fde032c"
+  },
+  {
+   "id": "pin-cover",
+   "words": "Each day: at least 1 person on Cardiac call, ICU call (SICU) or MO1 call",
+   "invalid": [],
+   "norm": "80872cefa7107b08"
+  },
+  {
+   "id": "pin-cover-soft",
+   "words": "Each day: at least 1 person from seniors on Cardiac call, ICU call (SICU) or MO1 call",
+   "invalid": [],
+   "norm": "2b7b3f9b0a723203"
+  },
+  {
+   "id": "pin-limit",
+   "words": "Everyone: at most 4 Cardiac call, ICU call (SICU) or MO1 call a month",
+   "invalid": [],
+   "norm": "03409806da67cbf0"
+  },
+  {
+   "id": "pin-limit-soft",
+   "words": "Seniors: at most 4 Cardiac call, ICU call (SICU) or MO1 call a month",
+   "invalid": [],
+   "norm": "84d831b555e77ce5"
+  },
+  {
+   "id": "pin-sequence",
+   "words": "After Cardiac call, ICU call (SICU) or MO1 call: no Cardiac call, ICU call (SICU) or MO1 call the next day",
+   "invalid": [],
+   "norm": "9c2a6865c822bfd3"
+  },
+  {
+   "id": "pin-sequence-soft",
+   "words": "Seniors: after cardiac call, icu call (sicu) or mo1 call: no Cardiac call, ICU call (SICU) or MO1 call the next day",
+   "invalid": [],
+   "norm": "d0fbf34cbf5cd1fe"
+  },
+  {
+   "id": "pin-sameDay",
+   "words": "Never Cardiac call, ICU call (SICU) or MO1 call and Cardiac call, ICU call (SICU) or MO1 call on the same day",
+   "invalid": [],
+   "norm": "b360106e157a0e13"
+  },
+  {
+   "id": "pin-sameDay-soft",
+   "words": "Seniors: never Cardiac call, ICU call (SICU) or MO1 call and Cardiac call, ICU call (SICU) or MO1 call on the same day",
+   "invalid": [],
+   "norm": "5994e85750b4e822"
+  },
+  {
+   "id": "pin-together",
+   "words": "Everyone on Cardiac call, ICU call (SICU) or MO1 call: needs another person on Cardiac call, ICU call (SICU) or MO1 call too",
+   "invalid": [],
+   "norm": "b72bd0348afa3e4c"
+  },
+  {
+   "id": "pin-together-soft",
+   "words": "Seniors on Cardiac call, ICU call (SICU) or MO1 call: needs someone from everyone on Cardiac call, ICU call (SICU) or MO1 call too",
+   "invalid": [],
+   "norm": "eb4642fa596be8ad"
+  },
+  {
+   "id": "pin-maxRun",
+   "words": "Everyone: at most 5 days in a row of Cardiac call, ICU call (SICU) or MO1 call",
+   "invalid": [],
+   "norm": "5aab457aede47075"
+  },
+  {
+   "id": "pin-maxRun-soft",
+   "words": "Seniors: at most 5 days in a row of Cardiac call, ICU call (SICU) or MO1 call",
+   "invalid": [],
+   "norm": "7455e5405545cbd8"
+  },
+  {
+   "id": "pin-requests",
+   "words": "No call (X): give Cardiac call, ICU call (SICU) or MO1 call that day",
+   "invalid": [],
+   "norm": "e6fda7a35de157db"
+  },
+  {
+   "id": "pin-requests-soft",
+   "words": "Seniors: No call (X): give Cardiac call, ICU call (SICU) or MO1 call that day",
+   "invalid": [],
+   "norm": "4fa80a3b8bd69311"
+  },
+  {
+   "id": "pin-spread",
+   "words": "Share Cardiac call, ICU call (SICU) or MO1 call fairly among everyone (a day off adds 0.5 and so does the day before one: Fri 1.5, Sat 2, Sun 1.5)",
+   "invalid": [],
+   "norm": "3dcf1815f2ff0918"
+  },
+  {
+   "id": "pin-spread-soft",
+   "words": "Share Cardiac call, ICU call (SICU) or MO1 call fairly among seniors (a day off adds 0.5 and so does the day before one: Fri 1.5, Sat 2, Sun 1.5)",
+   "invalid": [],
+   "norm": "f3aa5d3481747aef"
+  },
+  {
+   "id": "pin-eligible",
+   "words": "Only everyone may do Cardiac call, ICU call (SICU) or MO1 call",
+   "invalid": [],
+   "norm": "e499053b8e0c9a34"
+  },
+  {
+   "id": "pin-eligible-soft",
+   "words": "Only seniors may do Cardiac call, ICU call (SICU) or MO1 call",
+   "invalid": [],
+   "norm": "16ae6057b91f1dc3"
+  },
+  {
+   "id": "pin-noCallsUntil",
+   "words": "No Cardiac call, ICU call (SICU) or MO1 call before the \"no calls until\" date set on each person",
+   "invalid": [],
+   "norm": "fa3752eb8269eff1"
+  },
+  {
+   "id": "pin-noCallsUntil-soft",
+   "words": "No Cardiac call, ICU call (SICU) or MO1 call before the \"no calls until\" date set on each person",
+   "invalid": [],
+   "norm": "8adde0d54d19fb1f"
+  },
+  {
+   "id": "pin-postingStart",
+   "words": "no Cardiac call, ICU call (SICU) or MO1 call in the first day of Cardiac (from day 2)",
+   "invalid": [],
+   "norm": "ed1176e38abec938"
+  },
+  {
+   "id": "pin-postingStart-soft",
+   "words": "Seniors: no Cardiac call, ICU call (SICU) or MO1 call in the first day of Cardiac (from day 2)",
+   "invalid": [],
+   "norm": "bde0d21c3406263b"
+  },
+  {
+   "id": "pin-standing",
+   "words": "Everyone: Cardiac call, ICU call (SICU) or MO1 call every day unless away",
+   "invalid": [],
+   "norm": "862d2ad470626b08"
+  },
+  {
+   "id": "pin-standing-soft",
+   "words": "Seniors: Cardiac call, ICU call (SICU) or MO1 call every day unless away",
+   "invalid": [],
+   "norm": "dac90fe56ab7a349"
+  }
+ ],
+ "reach": [
+  8,
+  8,
+  7
+ ],
+ "evaluate": {
+  "demoThis": {
+   "n": 31,
+   "hard": 2,
+   "soft": 29,
+   "score": 3036.3,
+   "failed": [],
+   "v": "fae13ae5cf76cef7",
+   "first": [
+    "Mon 16 Nov: 0 people on Cardiac call, needs 1",
+    "Hana W: Cardiac call on Sun 15 Nov needs Cardiac, Cardiac echo week or Cardiac perfusion week on Mon 16 Nov",
+    "Yash L: Cardiac call on Fri 30 Oct, then Cardiac call on Sun 1 Nov"
+   ]
+  },
+  "demoNext": {
+   "n": 77,
+   "hard": 62,
+   "soft": 15,
+   "score": 62185,
+   "failed": [],
+   "v": "9bf94739bc37b25e",
+   "first": [
+    "Tue 1 Dec: 0 people on Cardiac call, needs 1",
+    "Wed 2 Dec: 0 people on Cardiac call, needs 1",
+    "Thu 3 Dec: 0 people on Cardiac call, needs 1"
+   ]
+  },
+  "filledNext": {
+   "n": 19,
+   "hard": 0,
+   "soft": 19,
+   "score": 313.3,
+   "failed": [],
+   "v": "9fa83f94df97ab53",
+   "first": [
+    "Sat 12 Dec: Uma K has Cardiac call and Cardiac perfusion week",
+    "Wed 2 Dec: Pooja H has Cardiac call and Cardiac echo week",
+    "Sat 5 Dec: Pooja H has Cardiac call and Cardiac echo week"
+   ]
+  },
+  "samplesThis": {
+   "n": 2485,
+   "hard": 2381,
+   "soft": 104,
+   "score": 2385068.8,
+   "failed": [],
+   "v": "56194695e90f6e65",
+   "first": [
+    "Mon 16 Nov: 0 people on Cardiac call, ICU call (SICU) or MO1 call, needs 1",
+    "Sun 1 Nov: 0 people on Cardiac call, ICU call (SICU) or MO1 call, needs 1",
+    "Mon 2 Nov: 0 people on Cardiac call, ICU call (SICU) or MO1 call, needs 1"
+   ]
+  },
+  "samplesFilled": {
+   "n": 2575,
+   "hard": 2467,
+   "soft": 108,
+   "score": 2479142,
+   "failed": [],
+   "v": "8bb939c8a1d7ea73",
+   "first": [
+    "Tue 1 Dec: 0 people on Cardiac call, ICU call (SICU) or MO1 call, needs 1",
+    "Wed 2 Dec: 0 people on Cardiac call, ICU call (SICU) or MO1 call, needs 1",
+    "Thu 3 Dec: 0 people on Cardiac call, ICU call (SICU) or MO1 call, needs 1"
+   ]
+  },
+  "week": {
+   "n": 3,
+   "hard": 0,
+   "soft": 3,
+   "score": 101.3,
+   "failed": [],
+   "v": "96552f16b6e57777",
+   "first": [
+    "Sat 5 Dec: Pooja H has Cardiac call and Cardiac echo week",
+    "Sun 6 Dec: Amir L has Cardiac call and Cardiac echo week",
+    "Pooja H: any call on Sat 28 Nov, then any call on Sat 5 Dec"
+   ]
+  }
+ },
+ "evaluateRule": {
+  "pin-cover": "4f53cda18c2baa0c",
+  "pin-cover-soft": "0a2d0a1e566a3b7e",
+  "pin-limit": "3da698494f8768ff",
+  "pin-limit-soft": "4f53cda18c2baa0c",
+  "pin-sequence": "4f53cda18c2baa0c",
+  "pin-sequence-soft": "4f53cda18c2baa0c",
+  "pin-sameDay": "4f53cda18c2baa0c",
+  "pin-sameDay-soft": "4f53cda18c2baa0c",
+  "pin-together": "4f53cda18c2baa0c",
+  "pin-together-soft": "4f53cda18c2baa0c",
+  "pin-maxRun": "4f53cda18c2baa0c",
+  "pin-maxRun-soft": "4f53cda18c2baa0c",
+  "pin-requests": "a37f277ac790065c",
+  "pin-requests-soft": "4f53cda18c2baa0c",
+  "pin-spread": "4498f819a18020b5",
+  "pin-spread-soft": "4f53cda18c2baa0c",
+  "pin-eligible": "4f53cda18c2baa0c",
+  "pin-eligible-soft": "c2afc9d92dc52354",
+  "pin-noCallsUntil": "4f53cda18c2baa0c",
+  "pin-noCallsUntil-soft": "4f53cda18c2baa0c",
+  "pin-postingStart": "4f53cda18c2baa0c",
+  "pin-postingStart-soft": "4f53cda18c2baa0c",
+  "pin-standing": "6e8abe20ad26e999",
+  "pin-standing-soft": "4f53cda18c2baa0c"
+ },
+ "carry": "9b9f02db5473a1cc",
+ "dayOff": [
+  1,
+  1.5,
+  1.25
+ ],
+ "crafted": {
+  "rules": [
+   "After Cardiac call or ICU call (SICU): Cardiac or Cardiac echo week for the next 2 days",
+   "Cardiac call: Cardiac the same day",
+   "Marcus J, Qi C, Dewi D or Gavin C: any call or shift every day unless away",
+   "Everyone: at most 1 calls a week",
+   "Senior residents (R): at most 2 Cardiac call, ICU call (SICU) or MO1 call a month"
+  ],
+  "demoRules": {
+   "n": 22,
+   "hard": 2,
+   "soft": 20,
+   "score": 2415.7,
+   "failed": [],
+   "v": "3b3e43563e2069cd",
+   "first": [
+    "Fri 4 Dec: 2 people on Cardiac call, at most 1",
+    "Thu 10 Dec: 2 people on Cardiac call, at most 1",
+    "Sat 12 Dec: Uma K has Cardiac call and Cardiac perfusion week"
+   ]
+  },
+  "edge": {
+   "n": 65,
+   "hard": 0,
+   "soft": 65,
+   "score": 325,
+   "failed": [],
+   "v": "d6782d7550b7e84b",
+   "first": [
+    "Elliot S: Cardiac call or ICU call (SICU) on Sun 29 Nov needs Cardiac or Cardiac echo week on Tue 1 Dec",
+    "Mohan E: Cardiac call or ICU call (SICU) on Mon 30 Nov needs Cardiac or Cardiac echo week on Tue 1 Dec",
+    "Mohan E: Cardiac call or ICU call (SICU) on Mon 30 Nov needs Cardiac or Cardiac echo week on Wed 2 Dec"
+   ]
+  },
+  "month": {
+   "n": 2821,
+   "hard": 2431,
+   "soft": 390,
+   "score": 2444311.1,
+   "failed": [],
+   "v": "f574c301f9dfd1d9",
+   "first": [
+    "Marcus J: Cardiac call or ICU call (SICU) on Thu 10 Dec needs Cardiac or Cardiac echo week on Fri 11 Dec",
+    "Marcus J: Cardiac call or ICU call (SICU) on Thu 10 Dec needs Cardiac or Cardiac echo week on Sat 12 Dec",
+    "Victor F: Cardiac call or ICU call (SICU) on Tue 29 Dec needs Cardiac or Cardiac echo week on Wed 30 Dec"
+   ]
+  },
+  "staff": "c600900e3fb31065",
+  "msgs": "d684198a57670d83"
+ },
+ "dates": [
+  [
+   "2026-01-02",
+   "2025-12-31",
+   "2026-02-10",
+   4,
+   false,
+   true,
+   "New Year's Day",
+   "Thu 1 Jan",
+   "2026-01",
+   "2026-01-01"
+  ],
+  [
+   "2026-03-01",
+   "2026-02-27",
+   "2026-04-09",
+   6,
+   true,
+   false,
+   "",
+   "Sat 28 Feb",
+   "2026-02",
+   "2026-02-28"
+  ],
+  [
+   "2026-03-02",
+   "2026-02-28",
+   "2026-04-10",
+   0,
+   true,
+   false,
+   "",
+   "Sun 1 Mar",
+   "2026-03",
+   "2026-03-01"
+  ],
+  [
+   "2024-03-01",
+   "2024-02-28",
+   "2024-04-09",
+   4,
+   false,
+   false,
+   "",
+   "Thu 29 Feb",
+   "2024-02",
+   "2024-02-29"
+  ],
+  [
+   "2027-01-01",
+   "2026-12-30",
+   "2027-02-09",
+   4,
+   false,
+   false,
+   "",
+   "Thu 31 Dec",
+   "2026-12",
+   "2026-12-31"
+  ],
+  [
+   "2026-11-09",
+   "2026-11-07",
+   "2026-12-18",
+   0,
+   true,
+   true,
+   "Deepavali",
+   "Sun 8 Nov",
+   "2026-11",
+   "2026-11-08"
+  ]
+ ],
+ "months": [
+  [
+   31,
+   "2026-01-01",
+   "2026-02",
+   "2024-12",
+   "January 2026"
+  ],
+  [
+   28,
+   "2026-02-01",
+   "2026-03",
+   "2025-01",
+   "February 2026"
+  ],
+  [
+   29,
+   "2024-02-01",
+   "2024-03",
+   "2023-01",
+   "February 2024"
+  ],
+  [
+   31,
+   "2026-12-01",
+   "2027-01",
+   "2025-11",
+   "December 2026"
+  ]
+ ],
+ "lookups": [
+  "fb839db867de67b8",
+  "60abfd1c1c11a26f",
+  "dcd74b427a9a4c50",
+  [
+   "@posting",
+   "@shift",
+   "@leave",
+   "@other",
+   "@request",
+   "@away",
+   "@present",
+   "@any"
+  ]
+ ],
+ "staffInMonth": [
+  "a38ed6a463df5766",
+  "a38ed6a463df5766"
+ ],
+ "active": [
+  [
+   true,
+   true
+  ],
+  [
+   true,
+   true
+  ],
+  [
+   true,
+   true
+  ],
+  [
+   true,
+   true
+  ],
+  [
+   true,
+   true
+  ],
+  [
+   true,
+   true
+  ],
+  [
+   true,
+   true
+  ],
+  [
+   true,
+   true
+  ]
+ ],
+ "expand": [
+  [
+   "AH",
+   "AH1",
+   "AH2",
+   "AH3",
+   "AP",
+   "C",
+   "C-e",
+   "C-p",
+   "CP",
+   "ICU",
+   "KKH",
+   "LI",
+   "LivOT",
+   "NTF",
+   "OG1",
+   "OG2",
+   "TTSH"
+  ],
+  [
+   "AHC",
+   "C3",
+   "OGC",
+   "OGD",
+   "OGN",
+   "P",
+   "P1",
+   "P2",
+   "P3",
+   "P4",
+   "P5",
+   "P6",
+   "R1",
+   "R1B",
+   "R2",
+   "R3",
+   "S1",
+   "S1B",
+   "WR"
+  ],
+  [
+   "0.5",
+   "AL",
+   "CCL",
+   "FCL",
+   "HL",
+   "MC",
+   "ML",
+   "NS",
+   "PL",
+   "SL",
+   "TL"
+  ],
+  [
+   "Adm",
+   "Exam",
+   "PC",
+   "PPC",
+   "Pain",
+   "RD",
+   "Z"
+  ],
+  [
+   "NP",
+   "R",
+   "R!",
+   "R?",
+   "X",
+   "X!",
+   "X?",
+   "XX"
+  ],
+  [
+   "0.5",
+   "AL",
+   "Adm",
+   "CCL",
+   "Exam",
+   "FCL",
+   "HL",
+   "MC",
+   "ML",
+   "NS",
+   "PC",
+   "PL",
+   "PPC",
+   "Pain",
+   "RD",
+   "SL",
+   "TL",
+   "Z",
+   "x"
+  ],
+  [],
+  [
+   "0.5",
+   "AH",
+   "AH1",
+   "AH2",
+   "AH3",
+   "AHC",
+   "AL",
+   "AP",
+   "Adm",
+   "C",
+   "C-e",
+   "C-p",
+   "C3",
+   "CCL",
+   "CP",
+   "Exam",
+   "FCL",
+   "HL",
+   "ICU",
+   "KKH",
+   "LI",
+   "LivOT",
+   "MC",
+   "ML",
+   "NP",
+   "NS",
+   "NTF",
+   "OG1",
+   "OG2",
+   "OGC",
+   "OGD",
+   "OGN",
+   "P",
+   "P1",
+   "P2",
+   "P3",
+   "P4",
+   "P5",
+   "P6",
+   "PC",
+   "PL",
+   "PPC",
+   "Pain",
+   "R",
+   "R!",
+   "R1",
+   "R1B",
+   "R2",
+   "R3",
+   "R?",
+   "RD",
+   "S1",
+   "S1B",
+   "SL",
+   "TL",
+   "TTSH",
+   "WR",
+   "X",
+   "X!",
+   "X?",
+   "XX",
+   "Z",
+   "x"
+  ],
+  [
+   "x"
+  ],
+  [
+   "PPC"
+  ],
+  [
+   "C3",
+   "R1B"
+  ],
+  [
+   "C",
+   "C-e"
+  ],
+  [
+   "0.5",
+   "AL",
+   "C3",
+   "CCL",
+   "FCL",
+   "HL",
+   "MC",
+   "ML",
+   "NS",
+   "PL",
+   "SL",
+   "TL"
+  ]
+ ],
+ "cells": {
+  "n": 372,
+  "h": "8979f4fba981c3f6"
+ },
+ "setCell": [
+  "{\"p1\":{\"a\":[\"C3\"],\"r\":[],\"auto\":[],\"note\":\"\",\"lock\":false}}",
+  "{\"p1\":{\"a\":[\"C3\"],\"r\":[\"C\"],\"auto\":[],\"note\":\"\",\"lock\":false}}",
+  "null",
+  "{\"p1\":{\"a\":[\"C3\",\"R1B\"],\"r\":[],\"auto\":[],\"note\":\"\",\"lock\":false}}",
+  "{\"p1\":{\"a\":[\"C3\"],\"r\":[\"C\"],\"auto\":[],\"note\":\"\",\"lock\":false}}"
+ ],
+ "clean": {
+  "duties": "3d4905d771d89780",
+  "rules": "29956044387a88c4",
+  "defaults": "55552b01ac20cda7",
+  "migrated": "add2ab920b12e463"
+ }
+}

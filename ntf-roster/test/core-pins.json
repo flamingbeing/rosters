@@ -1,0 +1,1052 @@
+{
+ "F": {
+  "SHIFT": 1,
+  "LEAVE": 2,
+  "OTHER": 4,
+  "REQ": 8,
+  "X": 16,
+  "ANY": 32,
+  "PRESENT": 64
+ },
+ "types": {
+  "cover": {
+   "label": "Cover each day",
+   "icon": "👥",
+   "scope": "day",
+   "help": "How many people must (or may) be on a duty each day.",
+   "example": "Each day: exactly 2 juniors on Call",
+   "soft_only": false,
+   "params": "f8f4bc53b390a0b5",
+   "defaults": {
+    "codes": [],
+    "min": 1,
+    "max": null
+   },
+   "fresh": "2369335de1cb5e09",
+   "words": "Each day: at least 1 person on …"
+  },
+  "limit": {
+   "label": "Limit per person",
+   "icon": "🔢",
+   "scope": "person",
+   "help": "How many times each person may (or must) do a duty per week, month or any run of days.",
+   "example": "Juniors: at most 7 Call a month (scaled by FTE)",
+   "soft_only": false,
+   "params": "257d9cb92fb2a76a",
+   "defaults": {
+    "codes": [],
+    "period": "month",
+    "window": 7,
+    "min": null,
+    "max": 4,
+    "fte": false,
+    "prorate": false
+   },
+   "fresh": "e05ad773b49c81c3",
+   "words": "Everyone: at most 4 … a month"
+  },
+  "sequence": {
+   "label": "Day-after rules",
+   "icon": "⏭️",
+   "scope": "person",
+   "help": "What may or must follow (or come before) a duty: gaps between calls, no call before leave.",
+   "example": "After Call: no Call for the next 2 days",
+   "soft_only": false,
+   "params": "36e9e4afefea0173",
+   "defaults": {
+    "ifCodes": [],
+    "thenCodes": [],
+    "mode": "forbid",
+    "from": 1,
+    "to": 1
+   },
+   "fresh": "1f5de9466a304f12",
+   "words": "After …: no … the next day"
+  },
+  "sameDay": {
+   "label": "Same-day combinations",
+   "icon": "🚫",
+   "scope": "person",
+   "help": "Codes that can't go together on one day (leave and a shift), or one that needs another.",
+   "example": "Never leave and any shift on the same day",
+   "soft_only": false,
+   "params": "b3ea1c022c866c4e",
+   "defaults": {
+    "codesA": [],
+    "codesB": [],
+    "mode": "forbid"
+   },
+   "fresh": "494b88028afd51b3",
+   "words": "Never … and … on the same day"
+  },
+  "together": {
+   "label": "Pairing between people",
+   "icon": "🤝",
+   "scope": "day",
+   "help": "Who can't be on together (two Baby MOs), or who needs someone else on with them.",
+   "example": "Baby MO on Call: at least 1 of senior residents or ACs on Call too",
+   "soft_only": false,
+   "params": "eb6321d4223da41c",
+   "defaults": {
+    "codes": [],
+    "other": {
+     "groups": [],
+     "tags": [],
+     "staff": [],
+     "exclude": []
+    },
+    "otherCodes": [],
+    "mode": "needs",
+    "min": 1
+   },
+   "fresh": "b817698dea56c6c0",
+   "words": "Everyone on …: needs another person on … too"
+  },
+  "maxRun": {
+   "label": "Consecutive days",
+   "icon": "📅",
+   "scope": "person",
+   "help": "The longest run of days in a row someone may have a duty.",
+   "example": "Everyone: at most 5 days in a row of any shift",
+   "soft_only": false,
+   "params": "7d4becd715bf2b1e",
+   "defaults": {
+    "codes": [],
+    "max": 5
+   },
+   "fresh": "eabf4bf451f5dc85",
+   "words": "Everyone: at most 5 days in a row of …"
+  },
+  "requests": {
+   "label": "Honour requests",
+   "icon": "🙋",
+   "scope": "person",
+   "help": "Give people what they asked for (Cr, Pr, Wr) and keep them off what they asked not to do (Nc, NP, Nw).",
+   "example": "No call (Nc): no Call that day",
+   "soft_only": false,
+   "params": "a5f054566b74a3dd",
+   "defaults": {
+    "request": "Cr",
+    "codes": [
+     "C"
+    ],
+    "mode": "want",
+    "span": "day"
+   },
+   "fresh": "f6a8ebce8be35016",
+   "words": "Call request (Cr): give Call that day"
+  },
+  "spread": {
+   "label": "Share fairly",
+   "icon": "⚖️",
+   "scope": "global",
+   "help": "Spread a duty evenly: weekends and public holidays count extra. Always soft.",
+   "example": "Share Call fairly among juniors (weekends x2, holidays x2)",
+   "soft_only": true,
+   "params": "c5525174ca00cdae",
+   "defaults": {
+    "codes": [],
+    "period": "month",
+    "weekendWeight": 2,
+    "holidayWeight": 2,
+    "tolerance": 1
+   },
+   "fresh": "ae2845b133bfe27f",
+   "words": "Share … fairly among everyone (weekends x2, holidays x2)"
+  },
+  "eligible": {
+   "label": "Only these people",
+   "icon": "🎫",
+   "scope": "person",
+   "help": "Restrict a duty to some people (OT consultant: seniors only).",
+   "example": "Only seniors may do OT consultant",
+   "soft_only": false,
+   "params": "2d2d612492fb7162",
+   "defaults": {
+    "codes": []
+   },
+   "fresh": "e6778d11fb21de8e",
+   "words": "Only everyone may do …"
+  },
+  "standing": {
+   "label": "Standing duty",
+   "icon": "📌",
+   "scope": "person",
+   "help": "Someone always does a duty on certain days unless they are away (APS every weekday).",
+   "example": "Pain (APS): Acute pain service every day (weekdays)",
+   "soft_only": false,
+   "params": "2d2d612492fb7162",
+   "defaults": {
+    "codes": []
+   },
+   "fresh": "8fe1a23a7789f0f5",
+   "words": "Everyone: … every day unless away"
+  }
+ },
+ "rules": [
+  {
+   "id": "r-leave",
+   "words": "Never leave and any shift on the same day",
+   "invalid": [],
+   "norm": "ece5f66af6aa91aa"
+  },
+  {
+   "id": "r-postcall",
+   "words": "Never post call and any shift on the same day",
+   "invalid": [],
+   "norm": "ba13070d4e0e93e4"
+  },
+  {
+   "id": "r-jcall",
+   "words": "Each day: exactly 2 people from Senior residents, Senior resident physicians, Resident physicians or 3 more on Call",
+   "invalid": [],
+   "norm": "eda0c0f430faa305"
+  },
+  {
+   "id": "r-scall",
+   "words": "Each day: exactly 1 senior on Call",
+   "invalid": [],
+   "norm": "6570d922813fb38d"
+  },
+  {
+   "id": "r-gap",
+   "words": "After Call: no Call for the next 2 days",
+   "invalid": [],
+   "norm": "e7639eb7b1a5baee"
+  },
+  {
+   "id": "r-maxcall",
+   "words": "Senior residents, Senior resident physicians, Resident physicians or 3 more: at most 7 Call a month (scaled by FTE)",
+   "invalid": [],
+   "norm": "004d18144b083188"
+  },
+  {
+   "id": "r-wkend",
+   "words": "Everyone: at most 2 Call a month on weekends",
+   "invalid": [],
+   "norm": "ac8c79b00248c53f"
+  },
+  {
+   "id": "r-fair-j",
+   "words": "Share Call fairly among Senior residents, Senior resident physicians, Resident physicians or 3 more (weekends x2, holidays x2)",
+   "invalid": [],
+   "norm": "3a37aab1e32b022b"
+  },
+  {
+   "id": "r-fair-s",
+   "words": "Share Call fairly among Senior consultants / consultants or Associate consultants (weekends x2, holidays x2)",
+   "invalid": [],
+   "norm": "44c324a9ec907a3c"
+  },
+  {
+   "id": "r-req-cr",
+   "words": "Call request (Cr): give Call that day",
+   "invalid": [],
+   "norm": "0dca2904d716ab4d"
+  },
+  {
+   "id": "r-req-nc",
+   "words": "No call (Nc): no Call that day",
+   "invalid": [],
+   "norm": "7b44222f06799622"
+  },
+  {
+   "id": "r-req-wr",
+   "words": "Weekend shift request (Wr): give any shift that weekend",
+   "invalid": [],
+   "norm": "75feb482af315189"
+  },
+  {
+   "id": "r-req-nw",
+   "words": "No weekend shift (Nw): no shift that weekend",
+   "invalid": [],
+   "norm": "ffb2c7ef26111dc7"
+  },
+  {
+   "id": "r-req-pr",
+   "words": "PM request (Pr): give PM shift that day",
+   "invalid": [],
+   "norm": "5d33fe47991d435f"
+  },
+  {
+   "id": "r-req-np",
+   "words": "No PM shift (NP): no PM shift that day",
+   "invalid": [],
+   "norm": "f4834b234cfcce61"
+  },
+  {
+   "id": "r-baby",
+   "words": "Baby MO on Call: needs someone from Senior residents, Senior resident physicians, Resident physicians or Associate consultants on Call too",
+   "invalid": [],
+   "norm": "cc0cc8a02ed0cc26"
+  },
+  {
+   "id": "r-baby2",
+   "words": "Baby MO on Call: never with another Baby MO on Call",
+   "invalid": [],
+   "norm": "0db85c17f1bf04af"
+  },
+  {
+   "id": "r-preleave",
+   "words": "After Call: no leave the next day",
+   "invalid": [],
+   "norm": "f92c2bc63d5a5411"
+  },
+  {
+   "id": "r-pm",
+   "words": "Weekdays except public holidays: exactly 1 person from Senior residents, Senior resident physicians, Resident physicians or 3 more on PM shift",
+   "invalid": [],
+   "norm": "c25d1585bb84ffba"
+  },
+  {
+   "id": "r-otc",
+   "words": "Only consultants may do OT consultant",
+   "invalid": [],
+   "norm": "38e7413c79fbc8b9"
+  },
+  {
+   "id": "r-phd",
+   "words": "Public holidays: exactly 1 person from Senior residents, Senior resident physicians, Resident physicians or 3 more on Public holiday day shift",
+   "invalid": [],
+   "norm": "e9fce397ae8b981c"
+  },
+  {
+   "id": "r-leave",
+   "words": "Never leave and any shift on the same day",
+   "invalid": [],
+   "norm": "7befdc68275d92e1"
+  },
+  {
+   "id": "r-leave-s",
+   "words": "Never leave and any shift on the same day",
+   "invalid": [],
+   "norm": "c66e58b9bd460833"
+  },
+  {
+   "id": "r-postcall",
+   "words": "Never post call and any shift on the same day",
+   "invalid": [],
+   "norm": "ddffbeb744ae185f"
+  },
+  {
+   "id": "r-postcall-s",
+   "words": "Never post call and any shift on the same day",
+   "invalid": [],
+   "norm": "da7d6a789dacf01e"
+  },
+  {
+   "id": "r-jcall",
+   "words": "Each day: exactly 2 people from Senior residents, Senior resident physicians, Resident physicians or 3 more on Call",
+   "invalid": [],
+   "norm": "eda0c0f430faa305"
+  },
+  {
+   "id": "r-scall",
+   "words": "Each day: exactly 1 senior on Call",
+   "invalid": [],
+   "norm": "6570d922813fb38d"
+  },
+  {
+   "id": "r-gap",
+   "words": "After Call: no Call for the next 2 days",
+   "invalid": [],
+   "norm": "dfe89f79beb65ca0"
+  },
+  {
+   "id": "r-gap-s",
+   "words": "After Call: no Call for the next 2 days",
+   "invalid": [],
+   "norm": "3a3c5f80086728c3"
+  },
+  {
+   "id": "r-maxcall",
+   "words": "Senior residents, Senior resident physicians, Resident physicians or 3 more: at most 7 Call a month (scaled by FTE)",
+   "invalid": [],
+   "norm": "004d18144b083188"
+  },
+  {
+   "id": "r-wkend",
+   "words": "Everyone: at most 2 Call a month on weekends",
+   "invalid": [],
+   "norm": "cd7ba6e70103d89f"
+  },
+  {
+   "id": "r-wkend-s",
+   "words": "Everyone: at most 2 Call a month on weekends",
+   "invalid": [],
+   "norm": "473f2f1d00f8ff81"
+  },
+  {
+   "id": "r-fair-j",
+   "words": "Share Call fairly among Senior residents, Senior resident physicians, Resident physicians or 3 more (weekends x2, holidays x2)",
+   "invalid": [],
+   "norm": "3a37aab1e32b022b"
+  },
+  {
+   "id": "r-fair-s",
+   "words": "Share Call fairly among Senior consultants / consultants or Associate consultants (weekends x2, holidays x2)",
+   "invalid": [],
+   "norm": "44c324a9ec907a3c"
+  },
+  {
+   "id": "r-req-cr",
+   "words": "Call request (Cr): give Call that day",
+   "invalid": [],
+   "norm": "0e9cc322f4f00aef"
+  },
+  {
+   "id": "r-req-cr-s",
+   "words": "Call request (Cr): give Call that day",
+   "invalid": [],
+   "norm": "dfa9484ebd2ba4ff"
+  },
+  {
+   "id": "r-req-nc",
+   "words": "No call (Nc): no Call that day",
+   "invalid": [],
+   "norm": "4712bd2062fe458c"
+  },
+  {
+   "id": "r-req-nc-s",
+   "words": "No call (Nc): no Call that day",
+   "invalid": [],
+   "norm": "a9f45c4171d31856"
+  },
+  {
+   "id": "r-req-wr",
+   "words": "Weekend shift request (Wr): give any shift that weekend",
+   "invalid": [],
+   "norm": "44674b2da600fd8b"
+  },
+  {
+   "id": "r-req-wr-s",
+   "words": "Weekend shift request (Wr): give any shift that weekend",
+   "invalid": [],
+   "norm": "c06c8797c5fb5c09"
+  },
+  {
+   "id": "r-req-nw",
+   "words": "No weekend shift (Nw): no shift that weekend",
+   "invalid": [],
+   "norm": "58437973090fe1e4"
+  },
+  {
+   "id": "r-req-nw-s",
+   "words": "No weekend shift (Nw): no shift that weekend",
+   "invalid": [],
+   "norm": "a920a143163ce16c"
+  },
+  {
+   "id": "r-req-pr",
+   "words": "PM request (Pr): give PM shift that day",
+   "invalid": [],
+   "norm": "47b4917b484bfa2c"
+  },
+  {
+   "id": "r-req-pr-s",
+   "words": "PM request (Pr): give PM shift that day",
+   "invalid": [],
+   "norm": "6d1291a3c80c8123"
+  },
+  {
+   "id": "r-req-np",
+   "words": "No PM shift (NP): no PM shift that day",
+   "invalid": [],
+   "norm": "4d3282d9af2aa04f"
+  },
+  {
+   "id": "r-req-np-s",
+   "words": "No PM shift (NP): no PM shift that day",
+   "invalid": [],
+   "norm": "9b9355fa203e9455"
+  },
+  {
+   "id": "r-baby",
+   "words": "Baby MO on Call: needs someone from Senior residents, Senior resident physicians, Resident physicians or Associate consultants on Call too",
+   "invalid": [],
+   "norm": "cc0cc8a02ed0cc26"
+  },
+  {
+   "id": "r-baby2",
+   "words": "Baby MO on Call: never with another Baby MO on Call",
+   "invalid": [],
+   "norm": "0db85c17f1bf04af"
+  },
+  {
+   "id": "r-preleave",
+   "words": "After Call: no leave the next day",
+   "invalid": [],
+   "norm": "8649f2bb652b2ee6"
+  },
+  {
+   "id": "r-preleave-s",
+   "words": "After Call: no leave the next day",
+   "invalid": [],
+   "norm": "19c631e6bb627a15"
+  },
+  {
+   "id": "r-pm",
+   "words": "Weekdays except public holidays: exactly 1 person from Senior residents, Senior resident physicians, Resident physicians or 3 more on PM shift",
+   "invalid": [],
+   "norm": "c25d1585bb84ffba"
+  },
+  {
+   "id": "r-otc",
+   "words": "Only consultants may do OT consultant",
+   "invalid": [],
+   "norm": "38e7413c79fbc8b9"
+  },
+  {
+   "id": "r-phd",
+   "words": "Public holidays: exactly 1 person from Senior residents, Senior resident physicians, Resident physicians or 3 more on Public holiday day shift",
+   "invalid": [],
+   "norm": "e9fce397ae8b981c"
+  },
+  {
+   "id": "pin-cover",
+   "words": "Each day: at least 1 person on Call, PM shift or Stepdown MO call",
+   "invalid": [],
+   "norm": "f025efdfe5762d9f"
+  },
+  {
+   "id": "pin-cover-soft",
+   "words": "Each day: at least 1 person from Senior consultants / consultants on Call, PM shift or Stepdown MO call",
+   "invalid": [],
+   "norm": "aecf00fa2bf4a2cd"
+  },
+  {
+   "id": "pin-limit",
+   "words": "Everyone: at most 4 Call, PM shift or Stepdown MO call a month",
+   "invalid": [],
+   "norm": "1b7920b8ddb1c720"
+  },
+  {
+   "id": "pin-limit-soft",
+   "words": "Senior consultants / consultants: at most 4 Call, PM shift or Stepdown MO call a month",
+   "invalid": [],
+   "norm": "2e27719a9fa93467"
+  },
+  {
+   "id": "pin-sequence",
+   "words": "After Call, PM shift or Stepdown MO call: no Call, PM shift or Stepdown MO call the next day",
+   "invalid": [],
+   "norm": "7b3dbc411d46e5f0"
+  },
+  {
+   "id": "pin-sequence-soft",
+   "words": "Senior consultants / consultants: after call, pm shift or stepdown mo call: no Call, PM shift or Stepdown MO call the next day",
+   "invalid": [],
+   "norm": "c834ff5f97b747ae"
+  },
+  {
+   "id": "pin-sameDay",
+   "words": "Never Call, PM shift or Stepdown MO call and Call, PM shift or Stepdown MO call on the same day",
+   "invalid": [],
+   "norm": "265973ac1c052721"
+  },
+  {
+   "id": "pin-sameDay-soft",
+   "words": "Senior consultants / consultants: never Call, PM shift or Stepdown MO call and Call, PM shift or Stepdown MO call on the same day",
+   "invalid": [],
+   "norm": "8a7977d803a81284"
+  },
+  {
+   "id": "pin-together",
+   "words": "Everyone on Call, PM shift or Stepdown MO call: needs another person on Call, PM shift or Stepdown MO call too",
+   "invalid": [],
+   "norm": "974da555c00de66d"
+  },
+  {
+   "id": "pin-together-soft",
+   "words": "Senior consultants / consultants on Call, PM shift or Stepdown MO call: needs someone from everyone on Call, PM shift or Stepdown MO call too",
+   "invalid": [],
+   "norm": "6dcf1a611e6b6179"
+  },
+  {
+   "id": "pin-maxRun",
+   "words": "Everyone: at most 5 days in a row of Call, PM shift or Stepdown MO call",
+   "invalid": [],
+   "norm": "c72288a23951182c"
+  },
+  {
+   "id": "pin-maxRun-soft",
+   "words": "Senior consultants / consultants: at most 5 days in a row of Call, PM shift or Stepdown MO call",
+   "invalid": [],
+   "norm": "7012c826ca3c1d38"
+  },
+  {
+   "id": "pin-requests",
+   "words": "Call request (Cr): give Call, PM shift or Stepdown MO call that day",
+   "invalid": [],
+   "norm": "5a423fa7adafaaa0"
+  },
+  {
+   "id": "pin-requests-soft",
+   "words": "Senior consultants / consultants: Call request (Cr): give Call, PM shift or Stepdown MO call that day",
+   "invalid": [],
+   "norm": "9d1963724b1e9ad0"
+  },
+  {
+   "id": "pin-spread",
+   "words": "Share Call, PM shift or Stepdown MO call fairly among everyone (weekends x2, holidays x2)",
+   "invalid": [],
+   "norm": "f0c328812a62bed1"
+  },
+  {
+   "id": "pin-spread-soft",
+   "words": "Share Call, PM shift or Stepdown MO call fairly among Senior consultants / consultants (weekends x2, holidays x2)",
+   "invalid": [],
+   "norm": "8f8676b2a55ebc66"
+  },
+  {
+   "id": "pin-eligible",
+   "words": "Only everyone may do Call, PM shift or Stepdown MO call",
+   "invalid": [],
+   "norm": "820210501e63f535"
+  },
+  {
+   "id": "pin-eligible-soft",
+   "words": "Only Senior consultants / consultants may do Call, PM shift or Stepdown MO call",
+   "invalid": [],
+   "norm": "303764f88af7e90b"
+  },
+  {
+   "id": "pin-standing",
+   "words": "Everyone: Call, PM shift or Stepdown MO call every day unless away",
+   "invalid": [],
+   "norm": "d83a719d69c9f878"
+  },
+  {
+   "id": "pin-standing-soft",
+   "words": "Senior consultants / consultants: Call, PM shift or Stepdown MO call every day unless away",
+   "invalid": [],
+   "norm": "1c9d0e1956dbd5e7"
+  }
+ ],
+ "reach": [
+  7,
+  7,
+  7
+ ],
+ "evaluate": {
+  "demoThis": {
+   "n": 39,
+   "hard": 0,
+   "soft": 39,
+   "score": 217.6,
+   "failed": [],
+   "v": "c957cc9cf18ca85a",
+   "first": [
+    "Yvonne N: Call 0 in November 2026 (weekends and holidays count extra); group average 2",
+    "Zachary L: Call 0 in November 2026 (weekends and holidays count extra); group average 2",
+    "Aisyah R: Call 0 in November 2026 (weekends and holidays count extra); group average 2"
+   ]
+  },
+  "demoNext": {
+   "n": 127,
+   "hard": 85,
+   "soft": 42,
+   "score": 116330,
+   "failed": [],
+   "v": "c02c8b35e9611416",
+   "first": [
+    "Tue 1 Dec: 0 people on Call, needs 2",
+    "Wed 2 Dec: 0 people on Call, needs 2",
+    "Thu 3 Dec: 0 people on Call, needs 2"
+   ]
+  },
+  "filledNext": {
+   "n": 16,
+   "hard": 0,
+   "soft": 16,
+   "score": 40,
+   "failed": [],
+   "v": "8f80f2fb2e74fae6",
+   "first": [
+    "Dinesh K: Call 1 in December 2026 (weekends and holidays count extra); group average 2",
+    "Ishaan R: Call 1 in December 2026 (weekends and holidays count extra); group average 2",
+    "Nur I: Call 1 in December 2026 (weekends and holidays count extra); group average 2"
+   ]
+  },
+  "samplesThis": {
+   "n": 2056,
+   "hard": 1589,
+   "soft": 467,
+   "score": 1592283.3,
+   "failed": [],
+   "v": "8b4a68f8e6086cf1",
+   "first": [
+    "Sun 1 Nov: 0 people on Call, PM shift or Stepdown MO call, needs 1",
+    "Mon 2 Nov: 0 people on Call, PM shift or Stepdown MO call, needs 1",
+    "Tue 10 Nov: 0 people on Call, PM shift or Stepdown MO call, needs 1"
+   ]
+  },
+  "samplesFilled": {
+   "n": 2152,
+   "hard": 1675,
+   "soft": 477,
+   "score": 1678370.2,
+   "failed": [],
+   "v": "87f66d62f969e86b",
+   "first": [
+    "Tue 1 Dec: 0 people on Call, PM shift or Stepdown MO call, needs 1",
+    "Thu 3 Dec: 0 people on Call, PM shift or Stepdown MO call, needs 1",
+    "Wed 9 Dec: 0 people on Call, PM shift or Stepdown MO call, needs 1"
+   ]
+  },
+  "week": {
+   "n": 12,
+   "hard": 0,
+   "soft": 12,
+   "score": 10,
+   "failed": [],
+   "v": "df737615393c6156",
+   "first": [
+    "Dinesh K: Call 1 in December 2026 (weekends and holidays count extra); group average 2",
+    "Ishaan R: Call 1 in December 2026 (weekends and holidays count extra); group average 2",
+    "Nur I: Call 1 in December 2026 (weekends and holidays count extra); group average 2"
+   ]
+  }
+ },
+ "evaluateRule": {
+  "pin-cover": "4f53cda18c2baa0c",
+  "pin-cover-soft": "5c20587e2c76dd16",
+  "pin-limit": "eba02ae88e1b14ff",
+  "pin-limit-soft": "4f53cda18c2baa0c",
+  "pin-sequence": "e96a9beca73deca0",
+  "pin-sequence-soft": "4f53cda18c2baa0c",
+  "pin-sameDay": "4f53cda18c2baa0c",
+  "pin-sameDay-soft": "4f53cda18c2baa0c",
+  "pin-together": "4f53cda18c2baa0c",
+  "pin-together-soft": "4f53cda18c2baa0c",
+  "pin-maxRun": "4f53cda18c2baa0c",
+  "pin-maxRun-soft": "4f53cda18c2baa0c",
+  "pin-requests": "4596a8b41df10f9e",
+  "pin-requests-soft": "3852467a70f5064e",
+  "pin-spread": "075d40ce1b9bc273",
+  "pin-spread-soft": "4f53cda18c2baa0c",
+  "pin-eligible": "4f53cda18c2baa0c",
+  "pin-eligible-soft": "bc74a2922ba6437e",
+  "pin-standing": "24c23b441968be14",
+  "pin-standing-soft": "e2a4cd1db1dcc499"
+ },
+ "dates": [
+  [
+   "2026-01-02",
+   "2025-12-31",
+   "2026-02-10",
+   4,
+   false,
+   true,
+   "New Year's Day",
+   "Thu 1 Jan",
+   "2026-01",
+   "2026-01-01"
+  ],
+  [
+   "2026-03-01",
+   "2026-02-27",
+   "2026-04-09",
+   6,
+   true,
+   false,
+   "",
+   "Sat 28 Feb",
+   "2026-02",
+   "2026-02-28"
+  ],
+  [
+   "2026-03-02",
+   "2026-02-28",
+   "2026-04-10",
+   0,
+   true,
+   false,
+   "",
+   "Sun 1 Mar",
+   "2026-03",
+   "2026-03-01"
+  ],
+  [
+   "2024-03-01",
+   "2024-02-28",
+   "2024-04-09",
+   4,
+   false,
+   false,
+   "",
+   "Thu 29 Feb",
+   "2024-02",
+   "2024-02-29"
+  ],
+  [
+   "2027-01-01",
+   "2026-12-30",
+   "2027-02-09",
+   4,
+   false,
+   false,
+   "",
+   "Thu 31 Dec",
+   "2026-12",
+   "2026-12-31"
+  ],
+  [
+   "2026-11-09",
+   "2026-11-07",
+   "2026-12-18",
+   0,
+   true,
+   true,
+   "Deepavali",
+   "Sun 8 Nov",
+   "2026-11",
+   "2026-11-08"
+  ]
+ ],
+ "months": [
+  [
+   31,
+   "2026-01-01",
+   "2026-02",
+   "2024-12",
+   "January 2026"
+  ],
+  [
+   28,
+   "2026-02-01",
+   "2026-03",
+   "2025-01",
+   "February 2026"
+  ],
+  [
+   29,
+   "2024-02-01",
+   "2024-03",
+   "2023-01",
+   "February 2024"
+  ],
+  [
+   31,
+   "2026-12-01",
+   "2027-01",
+   "2025-11",
+   "December 2026"
+  ]
+ ],
+ "lookups": [
+  "25365b3e99a45ae2",
+  "a4f8c0df4ec82b6a",
+  "45e1c98484714dc0",
+  [
+   "@shift",
+   "@leave",
+   "@other",
+   "@request",
+   "@away",
+   "@present",
+   "@any"
+  ]
+ ],
+ "staffInMonth": [
+  "33df441709ebc251",
+  "34ba66f7fad7116f"
+ ],
+ "active": [
+  [
+   true,
+   true
+  ],
+  [
+   true,
+   true
+  ],
+  [
+   true,
+   true
+  ],
+  [
+   true,
+   true
+  ],
+  [
+   true,
+   true
+  ],
+  [
+   true,
+   true
+  ],
+  [
+   true,
+   true
+  ],
+  [
+   true,
+   true
+  ]
+ ],
+ "expand": [
+  [
+   "APS",
+   "C",
+   "Clinic",
+   "Creg",
+   "HC",
+   "Inj",
+   "OTC",
+   "P",
+   "PHD",
+   "SMO",
+   "W"
+  ],
+  [
+   "AAL",
+   "ACLS",
+   "AL",
+   "CCL",
+   "CL",
+   "EL",
+   "FCL",
+   "HL",
+   "MC",
+   "ML",
+   "NPL",
+   "OIL",
+   "RS",
+   "SPL",
+   "TL"
+  ],
+  [
+   "ICM",
+   "JR",
+   "LT",
+   "Mtg",
+   "NUH",
+   "Teach"
+  ],
+  [
+   "Cr",
+   "NP",
+   "Nc",
+   "Nw",
+   "Pr",
+   "Wr"
+  ],
+  [
+   "AAL",
+   "ACLS",
+   "AL",
+   "CCL",
+   "CL",
+   "EL",
+   "FCL",
+   "HL",
+   "ICM",
+   "JR",
+   "LT",
+   "MC",
+   "ML",
+   "Mtg",
+   "NPL",
+   "NUH",
+   "OIL",
+   "RS",
+   "SPL",
+   "TL",
+   "Teach",
+   "x"
+  ],
+  [],
+  [
+   "AAL",
+   "ACLS",
+   "AL",
+   "APS",
+   "C",
+   "CCL",
+   "CL",
+   "Clinic",
+   "Cr",
+   "Creg",
+   "EL",
+   "FCL",
+   "HC",
+   "HL",
+   "ICM",
+   "Inj",
+   "JR",
+   "LT",
+   "MC",
+   "ML",
+   "Mtg",
+   "NP",
+   "NPL",
+   "NUH",
+   "Nc",
+   "Nw",
+   "OIL",
+   "OTC",
+   "P",
+   "PHD",
+   "Pr",
+   "RS",
+   "SMO",
+   "SPL",
+   "TL",
+   "Teach",
+   "W",
+   "Wr",
+   "x"
+  ],
+  [
+   "x"
+  ],
+  [
+   "PPC"
+  ],
+  [
+   "C",
+   "P"
+  ],
+  [
+   "AAL",
+   "AL"
+  ],
+  [
+   "AAL",
+   "ACLS",
+   "AL",
+   "C",
+   "CCL",
+   "CL",
+   "EL",
+   "FCL",
+   "HL",
+   "MC",
+   "ML",
+   "NPL",
+   "OIL",
+   "RS",
+   "SPL",
+   "TL"
+  ]
+ ],
+ "cells": {
+  "n": 372,
+  "h": "4d89af67f166b612"
+ },
+ "setCell": [
+  "{\"p1\":{\"a\":[\"C\"],\"r\":[],\"auto\":[],\"note\":\"\",\"lock\":false}}",
+  "{\"p1\":{\"a\":[\"C\"],\"r\":[\"AL\"],\"auto\":[],\"note\":\"\",\"lock\":false}}",
+  "null",
+  "{\"p1\":{\"a\":[\"C\",\"P\"],\"r\":[],\"auto\":[],\"note\":\"\",\"lock\":false}}",
+  "{\"p1\":{\"a\":[\"C\"],\"r\":[\"AL\"],\"auto\":[],\"note\":\"\",\"lock\":false,\"ap\":true,\"rp\":{\"AL\":\"!\"}}}"
+ ],
+ "clean": {
+  "duties": "2c16964349c8782b",
+  "rules": "c8e6155dedbeeb4d",
+  "defaults": "12cc46e58a94e73a",
+  "migrated": "304e6a7d545b98b8"
+ }
+}

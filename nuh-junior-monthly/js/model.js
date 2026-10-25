@@ -1,5 +1,11 @@
-// NUH Junior Monthly: the data model. State shape, defaults, local-date helpers, cell helpers and code tokens.
+// NUH Junior Monthly: the data model. State shape, defaults, migrations, month locks and the imported sheet's grades;
+// the local-date helpers, cell helpers and code tokens are the roster core's (lib/roster-core/model.js), re-exported here.
 // Plain functions over plain data (see SPEC.md "State"). No DOM, so node tests and the solver worker can use it.
+
+import {
+  uid, iso, parseISO, addDays, monthDays, monthOf, addMonths, weekday, isWeekend, isHoliday, holidayName, fmtDay, fmtMonth,
+  dutyMap, groupMap, staffMap, staffActiveOn, getCell, createCells, staffInMonth as coreStaffInMonth,
+} from '../../lib/roster-core/model.js';   // /lib/ is the shared folder on every host (worker/routes.js SHARED)
 
 export const STORE_KEY = 'nuhjm-v1';
 export const DEMO_KEY = 'nuhjm-demo';
@@ -438,26 +444,15 @@ export function migrate(s) {
   return s;
 }
 
-export function uid(prefix = 'id') {
-  return `${prefix}-${Math.random().toString(36).slice(2, 8)}${Date.now().toString(36).slice(-3)}`;
-}
+// ---------- dates, lookups and cells: the roster core's (lib/roster-core/model.js, one copy for the roster apps) ----------
 
-// ---------- dates (local, never UTC) ----------
+export {
+  uid, iso, parseISO, addDays, monthDays, monthOf, addMonths, weekday, isWeekend, isHoliday, holidayName, fmtDay, fmtMonth,
+  dutyMap, groupMap, staffMap, staffActiveOn, getCell,
+};
+// posting duties and PPC (the day off after an ICU call) are this app's; no request marks
+export const { TOKENS, setCell, effectiveCodes, isPPC, postingOf, expandTokens, matchesCodes } = createCells({ postings: true });
 
-const pad = n => String(n).padStart(2, '0');
-const DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-const MONTH = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-
-export function iso(d) { return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; }
-export function parseISO(s) {
-  const [y, m, d] = String(s).split('-').map(Number);
-  return new Date(y, (m || 1) - 1, d || 1);
-}
-export function addDays(s, n) {
-  const [y, m, d] = String(s).split('-').map(Number);
-  return iso(new Date(y, m - 1, d + n));
-}
 // A month is locked (finished) when its status is 'published': the team copy already stores that status, so locking is
 // shared with the team and needs no change to the rules. While locked, no change to that month's days goes through
 // (store.js), whoever tries it: calls, Auto-fill, import, copy back to the Google Sheet.
@@ -466,57 +461,7 @@ export function setMonthLocked(draft, m, locked) {
   if (!draft.months || typeof draft.months !== 'object') draft.months = {};
   draft.months[m] = { ...(draft.months[m] || {}), status: locked ? 'published' : 'draft', publishedAt: locked ? new Date().toISOString() : '' };
 }
-export function monthDays(m) {
-  const [y, mo] = String(m).split('-').map(Number);
-  const last = new Date(y, mo, 0).getDate();
-  const out = [];
-  for (let d = 1; d <= last; d++) out.push(`${y}-${pad(mo)}-${pad(d)}`);
-  return out;
-}
-export function monthOf(s) { return String(s).slice(0, 7); }
-export function addMonths(m, n) {
-  const [y, mo] = String(m).split('-').map(Number);
-  const d = new Date(y, mo - 1 + n, 1);
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}`;
-}
-// Weekdays are asked for thousands of times per screen (grid, checks, demo): remember them per date string.
-const WEEKDAY = new Map();
-export function weekday(s) {
-  let w = WEEKDAY.get(s);
-  if (w === undefined) {
-    w = parseISO(s).getDay();
-    if (WEEKDAY.size > 5000) WEEKDAY.clear();
-    WEEKDAY.set(s, w);
-  }
-  return w;
-}
-export function isWeekend(s) { const w = weekday(s); return w === 0 || w === 6; }
-export function isHoliday(state, s) { return !!(state && state.settings && state.settings.holidays && state.settings.holidays[s]); }
-export function holidayName(state, s) { return (state && state.settings && state.settings.holidays && state.settings.holidays[s]) || ''; }
-export function fmtDay(s) { const d = parseISO(s); return `${DOW[d.getDay()]} ${d.getDate()} ${MON[d.getMonth()]}`; }
-export function fmtMonth(m) { const [y, mo] = String(m).split('-').map(Number); return `${MONTH[mo - 1]} ${y}`; }
 
-// ---------- lookups ----------
-
-export function dutyMap(state) { return new Map((state.duties || []).map(d => [d.code, d])); }
-// The same map, built once per duties list (read-only use: effectiveCodes and matchesCodes run per cell). It is
-// rebuilt when the list changes, even in place (a duty added, replaced or recoded inside a commit).
-const DUTY_MAPS = new WeakMap();
-function dutyMapCached(state) {
-  const list = state.duties;
-  if (!Array.isArray(list)) return dutyMap(state);
-  const hit = DUTY_MAPS.get(list);
-  if (hit && hit.items.length === list.length && hit.items.every((d, k) => d === list[k] && hit.codes[k] === (d && d.code))) return hit.m;
-  const m = dutyMap(state);
-  DUTY_MAPS.set(list, { m, items: list.slice(), codes: list.map(d => d && d.code) });
-  return m;
-}
-export function groupMap(state) { return new Map((state.groups || []).map(g => [g.id, g])); }
-export function staffMap(state) { return new Map((state.staff || []).map(p => [p.id, p])); }
-
-export function staffActiveOn(person, s) {
-  return !!person && person.active !== false && (!person.start || s >= person.start) && (!person.end || s <= person.end);
-}
 
 // People on the staff list when month m's sheet was read who are not in that sheet (left, rotated out, a typo): hidden from
 // the month and never given calls by Auto-fill. Someone added after the import is not in this set, and neither is anyone
@@ -543,108 +488,9 @@ export function personIn(state, m, p) {
 }
 
 // Everyone in post at some point in the month, in sheet order (group order, then the order in state.staff), each with
+
+// Everyone in post at some point in the month, in sheet order (group order, then the order in state.staff), each with
 // the grade they had that month.
 export function staffInMonth(state, m) {
-  const days = monthDays(m), first = days[0], last = days[days.length - 1];
-  const order = new Map((state.groups || []).map((g, i) => [g.id, i]));
-  const absent = notInSheet(state, m);
-  return (state.staff || [])
-    .map((p, i) => ({ p: personIn(state, m, p), i }))
-    .filter(({ p }) => p.active !== false && !absent.has(p.id) && (!p.start || p.start <= last) && (!p.end || p.end >= first))
-    .sort((a, b) => ((order.get(a.p.group) ?? 999) - (order.get(b.p.group) ?? 999)) || a.i - b.i)
-    .map(({ p }) => p);
-}
-
-// ---------- cells ----------
-
-const EMPTY = Object.freeze([]);
-const uniq = a => [...new Set((Array.isArray(a) ? a : []).filter(c => typeof c === 'string' && c))];
-
-export function getCell(state, s, staffId) {
-  const day = state.cells && state.cells[s];
-  return (day && day[staffId]) || null;
-}
-
-// Merge a patch into a cell: dedupe codes, keep auto ⊆ a, delete the cell (and the day) when nothing is left.
-// Always writes a new cell object (never mutates the old one), so shallow copies of state stay safe.
-export function setCell(draft, s, staffId, patch) {
-  if (!draft.cells) draft.cells = {};
-  const day = draft.cells[s] || (draft.cells[s] = {});
-  const cur = day[staffId] || {};
-  const next = { ...cur, ...patch };
-  const a = uniq(next.a);
-  const cell = { a, r: uniq(next.r), auto: uniq(next.auto).filter(c => a.includes(c)), note: String(next.note || ''), lock: !!next.lock };
-  if (!cell.a.length && !cell.r.length && !cell.note && !cell.lock) delete day[staffId];
-  else day[staffId] = cell;
-  if (!Object.keys(day).length) delete draft.cells[s];
-  return day[staffId] || null;
-}
-
-// Assigned codes plus 'x' when the day before had an overnight shift.
-export function effectiveCodes(state, s, staffId) {
-  const cell = getCell(state, s, staffId);
-  const out = cell && Array.isArray(cell.a) ? [...cell.a] : [];
-  const prev = getCell(state, addDays(s, -1), staffId);
-  if (prev && Array.isArray(prev.a) && prev.a.length) {
-    const dm = dutyMapCached(state);
-    if (prev.a.some(c => dm.get(c) && dm.get(c).overnight) && !out.includes('x')) out.push('x');
-  }
-  if (isPPC(state, s, staffId) && !out.includes('PPC')) out.push('PPC');
-  return out;
-}
-
-// PPC: the day off two days after a duty marked rest2 (the ICU call), when the person is still on the same posting
-// that day (on the last Saturday of a posting there is no day off). Worked out, never stored.
-export function isPPC(state, s, staffId) {
-  const back = getCell(state, addDays(s, -2), staffId), cell = getCell(state, s, staffId);
-  if (!back || !cell || !Array.isArray(back.a) || !Array.isArray(cell.a)) return false;
-  const dm = dutyMapCached(state);
-  if (!back.a.some(c => dm.get(c) && dm.get(c).rest2)) return false;
-  return cell.a.some(c => dm.get(c) && dm.get(c).kind === 'posting' && back.a.includes(c));
-}
-export function postingOf(state, cell) {
-  if (!cell || !Array.isArray(cell.a)) return '';
-  const dm = dutyMapCached(state);
-  return cell.a.find(c => dm.get(c) && dm.get(c).kind === 'posting') || '';
-}
-
-export const TOKENS = ['@posting', '@shift', '@leave', '@other', '@request', '@away', '@present', '@any'];
-
-// Tokens to concrete codes. '@present' is a property of the day, not a code: matchesCodes handles it.
-export function expandTokens(state, codes) {
-  const out = new Set();
-  const all = state.duties || [];
-  const ofKind = k => all.filter(d => d.kind === k).forEach(d => out.add(d.code));
-  for (const c of codes || []) {
-    if (c === '@shift') ofKind('shift');
-    else if (c === '@leave') ofKind('leave');
-    else if (c === '@posting') ofKind('posting');
-    else if (c === '@other') ofKind('other');
-    else if (c === '@request') ofKind('request');
-    else if (c === '@away') { ofKind('leave'); ofKind('other'); out.add('x'); out.add('PPC'); }
-    else if (c === '@any') { all.forEach(d => out.add(d.code)); out.add('x'); }
-    else if (c !== '@present') out.add(c);
-  }
-  return out;
-}
-
-// Does this person's day match any of the codes (requests in r count too)? Handles every token.
-export function matchesCodes(state, s, staffId, codes, eff) {
-  codes = codes || EMPTY;
-  const cell = getCell(state, s, staffId);
-  const effc = eff || effectiveCodes(state, s, staffId);
-  const all = cell && Array.isArray(cell.r) ? [...effc, ...cell.r] : [...effc];
-  if (codes.includes('@any') && all.length) return true;
-  const set = expandTokens(state, codes);
-  if (all.some(c => set.has(c))) return true;
-  if (codes.includes('@present')) {
-    const dm = dutyMapCached(state);
-    const kindOf = c => (c === 'x' || c === 'PPC' ? 'derived' : (dm.get(c) && dm.get(c).kind));
-    if (effc.some(c => kindOf(c) === 'shift')) return true;
-    const person = (state.staff || []).find(p => p.id === staffId);
-    if (person && !staffActiveOn(person, s)) return false;
-    const away = effc.some(c => c === 'x' || c === 'PPC' || kindOf(c) === 'leave' || kindOf(c) === 'other');
-    return !isWeekend(s) && !isHoliday(state, s) && !away;
-  }
-  return false;
+  return coreStaffInMonth(state, m, { absent: notInSheet(state, m), personIn: p => personIn(state, m, p) });
 }

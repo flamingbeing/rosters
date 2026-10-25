@@ -15,11 +15,11 @@ const SHELL = [
   'https://design.anawj.com/v1/tokens.css', 'https://design.anawj.com/v1/app.css', 'https://design.anawj.com/v1/app.js',
   'js/app.js', 'js/store.js', 'js/model.js', 'js/rules.js', '../lib/roster-core/model.js', '../lib/roster-core/rules.js', 'js/solver.js', '../lib/roster-core/solver.js', 'js/solver-worker.js',
   'js/ui-roster.js', 'js/ui-day.js', 'js/ui-rules.js', 'js/ui-people.js', 'js/ui-check.js', 'js/ui-more.js', 'js/ui-leave.js', 'js/waitlist.js', 'js/pools.js', 'js/sheetgen.js', 'js/sheetgen-state.js', 'js/sheetgen-xlsx.js', 'js/sheetgen-gsheets.js', 'js/gsheets.js', 'js/sheet.js',
-  'js/io.js', 'js/unsent.js', 'js/docsync.js', 'js/demo.js', 'js/cloud.js', 'js/firebase-config.js', 'js/ui-team.js', 'js/version.js', 'js/guide.js', 'js/tour.js', 'js/apmes.js', 'js/people-pull.js',
+  'js/io.js', 'js/unsent.js', '../lib/roster-core/docsync.js', 'js/demo.js', 'js/cloud.js', 'js/firebase-config.js', 'js/ui-team.js', 'js/version.js', 'js/guide.js', 'js/tour.js', 'js/apmes.js', 'js/people-pull.js',
   'icons/icon-192.png', 'icons/icon-512.png', 'icons/maskable-512.png', 'icons/apple-touch-icon.png', 'icons/favicon-32.png', 'icons/icon.svg',
   // the page side of app-update and the sync engine (exact versions), so the app opens offline
   'https://core.anawj.com/update/0.2.0/register.js',
-  'https://core.anawj.com/sync/0.4.1/index.js', 'https://core.anawj.com/sync/0.4.1/src/sync.js', 'https://core.anawj.com/sync/0.4.1/src/writes.js', 'https://core.anawj.com/sync/0.4.1/src/conflict.js', 'https://core.anawj.com/sync/0.4.1/src/store.js', 'https://core.anawj.com/sync/0.4.1/src/outbox.js', 'https://core.anawj.com/sync/0.4.1/src/watchdog.js', 'https://core.anawj.com/sync/0.4.1/src/persist.js', 'https://core.anawj.com/sync/0.4.1/src/status.js', 'https://core.anawj.com/sync/0.4.1/src/forget.js', 'https://core.anawj.com/sync/0.4.1/src/firestore.js',
+  'https://core.anawj.com/sync/0.6.0/index.js', 'https://core.anawj.com/sync/0.6.0/src/sync.js', 'https://core.anawj.com/sync/0.6.0/src/writes.js', 'https://core.anawj.com/sync/0.6.0/src/conflict.js', 'https://core.anawj.com/sync/0.6.0/src/store.js', 'https://core.anawj.com/sync/0.6.0/src/outbox.js', 'https://core.anawj.com/sync/0.6.0/src/watchdog.js', 'https://core.anawj.com/sync/0.6.0/src/persist.js', 'https://core.anawj.com/sync/0.6.0/src/status.js', 'https://core.anawj.com/sync/0.6.0/src/forget.js', 'https://core.anawj.com/sync/0.6.0/src/firestore.js', 'https://core.anawj.com/sync/0.6.0/src/registry.js', 'https://core.anawj.com/sync/0.6.0/src/report.js', 'https://core.anawj.com/sync/0.6.0/src/app.js',
 ];
 const MANIFEST = {};
 

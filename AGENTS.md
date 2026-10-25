@@ -22,7 +22,8 @@ repo; never copy anything from there into this repo, a PR or an issue (neutral p
 - Each host serves only its own folder (`worker/routes.js` `SITES`); `/lib/` (one copy of exceljs for all three) is
   the only shared folder: exceljs, and `lib/roster-core/` (the roster core, below). Never put an app's own file in `lib/`: nuh-roster has its own `vendor/` at `/vendor/`.
 - `lib/roster-core/` is the engine nuh-junior-monthly and ntf-roster share: `solver.js` (`createSolver(deps, cfg)`),
-  `rules.js` (`createRules(deps, cfg)`) and `model.js` (dates, lookups, `createCells(cfg)`). A fix to it goes there once;
+  `rules.js` (`createRules(deps, cfg)`) and `model.js` (dates, lookups, `createCells(cfg)`), and `docsync.js` (unsent saves on app-sync's `createApp`; so far
+  nuh-junior-monthly only, the other two still have their own `js/docsync.js` until they move). A fix to it goes there once;
   what differs between apps is an option (listed at the top of each file), not a fork. An app wraps each in its own
   `js/<file>.js` and lists `../lib/roster-core/<file>` in its `sw.js` SHELL. Pinned outputs: each app's
   `test/solver-pins.test.mjs` and `test/core-pins.test.mjs` (rules and model). Both apps use all three.

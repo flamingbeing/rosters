@@ -2,7 +2,7 @@
 // save made offline, or cut off, is kept on this phone and sent again, and signing out refuses while any are unsent.
 // If core.anawj.com can't be reached the saves go straight to the team's copy, as before.
 import * as cloud from './cloud.js';
-import { createDocSync, canReloadNow } from './docsync.js';
+import { createDocSync, canReloadNow, leaveWith } from './docsync.js';
 
 export const SYNC_URL = 'https://core.anawj.com/sync/0.4.1/index.js';
 export const MODAL = 'dialog[open], .tag-editor';
@@ -62,6 +62,6 @@ export const unsentCount = () => counts().waiting;
 // Retry now / set aside what could not be sent
 export async function retryAll() { const d = await load(); if (!d) return; d.queue.kick(); for (const e of d.queue.entries()) if (e.state === 'failed') await d.queue.retry(e.key).catch(() => {}); }
 export async function discardAll() { const d = await load(); if (!d) return; for (const e of d.queue.entries()) if (e.state === 'failed' || e.state === 'conflict') await d.queue.archive(e.key); }
-// sign-out gate: false while anything is unsent. Without the outbox there is nothing to wait for.
-export async function leave(opts) { const d = await load(); return d ? d.signOut(opts) : true; }
+// sign-out gate: false while anything is unsent. Without the outbox there is nothing to wait for, but the clean-up still runs.
+export async function leave(opts) { return leaveWith(await load(), opts); }
 export const canReload = busy => canReloadNow({ unsent: unsentCount, busy, modal: MODAL });

@@ -101,7 +101,10 @@ What is happening now and the owner's dated decisions are kept outside this repo
   (`noteSaved`). A save whose answer was lost is recognised (the cloud already holds the same content).
 - The conflict sheet: Save mine anyway saves over theirs; Cancel, Pull theirs or closing it sets the held save aside.
 - Only the outbox, sign-out gate and `canReload` of app-sync are used (whole documents, no listeners or deltas).
-- Sign-out refuses while any save is unsent, then `forgetDevice` forgets the outbox. The roster in this browser stays, as before.
+- Sign-out refuses while any save is unsent, then `forgetDevice` forgets the outbox (also runs its clean-up when the
+  outbox could not load). The roster in this browser stays, as before.
+- Back-to-back offline saves of the roster carry the same seen copy; docsync sends each later one against the time the
+  previous one wrote, so it does not conflict with this device's own save.
 - Update module 0.2.0 with `canReload`: a new version waits while someone is typing, a dialog or sheet is open, or a save
   waits; tried again on focus loss and when the outbox empties. "Get the latest version" is unchanged.
 - Tests: `test/docsync.test.mjs` and `test/precache.test.mjs` (as in nuh-roster; they load app-sync's tag with

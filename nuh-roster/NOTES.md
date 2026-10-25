@@ -80,6 +80,9 @@ Setup steps (first admin, deploy) are in [README.md](README.md). What is happeni
   and clear this computer", the roster, staff list and name in this browser).
 - Update module 0.2.0 with `canReload`: a new version waits while someone is typing in a field or cell, a dialog or the
   person box is open, or a save waits. It is tried again when the field loses focus or the outbox empties.
-- If core.anawj.com can't be reached the saves go straight to the team's copy as before (no outbox).
+- If core.anawj.com can't be reached the saves go straight to the team's copy as before (no outbox); sign-out still runs
+  its own clean-up then (`leaveWith`).
+- Back-to-back offline saves of one document carry the same seen copy; docsync sends each later one against the time the
+  previous one wrote, so it does not conflict with this device's own save.
 - Limit: a save that is sent after the page was reloaded is in the team's copy, but the page does not know its time
   (the next save shows "someone saved first" with the person's own name; OK saves over it).

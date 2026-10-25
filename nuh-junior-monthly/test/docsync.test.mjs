@@ -118,6 +118,27 @@ function world() {
   eq(w.calls.length, 0, 'another account\'s outbox is not sent');
 }
 
+// two offline saves of one document: the second carries the same seen copy as the first, but the first moved the copy
+// on; it must not conflict with the device's own save
+{
+  const w = world(); w.online = false; w.outbox = 'test-outbox-8'; const d = w.make();
+  const a = await d.save('roster', 'd', { v: 1 }, 100);
+  const b = await d.save('roster', 'd', { v: 2 }, 100);
+  ok(a.sent === false && b.sent === false, 'both offline saves are kept');
+  w.online = true; d.queue.kick(); await sleep(300);
+  ok(w.copy.body && w.copy.body.v === 2, 'the later edit is the one the team ends up with');
+  ok(d.unsent().waiting === 0 && d.unsent().attention === false, 'nothing waits or needs the user after both are sent');
+  ok(!d.queue.entries().some(e => e.state === 'conflict'), 'the second save did not conflict with the first');
+}
+
+// sign-out when the outbox module could not be loaded: the app's clean-up still runs (unsent.js leave)
+{
+  const { leaveWith } = await import('../js/docsync.js');
+  let extra = 0;
+  ok(await leaveWith(null, { extra: async () => { extra++; } }) === true && extra === 1, 'no outbox: sign-out still runs the clean-up');
+  ok(await leaveWith({ signOut: async o => { await o.extra(); return true; } }, { extra: async () => { extra++; } }) === true && extra === 2, 'with an outbox it goes through its sign-out');
+}
+
 // canReload: typing, a sheet open, or a save in flight hold the new version back
 {
   const el = tag => ({ tagName: tag, isContentEditable: false });

@@ -32,7 +32,7 @@ for f in ntf-roster/test/*.test.mjs; do node "$f"; done   # rules engine, solver
 node ntf-roster/test/e2e.mjs                              # browser test: needs the server above on port 8080
 node ntf-roster/test/perf.e2e.mjs                         # speed budgets on a slowed phone (by hand, not in CI)
 tools/test-rules.sh                                       # firestore.rules in the local emulator (all apps)
-node tools/check.mjs                                      # repo check (sw.js SHELL lists files that exist)
+node .devkit/tools/check.mjs                                      # repo check (sw.js SHELL lists files that exist)
 ```
 
 - `test/rules.test.mjs`: every rule type, tokens, descriptions, validation and speed (~290 checks).

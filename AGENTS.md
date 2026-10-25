@@ -42,13 +42,16 @@ repo; never copy anything from there into this repo, a PR or an issue (neutral p
 ## Checks before merging
 
 ```
-node tools/check.mjs                          # repo checks + Worker tests
+node .devkit/tools/check.mjs                          # repo checks + Worker tests
 for f in */test/*.test.mjs; do node "$f" || break; done   # unit tests
-node tools/proofread.mjs                      # page and doc mistakes
+node .devkit/tools/proofread.mjs                      # page and doc mistakes
 python3 -m http.server 8080 &                 # then the touched app's browser tests, e.g.
 node ntf-roster/test/e2e.mjs                  # (PLAYWRIGHT_PATH=... CHROMIUM_PATH=... in a cloud session)
 bash tools/test-rules.sh                      # when a firestore.rules changes
 ```
+
+`.devkit/` (git-ignored) holds the kit's tools; CI copies it with `app-devkit/setup-tools@v1.6.0`. Locally:
+`git clone --depth 1 --branch v1.6.0 https://github.com/flamingbeing/app-devkit /tmp/devkit && mkdir -p .devkit && cp -R /tmp/devkit/{tools,playwright,rules,worker} .devkit/`.
 
 ## Working with the owner
 

@@ -1,0 +1,130 @@
+{
+ "team": {
+  "assignments": "17adb5d8bad35d45",
+  "placed": 62,
+  "before": {
+   "hard": 62,
+   "soft": 0,
+   "score": 62000
+  },
+  "after": {
+   "hard": 0,
+   "soft": 0,
+   "score": 0
+  },
+  "unfilled": [],
+  "iterations": 886
+ },
+ "teamSeed9": {
+  "assignments": "6ee1f71bacbaf2db",
+  "placed": 62,
+  "before": {
+   "hard": 62,
+   "soft": 0,
+   "score": 62000
+  },
+  "after": {
+   "hard": 0,
+   "soft": 0,
+   "score": 0
+  },
+  "unfilled": [],
+  "iterations": 5480
+ },
+ "eod": {
+  "assignments": "eed7538e51b3f6f5",
+  "placed": 31,
+  "before": {
+   "hard": 31,
+   "soft": 0,
+   "score": 31000
+  },
+  "after": {
+   "hard": 0,
+   "soft": 32,
+   "score": 2906
+  },
+  "unfilled": [],
+  "iterations": 9344
+ },
+ "rotation": {
+  "assignments": "90e3841df01abce7",
+  "placed": 31,
+  "before": {
+   "hard": 31,
+   "soft": 0,
+   "score": 31000
+  },
+  "after": {
+   "hard": 0,
+   "soft": 1,
+   "score": 100
+  },
+  "unfilled": [],
+  "iterations": 9344
+ },
+ "noCallsUntil": {
+  "assignments": "4455e99347d39727",
+  "placed": 62,
+  "before": {
+   "hard": 62,
+   "soft": 0,
+   "score": 62000
+  },
+  "after": {
+   "hard": 0,
+   "soft": 0,
+   "score": 0
+  },
+  "unfilled": [],
+  "iterations": 15443
+ },
+ "onlyC3": {
+  "assignments": "864dd86cb4e9cb0e",
+  "placed": 31,
+  "before": {
+   "hard": 62,
+   "soft": 0,
+   "score": 62000
+  },
+  "after": {
+   "hard": 31,
+   "soft": 0,
+   "score": 31000
+  },
+  "unfilled": [],
+  "iterations": 46500
+ },
+ "onlyR1B": {
+  "assignments": "5a4b297df4b30452",
+  "placed": 31,
+  "before": {
+   "hard": 62,
+   "soft": 0,
+   "score": 62000
+  },
+  "after": {
+   "hard": 31,
+   "soft": 0,
+   "score": 31000
+  },
+  "unfilled": [],
+  "iterations": 46500
+ },
+ "demo": {
+  "assignments": "b54a5f1425b4298b",
+  "placed": 2,
+  "before": {
+   "hard": 2,
+   "soft": 29,
+   "score": 3036.3
+  },
+  "after": {
+   "hard": 0,
+   "soft": 30,
+   "score": 948.3
+  },
+  "unfilled": [],
+  "iterations": 7296
+ }
+}

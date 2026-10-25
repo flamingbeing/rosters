@@ -169,13 +169,13 @@ The engine is shared with nuh-junior-monthly in `lib/roster-core/` (`/lib/` on e
 words, checks and the cell helpers, recorded from the app's own files before each move (re-record with `--write` only when a change to
 the results is meant). Fix the engine once, in `lib/roster-core/`.
 
-## Unsent saves (25 Oct 2026, app-sync 0.6.0 `createApp`)
+## Unsent saves (25 Oct 2026, app-sync 0.6.3 `createApp`)
 
 The same as NUH junior monthly (its NOTES.md "Unsent saves"); what differs here is marked. Here sign-in too is
 createApp's (`cloud.signIn` → `app.signIn`: popup, or redirect in the installed app and when a popup is blocked; this host is
 the auth domain); with core.anawj.com unreachable it is the plain popup.
 - Save to cloud goes through `js/unsent.js` > `lib/roster-core/docsync.js` (one copy for the roster apps): app-sync's
-  `createApp` with the app's own write as its `commit`, exact pin `core.anawj.com/sync/0.6.0/`, every module precached in `sw.js`. The write is still `cloud.saveAll` (staff list, rules
+  `createApp` with the app's own write as its `commit`, exact pin `core.anawj.com/sync/0.6.3/`, every module precached in `sw.js`. The write is still `cloud.saveAll` (staff list, rules
   and changed months in one transaction, with its per-document "someone saved first" check and sheet prompt). Offline or
   cut off: the save is kept on the device ("Kept on this device"), the Team sharing panel shows how many wait (Retry;
   Set aside when one failed), and it is sent when the connection returns; this browser then counts it as saved.

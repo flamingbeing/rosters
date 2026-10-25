@@ -6,7 +6,7 @@ import { installFakeStorage, loadAppSync } from '../../tools/app-sync-for-tests.
 import { createDocSync, canReloadNow } from '../../lib/roster-core/docsync.js';
 
 const storage = installFakeStorage();
-const sync = await loadAppSync('0.6.0');
+const sync = await loadAppSync('0.6.3');
 let n = 0;
 const ok = (v, name) => { n++; assert.ok(v, name); };
 const eq = (a, b, name) => { n++; assert.deepEqual(a, b, name); };

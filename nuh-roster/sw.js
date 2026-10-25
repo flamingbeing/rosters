@@ -21,7 +21,7 @@ const SHELL = [
   'icons/icon-192.png', 'icons/icon-512.png', 'icons/maskable-512.png', 'icons/apple-touch-icon.png', 'icons/favicon-32.png', 'icons/icon.svg',
   // the page side of app-update and the sync engine (exact versions), so the app opens offline
   'https://core.anawj.com/update/0.2.0/register.js',
-  'https://core.anawj.com/sync/0.6.0/index.js', 'https://core.anawj.com/sync/0.6.0/src/sync.js', 'https://core.anawj.com/sync/0.6.0/src/writes.js', 'https://core.anawj.com/sync/0.6.0/src/conflict.js', 'https://core.anawj.com/sync/0.6.0/src/store.js', 'https://core.anawj.com/sync/0.6.0/src/outbox.js', 'https://core.anawj.com/sync/0.6.0/src/watchdog.js', 'https://core.anawj.com/sync/0.6.0/src/persist.js', 'https://core.anawj.com/sync/0.6.0/src/status.js', 'https://core.anawj.com/sync/0.6.0/src/forget.js', 'https://core.anawj.com/sync/0.6.0/src/firestore.js', 'https://core.anawj.com/sync/0.6.0/src/registry.js', 'https://core.anawj.com/sync/0.6.0/src/report.js', 'https://core.anawj.com/sync/0.6.0/src/app.js',
+  'https://core.anawj.com/sync/0.6.3/index.js', 'https://core.anawj.com/sync/0.6.3/src/sync.js', 'https://core.anawj.com/sync/0.6.3/src/writes.js', 'https://core.anawj.com/sync/0.6.3/src/conflict.js', 'https://core.anawj.com/sync/0.6.3/src/store.js', 'https://core.anawj.com/sync/0.6.3/src/outbox.js', 'https://core.anawj.com/sync/0.6.3/src/watchdog.js', 'https://core.anawj.com/sync/0.6.3/src/persist.js', 'https://core.anawj.com/sync/0.6.3/src/status.js', 'https://core.anawj.com/sync/0.6.3/src/forget.js', 'https://core.anawj.com/sync/0.6.3/src/firestore.js', 'https://core.anawj.com/sync/0.6.3/src/registry.js', 'https://core.anawj.com/sync/0.6.3/src/report.js', 'https://core.anawj.com/sync/0.6.3/src/app.js',
 ];
 const MANIFEST = {};
 

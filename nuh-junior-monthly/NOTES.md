@@ -112,9 +112,17 @@ What is happening now and the owner's dated decisions are kept outside this repo
 - Limit: a save sent after the page was reloaded is in the cloud, but this browser does not know its time, so the next
   Save asks "someone else saved first" about the person's own save (Save mine anyway).
 
-## Auto-fill engine (roster core)
+## Roster core: auto-fill, rules and model
 
-The solver's engine is `lib/roster-core/solver.js` (`createSolver(deps, cfg)`), shared with ntf-roster's future switch; `js/solver.js` is a
-thin wrapper giving it this app's model and rules, and `sw.js` SHELL lists the core file. `test/solver-pins.test.mjs` pins the output on fixed
-inputs (re-record with `--write` only when a change to the results is meant). `lib/roster-core/test/solver.test.mjs` shows the core's NTF
-flavour equals ntf-roster's own solver, so that app can switch with no change to its results.
+The engine is shared with ntf-roster in `lib/roster-core/` (`/lib/` on every host); this app's files are thin wrappers:
+- `js/solver.js` gives `createSolver(deps, cfg)` (`lib/roster-core/solver.js`) this app's model and rules.
+- `js/rules.js` gives `createRules(deps, cfg)` (`lib/roster-core/rules.js`) this app's options: posting duties and PPC,
+  calls read as on their posting (`callPost`), the imported sheet's grades and absences, the full fair-share rule,
+  "only when that day is", "No calls until", "Start of a posting" and its words for calls. Every option is listed at the
+  top of the core file; a fix to the engine goes there once.
+- `js/model.js` keeps this app's data (duties, groups, default rules), migrations, month locks and the sheet's grades;
+  dates, lookups and the cell helpers are the core's (`lib/roster-core/model.js`, `createCells({ postings: true })`),
+  re-exported.
+`sw.js` SHELL lists the three core files. `test/solver-pins.test.mjs` and `test/core-pins.test.mjs` pin auto-fill, the
+rule list, its words, checks and the cell helpers on fixed inputs (re-record with `--write` only when a change to the
+results is meant).

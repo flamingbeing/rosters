@@ -15,11 +15,19 @@
 //   connection). Throws the app's Conflict, with `.key` for dismiss(), or the save's own error.
 // save(kind, id, body, null, { over: conflict }) saves over a conflict the user chose to override.
 export function createDocSync({ sync, name, getOwner, write, isConflict, already = null, online = () => typeof navigator === 'undefined' || navigator.onLine !== false, toRemote = e => ({ current: e.current }), fromRemote = r => Object.assign(new Error('Someone else saved first.'), { current: r.current }), delay }) {
+  // the copy this device's last sent save left, per document: back-to-back offline saves all carry the same `seen`, so
+  // each one after the first is sent against what the one before it wrote (not as a conflict with the device's own save)
+  const sentSeen = new Map();
   const queue = sync.createWriteQueue({
     store: sync.createOutbox({ name }), getOwner, online, ...(delay ? { delay } : {}),
     labels: { recover: 'unsent saves' },
     backend: async (_owner, kind, record, base) => {
-      try { return await write(kind, record.body, base?.seen ?? null, !!record.force); }
+      const k = kind + ':' + record.id, seen = base?.seen ?? null, prev = sentSeen.get(k);
+      try {
+        const out = await write(kind, record.body, !record.force && prev && prev.seen === seen ? prev.at : seen, !!record.force);
+        sentSeen.set(k, { seen, at: out?.at });
+        return out;
+      }
       catch (e) {
         if (!isConflict(e)) throw e;
         const same = already && await already(kind, record.body, e);
@@ -57,9 +65,17 @@ export function createDocSync({ sync, name, getOwner, write, isConflict, already
   async function signOut({ proceed = async () => true, extra = null } = {}) {
     if (!(await queue.flush())) return false;
     const out = await sync.forgetDevice({ queue, proceed, extra });
+    sentSeen.clear();
     return out.wiped;
   }
   return { queue, save, finished, dismiss, unsent, signOut, activate: () => { const e = getOwner(); return e ? queue.activate(e) : null; } };
+}
+
+// Sign-out gate for an app whose outbox may not have loaded (core.anawj.com unreachable): with no outbox there is nothing
+// unsent to wait for, but the app's own clean-up (`extra`: what it keeps in this browser) must still run.
+export async function leaveWith(docs, opts) {
+  if (!docs) { await opts?.extra?.(); return true; }
+  return docs.signOut(opts);
 }
 
 // The take-over reload of a new app version waits while this says no: someone is typing, a sheet is open, a save is

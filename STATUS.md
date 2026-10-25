@@ -15,6 +15,8 @@
 2. anawj-site drops the three hosts and its copies.
 
 ## Recently done
+- 25 Oct 2026: nuh-roster and nuh-junior-monthly unsent saves, two small losses fixed: sign-out clean-up now runs even
+  when the outbox did not load, and a second offline save of one document no longer conflicts with the first.
 - 25 Oct 2026: ntf-roster on the rules kit too (`worker/ntf.js`); all three apps now take role claims. Its Worker
   secrets `NTF_SA_EMAIL`/`NTF_SA_KEY` are still to add (until then its routes answer 503 and the members entry serves).
 - 25 Oct 2026: nuh-roster on the rules kit too (same shape as nuh-junior-monthly; `worker/members.js` now holds the

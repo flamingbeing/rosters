@@ -58,6 +58,47 @@ got.evaluateRule = Object.fromEntries(sampleRules(filled).map(r => [r.id, h(R.ev
 if (R.carryBalances) got.carry = h(R.carryBalances(filled, M.addMonths(next, 1), { codes: shifts.slice(0, 2), among: others.slice(0, 3), carryMonths: 4 }));
 if (R.dayOffWeight) got.dayOff = [R.dayOffWeight(false, false), R.dayOffWeight(true, false), R.dayOffWeight(false, true, 1, 0.25)];
 
+// a crafted month for the options the demo does not reach: a call alone on a posting week, an imported sheet that leaves
+// someone out and shows another person in a different grade, a "must" rule at the edge of the range, token code lists
+const call0 = st => (M.dutyMap(st).has('C3') ? 'C3' : shifts[0]);
+const post0 = st => (M.dutyMap(st).has('C') ? 'C' : ((st.duties || []).find(d => d.kind === 'posting') || {}).code || others[0]);
+const crafted = (() => {
+  const s = JSON.parse(JSON.stringify(filled)), dd = M.monthDays(next);
+  const post = post0(s), call = call0(s);
+  const [a, b, c] = (s.staff || []).filter(p => p.active !== false);
+  for (let k = 0; k < 8; k++) M.setCell(s, dd[k], a.id, { a: k === 3 ? [call] : [post], r: [], auto: [] });
+  M.setCell(s, dd[9], a.id, { a: [shifts[0]], r: [], auto: [] });   // then two days not planned yet, past the edge of the range
+  for (const k of [10, 11]) M.setCell(s, dd[k], a.id, { a: [], r: [], auto: [], note: '', lock: false });
+  // many call / no-call requests for one person (the first few count in full where an app weighs them), one marked '!'
+  const fair = ['Cr', 'Nc'].filter(x => M.dutyMap(s).has(x));
+  for (let k = 12; k < 20 && fair.length; k++) M.setCell(s, dd[k], b.id, { a: [], r: [fair[k % fair.length]], auto: [], ...(k === 18 ? { rp: { [fair[k % fair.length]]: '!' } } : {}) });
+  if (fair.length) M.setCell(s, dd[14], b.id, { a: [shifts[0]] });
+  const g2 = (s.groups || []).find(g => g.id !== c.group);
+  s.sheets = { ...(s.sheets || {}), [next]: { inSheet: (s.staff || []).map(p => p.id).filter(id => id !== b.id), known: (s.staff || []).map(p => p.id), grades: { [c.id]: g2 && g2.id } } };
+  return s;
+})();
+const craftedRules = state => {
+  const base = { enabled: true, hard: false, weight: 5, when: { from: '', to: '', days: [], holidays: 'any' } };
+  const ids = (state.staff || []).slice(0, 4).map(p => p.id);
+  return [
+    { ...base, id: 'c-req', type: 'sequence', who: { groups: [], tags: [], staff: [], exclude: [] }, params: { ifCodes: shifts.slice(0, 2), thenCodes: others.slice(0, 2), mode: 'require', from: 1, to: 2 } },
+    { ...base, id: 'c-post', type: 'sequence', who: { groups: [], tags: [], staff: [], exclude: [] }, params: { ifCodes: [call0(state)], thenCodes: [post0(state)], mode: 'require', from: 0, to: 0 } },
+    { ...base, id: 'c-stand', type: 'standing', who: { groups: [], tags: [], staff: ids, exclude: [] }, params: { codes: ['@shift'] } },
+    { ...base, id: 'c-many', type: 'limit', who: { groups: [], tags: [], staff: [], exclude: [] }, params: { codes: [...shifts, ...others].slice(0, 9), max: 1, period: 'week' } },
+    { ...base, id: 'c-grp', type: 'limit', who: { groups: [(state.groups || [])[1]?.id].filter(Boolean), tags: [], staff: [], exclude: [] }, params: { codes: shifts.slice(0, 3), max: 2, period: 'month' } },
+  ];
+};
+{
+  const dd = M.monthDays(next), edge = { from: dd[0], to: dd[9] };
+  got.crafted = {
+    rules: craftedRules(crafted).map(r => R.describeRule(r, crafted)),
+    demoRules: ev(crafted, span(next)), edge: ev(crafted, { ...edge, rules: craftedRules(crafted) }),
+    month: ev(crafted, { ...span(next), rules: [...craftedRules(crafted), ...sampleRules(crafted)] }),
+    staff: h(M.staffInMonth(crafted, next)),
+    msgs: h(R.evaluate(crafted, { ...edge, rules: craftedRules(crafted) }).violations.map(v => v.msg)),
+  };
+}
+
 // model helpers
 const dates = ['2026-01-01', '2026-02-28', '2026-03-01', '2024-02-29', '2026-12-31', '2026-11-08'];
 got.dates = dates.map(s => [M.addDays(s, 1), M.addDays(s, -1), M.addDays(s, 40), M.weekday(s), M.isWeekend(s), M.isHoliday(demo, s), M.holidayName(demo, s), M.fmtDay(s), M.monthOf(s), M.iso(M.parseISO(s))]);

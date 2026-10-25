@@ -151,15 +151,20 @@ restriction" (same day, following days, between two people, and ready-made ones)
 
 | File | Sections |
 |---|---|
-| [docs/rules.md](docs/rules.md) | Rules engine (`js/rules.js`); How to add a new rule type (step by step); Sharing rules as text (`js/rules-share.js`); Rules as plain sentences (`js/rules-text.js`); Rules: all confirmed, Priorities sheet; Each roster has its own rules |
+| [docs/rules.md](docs/rules.md) | Rules engine (`lib/roster-core/rules.js`, wrapped by `js/rules.js`); How to add a new rule type (step by step); Sharing rules as text (`js/rules-share.js`); Rules as plain sentences (`js/rules-text.js`); Rules: all confirmed, Priorities sheet; Each roster has its own rules |
 | [docs/fill.md](docs/fill.md) | Auto-fill (`js/solver.js`, `js/solver-worker.js`); Request priority (`js/reqprio.js`, `js/ui-reqprio.js`); Junior pool; Senior residents and moving someone by hand |
 | [docs/data.md](docs/data.md) | Excel (`js/io.js`); Rotations from APMES People (`js/rotations.js`, `js/people-pull.js`); Storage, practice and team sharing; Month lock and header; Sign-in on this host; One roster at a time |
 | [docs/speed.md](docs/speed.md), [docs/walkthrough.md](docs/walkthrough.md) | Speed; first-time help |
 | [SPEC.md](SPEC.md) | The module contract (state shape, exports, rule types) |
 
-## Auto-fill engine (roster core)
+## Roster core: auto-fill, rules and model
 
-The solver's engine is `lib/roster-core/solver.js` (`createSolver(deps, cfg)`, shared with nuh-junior-monthly); `js/solver.js` is a thin
-wrapper giving it this app's model and rules (`fillOption: 'codes'`, `keepOtherAuto`, `reach: 1`, no up-front blocks), and `sw.js` SHELL lists the core
-file. `test/solver-pins.test.mjs` pins the output on fixed inputs, recorded from the app's own solver before the move (re-record with `--write`
-only when a change to the results is meant). Fix the engine once, in `lib/roster-core/`.
+The engine is shared with nuh-junior-monthly in `lib/roster-core/` (`/lib/` on every host); this app's files are thin wrappers:
+- `js/solver.js` gives `createSolver(deps, cfg)` this app's model and rules (`fillOption: 'codes'`, `keepOtherAuto`, `reach: 1`, no
+  up-front blocks).
+- `js/rules.js` gives `createRules(deps, cfg)` this app's options: request priorities (`reqprio.js`) and "consultants" in the words.
+- `js/model.js` keeps this app's data, migrations, month locks per roster and the pools; dates, lookups and the cell helpers are the
+  core's (`createCells({ requestMarks: true })`: approved leave and request marks kept in a cell), re-exported.
+`sw.js` SHELL lists the three core files. `test/solver-pins.test.mjs` and `test/core-pins.test.mjs` pin auto-fill, the rule list, its
+words, checks and the cell helpers, recorded from the app's own files before each move (re-record with `--write` only when a change to
+the results is meant). Fix the engine once, in `lib/roster-core/`.

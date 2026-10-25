@@ -730,6 +730,56 @@
   "pin-standing": "24c23b441968be14",
   "pin-standing-soft": "e2a4cd1db1dcc499"
  },
+ "crafted": {
+  "rules": [
+   "After Call or PM shift: Annual leave or Advance annual leave for the next 2 days",
+   "Call: Call the same day",
+   "Aileen T, Bernard L, Chitra R or Desmond H: any shift every day unless away",
+   "Everyone: at most 1 Call, PM shift, Stepdown MO call, OT consultant, Public holiday day shift, Weekend duty, Call tag-on, Acute pain service or Clinic a week",
+   "Associate consultants: at most 2 Call, PM shift or Stepdown MO call a month"
+  ],
+  "demoRules": {
+   "n": 74,
+   "hard": 23,
+   "soft": 51,
+   "score": 23722.7,
+   "failed": [],
+   "v": "236385d92b4ffaf7",
+   "first": [
+    "Wed 2 Dec: Aileen T has post call and Call",
+    "Thu 3 Dec: Aileen T has post call and Call",
+    "Fri 4 Dec: Aileen T has post call and Call"
+   ]
+  },
+  "edge": {
+   "n": 137,
+   "hard": 0,
+   "soft": 137,
+   "score": 715,
+   "failed": [],
+   "v": "d10834c3dca7030c",
+   "first": [
+    "Aileen T: Call or PM shift on Tue 1 Dec needs Annual leave or Advance annual leave on Wed 2 Dec",
+    "Aileen T: Call or PM shift on Tue 1 Dec needs Annual leave or Advance annual leave on Thu 3 Dec",
+    "Aileen T: Call or PM shift on Wed 2 Dec needs Annual leave or Advance annual leave on Thu 3 Dec"
+   ]
+  },
+  "month": {
+   "n": 2519,
+   "hard": 1675,
+   "soft": 844,
+   "score": 1686437.1,
+   "failed": [],
+   "v": "b935d9b040bba4c5",
+   "first": [
+    "Aileen T: Call or PM shift on Tue 1 Dec needs Annual leave or Advance annual leave on Wed 2 Dec",
+    "Aileen T: Call or PM shift on Tue 1 Dec needs Annual leave or Advance annual leave on Thu 3 Dec",
+    "Aileen T: Call or PM shift on Wed 2 Dec needs Annual leave or Advance annual leave on Thu 3 Dec"
+   ]
+  },
+  "staff": "34ba66f7fad7116f",
+  "msgs": "dea925e295678cd4"
+ },
  "dates": [
   [
    "2026-01-02",

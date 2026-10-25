@@ -12,7 +12,7 @@ const VERSION = 'ntf-roster-v2';
 // the big vendor files (Excel, PDF) are cached the first time they're used, not on install
 const SHELL = [
   './', 'style.css', 'css/rules.css', 'manifest.webmanifest', 'css/tokens.css',
-  'js/app.js', 'js/store.js', 'js/model.js', 'js/rules.js', 'js/reqprio.js', 'js/solver.js', '../lib/roster-core/solver.js', 'js/solver-worker.js',
+  'js/app.js', 'js/store.js', 'js/model.js', 'js/rules.js', '../lib/roster-core/model.js', '../lib/roster-core/rules.js', 'js/reqprio.js', 'js/solver.js', '../lib/roster-core/solver.js', 'js/solver-worker.js',
   'js/ui-roster.js', 'js/ui-day.js', 'js/ui-rules.js', 'js/ui-people.js', 'js/ui-check.js', 'js/ui-more.js',
   'js/io.js', 'js/jpool.js', 'js/aps.js', 'js/ui-jpool.js', 'js/ui-aps.js', 'js/ui-requests.js', 'js/ui-reqprio.js', 'js/ui-ruleprio.js', 'js/rules-share.js', 'js/rules-text.js', 'js/rotations.js', 'js/people-pull.js', 'js/demo.js', 'js/cloud.js', 'js/firebase-config.js', 'js/ui-team.js', 'js/cloudstate.js', 'js/version.js', 'js/guide.js', 'js/tour.js',
   'icons/icon-192.png', 'icons/icon-512.png', 'icons/maskable-512.png', 'icons/apple-touch-icon.png', 'icons/favicon-32.png', 'icons/icon.svg',

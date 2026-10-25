@@ -2,7 +2,11 @@
 
 Part of [NOTES.md](../NOTES.md). How rules work: the engine and how to add a rule type, sharing rules as text, rules as plain sentences, the confirmed rules and the Priorities sheet, and why each roster has its own rules.
 
-## Rules engine (`js/rules.js`)
+## Rules engine (`lib/roster-core/rules.js`, wrapped by `js/rules.js`)
+
+The engine is the roster core's, shared with nuh-junior-monthly; `js/rules.js` only gives it this app's options (request
+priorities for Cr and Nc, "consultants" in the words). The other app's extras (posting duties, PPC, the full fair-share
+rule, two more rule types) are options this app leaves off.
 
 Every rule is plain data: `{ id, type, name, enabled, hard, weight, who, when, params, note }`. `who` picks people
 (groups, tags, named people, except); `when` picks days (from/to, weekdays, public holidays any/only/exclude). Hard
@@ -37,10 +41,11 @@ way in (`cleanRule`, `cleanDuty`, `migrate`).
 ### How to add a new rule type (step by step)
 
 Do this only when the owner wants a kind of rule that none of the ten types can express (most new rules are just a
-new rule of an existing type, made in the app). The comment block at the top of `js/rules.js` is the reference.
+new rule of an existing type, made in the app). The comment block at the top of `lib/roster-core/rules.js` is the reference.
 
 1. **Name it.** Pick a short camelCase type key (e.g. `minGap`) and the plain-English label the builder shows.
-2. **Add one entry to `RULE_TYPES` in `js/rules.js`**, next to a similar type to copy from (`maxRun` is a short
+2. **Add one entry to `RULE_TYPES` in `lib/roster-core/rules.js`** (both apps get it; one only one app should have goes in the
+   optional list there, `cfg.types`), next to a similar type to copy from (`maxRun` is a short
    person-scoped example; `cover` a day-scoped one; `spread` a global one):
    - `label`, `icon` (an emoji), `help`, `example`: the words on the "Add rule" picker.
    - `params`: the form, as a list of ParamSpecs (`{ key, label, kind, options?, min?, max?, optional?, help? }`
@@ -57,7 +62,8 @@ new rule of an existing type, made in the app). The comment block at the top of 
      `X.V(pen, msg, { date, staffId, dates?, staffIds? })`. Return `null` when the rule can't apply (no codes).
      Report only days between `ctx.lo` and `ctx.hi` (the month on screen); the days around it are context.
 3. **Test it** in `test/rules.test.mjs`: a passing and a failing case, the `describeRule` sentence, and a
-   `validateRule` case. Run `node ntf-roster/test/rules.test.mjs`, then `node ntf-roster/test/solver.test.mjs`.
+   `validateRule` case. Run `node ntf-roster/test/rules.test.mjs`, then `node ntf-roster/test/solver.test.mjs`; both apps'
+   `test/core-pins.test.mjs` then show the new `types` entry (re-record them with `--write`, a meant change).
 4. **Check it in the browser**: Rules › Add rule shows the new card; build one in `?demo` and see its problems in the
    grid and in Check. If Auto-fill should be able to satisfy it (not just score it), check `js/solver.js` step 2: only
    `cover`, `standing` and minimum `limit` rules create demand; everything else is scored.

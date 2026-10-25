@@ -15,6 +15,8 @@
 2. anawj-site drops the three hosts and its copies.
 
 ## Recently done
+- 25 Oct 2026: ntf-roster on the roster core's rules and model too (request priorities and "consultants" are its
+  options); rule list, words, checks and auto-fill pinned identical. Both roster apps now share solver, rules and model.
 - 25 Oct 2026: roster core takes the rules and model too: `lib/roster-core/rules.js` (`createRules`, the differences
   between the two apps are options) and `lib/roster-core/model.js` (dates, lookups, cell helpers); nuh-junior-monthly
   uses them, rule list, words, checks and auto-fill pinned identical. ntf-roster switches next.

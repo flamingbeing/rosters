@@ -25,8 +25,7 @@ repo; never copy anything from there into this repo, a PR or an issue (neutral p
   `rules.js` (`createRules(deps, cfg)`) and `model.js` (dates, lookups, `createCells(cfg)`). A fix to it goes there once;
   what differs between apps is an option (listed at the top of each file), not a fork. An app wraps each in its own
   `js/<file>.js` and lists `../lib/roster-core/<file>` in its `sw.js` SHELL. Pinned outputs: each app's
-  `test/solver-pins.test.mjs` and `test/core-pins.test.mjs` (rules and model). nuh-junior-monthly uses all three;
-  ntf-roster the solver so far.
+  `test/solver-pins.test.mjs` and `test/core-pins.test.mjs` (rules and model). Both apps use all three.
 - The NUHS design kit is loaded from `https://design.anawj.com/v1/` (another repo); never copy it in. A kit change
   that breaks these pages goes to `/v2/` there.
 - ntfroster.anawj.com signs in through its own host: `__/auth/` (Firebase's helper pages) and `ntf-auth/firebase/init.json`

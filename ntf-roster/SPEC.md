@@ -24,8 +24,8 @@ Public repo: never commit real names, rosters or leave. Demo and tests use made-
 
 | File | What | Built by |
 |---|---|---|
-| `js/model.js` | state shape, defaults, date utils, cell helpers, code sets, migration | A |
-| `js/rules.js` | rule type registry, describe, validate, evaluate (full + incremental), violations | A |
+| `js/model.js` | state shape, defaults, migration, month locks, pools; date utils, cell helpers and code sets re-exported from `lib/roster-core/model.js` | A |
+| `js/rules.js` | this app's options for the roster core's rule engine (`lib/roster-core/rules.js`: rule type registry, describe, validate, evaluate, violations) | A |
 | `js/solver.js`, `js/solver-worker.js` | auto-fill (pure function + Web Worker wrapper) | A |
 | `test/rules.test.mjs`, `test/solver.test.mjs` | node unit tests (`node ntf-roster/test/x.test.mjs`, plain `node:assert`) | A |
 | `index.html`, `style.css`, `js/app.js`, `js/store.js` | shell, router, header, toasts, sheets, store + undo | C |

@@ -5,6 +5,7 @@
 import * as cloud from './cloud.js';
 import * as CS from './cloudstate.js';
 import { mergeByPool } from './jpool.js';
+import * as unsent from './unsent.js';
 
 // The team copy's updatedAt this browser last loaded or saved, per device (not part of the roster):
 // { team: ms | null, months: { 'YYYY-MM': ms }, sig: { 'YYYY-MM': fingerprint of the month as last saved or pulled } }. A save that finds a different updatedAt there stops (conflict).
@@ -15,6 +16,30 @@ const ROLE_HELP = {
   rosterer: 'You can save and load the roster.',
   viewer: 'You can load the roster; an admin can let you save it.',
 };
+
+// Saves kept on this device that the team doesn't have yet (offline, or cut off) and what each one covers, so that when
+// the connection returns and they go through, this browser counts them as saved. Module-level: the panel may be closed by then.
+const inflight = new Map(); // job key -> { todo, sigs }
+let shown = null;           // the open panel: { app, changed, refresh }
+function noteSaved({ at, by }, todo, sigs) {
+  const seen = readSeen();
+  seen.team = at;
+  for (const m of todo) { seen.months[m] = at; seen.sig[m] = sigs[m]; }
+  writeSeen(seen);
+  CS.noteSynced(at, byName(by));
+}
+unsent.onUnsentChange(() => {
+  for (const [key, w] of inflight) {
+    const done = unsent.finished(key);
+    if (!done) continue;
+    inflight.delete(key);
+    if (done.state === 'synced' && done.result?.at) {
+      noteSaved(done.result, w.todo, w.sigs);
+      if (shown) { shown.app.toast('Sent to the cloud: the roster saved while offline.'); shown.changed(); }
+    }
+  }
+  if (shown) shown.refresh();
+});
 
 function readSeen() {
   try {
@@ -165,21 +190,30 @@ export function mountTeam(el, app, opts = {}) {
   // ---- actions ----
 
   const signIn = () => work('Signing in…', async () => { await cloud.signIn(); });
-  const signOut = () => work('Signing out…', async () => { await cloud.signOut(); });
+  // refused while saves are unsent (they stay on this device and are sent when it is online); then the outbox is forgotten
+  const signOut = () => work('Signing out…', async () => {
+    if (!(await unsent.leave())) { app.toast('Some saves have not reached the cloud yet. Wait for the connection (or press Retry), then sign out.', { kind: 'warn', ms: 9000 }); return; }
+    await cloud.signOut();
+  });
 
   // Saves the staff list, rules and settings plus every month that changed since this browser last saved or pulled.
-  function save(force = false) {
+  function save(force = false, over = null) {
     return work('Saving…', async () => {
       const st = app.store.get(), seen = readSeen();
       const todo = cloud.monthsWithContent(st).filter(m => force || seen.sig[m] !== sigOf(st, m) || seen.months[m] == null);
       const months = todo.map(m => ({ m, ...cloud.pickMonth(st, m) }));
-      const { at, by } = await cloud.saveAll({ team: st, months }, { teamAt: seen.team, monthsAt: seen.months, force });
-      seen.team = at;
-      for (const m of todo) { seen.months[m] = at; seen.sig[m] = sigOf(st, m); }
-      writeSeen(seen);
+      const sigs = Object.fromEntries(todo.map(m => [m, sigOf(st, m)]));
+      const sent = await unsent.save('all', 'main', { team: cloud.pickTeam(st), months }, { team: seen.team, months: seen.months }, { over: force ? over || { current: {} } : null });
+      if (!sent.sent) {
+        inflight.set(sent.key, { todo, sigs });
+        app.toast('Kept on this device. It will be sent to the cloud when you are back online.', { kind: 'warn', ms: 9000 });
+        return;
+      }
+      const { at, by } = sent.result;
+      noteSaved(sent.result, todo, sigs);
       status = { team: { updatedAt: at, updatedBy: by }, month: todo.includes(month) ? { updatedAt: at, updatedBy: by } : (status && status.month) || null,
         months: { ...((status && status.months) || {}), ...Object.fromEntries(todo.map(m => [m, { updatedAt: at, updatedBy: by }])) } };
-      CS.noteSynced(at, byName(by)); changed();
+      changed();
       app.toast(todo.length ? `Saved to the cloud: the staff list, rules and ${todo.length === 1 ? fmtMonth(todo[0]) : todo.length + ' months'}.` : 'Saved to the cloud: the staff list and rules. The months had not changed.');
     });
   }
@@ -261,6 +295,7 @@ export function mountTeam(el, app, opts = {}) {
   }
 
   function conflictPrompt(e) {
+    let chose = false;   // closing the sheet any other way keeps theirs and sets the held save aside
     const what = e.what === 'team' ? 'the staff list and rules' : fmtMonth(e.month);
     const pool = ((app.store.get().settings || {}).pool) || 'all';
     const poolOk = pool === 'junior' || pool === 'senior';
@@ -272,10 +307,12 @@ export function mountTeam(el, app, opts = {}) {
         h('p', { class: 'team-p' }, 'Pull theirs to see it first (undo brings yours back), or save yours over it. Their save stays in the cloud history either way.')),
       actions: [
         { label: 'Cancel' },
-        poolOk ? { label: `Merge: keep my ${pool} pool`, primary: true, fn: () => { mergePool(pool); } } : null,
-        { label: 'Pull theirs', fn: () => { load(); } },
-        { label: 'Save mine anyway', danger: true, fn: () => { save(true); } },
+        // the merge saves anew, so the held save is set aside either way
+        poolOk ? { label: `Merge: keep my ${pool} pool`, primary: true, fn: () => { chose = true; unsent.dismiss(e.key); mergePool(pool); } } : null,
+        { label: 'Pull theirs', fn: () => { chose = true; unsent.dismiss(e.key); load(); } },
+        { label: 'Save mine anyway', danger: true, fn: () => { chose = true; save(true, e); } },
       ].filter(Boolean),
+      onClose: () => { if (!chose) unsent.dismiss(e.key); },
     });
   }
 
@@ -322,6 +359,15 @@ export function mountTeam(el, app, opts = {}) {
 
   // ---- drawing ----
 
+  // saves kept on this device that the cloud doesn't have yet, with Retry and Set aside
+  function unsentLine() {
+    const { waiting, attention } = unsent.counts();
+    if (!waiting) return null;
+    return h('p', { class: 'team-p unsent', role: 'status' }, `${waiting} save${waiting > 1 ? 's' : ''} ${attention ? 'could not be sent' : 'waiting to be sent'}. `,
+      btn('Retry', () => unsent.retryAll(), 'btn btn-ghost btn-sm'), ' ',
+      attention ? btn('Set aside', () => unsent.discardAll(), 'btn btn-ghost btn-sm') : null);
+  }
+
   function render() {
     if (!alive) return;
     root.textContent = '';
@@ -345,7 +391,8 @@ export function mountTeam(el, app, opts = {}) {
         h('span', null, 'Signed in as ', h('strong', null, email)),
         h('span', { class: 'team-role', 'data-role': role }, ROLE_LABEL[member.role] || `${member.role || 'no role'} (reads only)`),
         signOutBtn),
-      h('p', { class: 'team-p' }, ROLE_HELP[role]));
+      h('p', { class: 'team-p' }, ROLE_HELP[role]),
+      unsentLine());
 
     // who saved last and when, and whether this browser has that copy
     const seen = readSeen();
@@ -424,6 +471,7 @@ export function mountTeam(el, app, opts = {}) {
       btn('Dismiss', () => dismiss(r), 'btn btn-danger-ghost btn-sm')))));
   }
 
+  shown = { app, changed, refresh: () => { if (alive && member) render(); } };
   render();
   cloud.watchUser(u => { ready = true; user = u; status = null; members = null; requests = null; request = null; refresh(); })
     .then(fn => { unwatch = fn; if (!alive && fn) fn(); })
@@ -434,6 +482,6 @@ export function mountTeam(el, app, opts = {}) {
       // a new month on screen: show its team status
       if (app.month !== month) { month = app.month; if (member) refresh(); }
     },
-    unmount() { alive = false; if (typeof unwatch === 'function') unwatch(); },
+    unmount() { alive = false; if (shown && shown.app === app) shown = null; if (typeof unwatch === 'function') unwatch(); },
   };
 }

@@ -100,6 +100,8 @@ What is happening now and the owner's dated decisions are kept outside this repo
   Set aside when one failed), and it is sent when the connection returns; this browser then counts it as saved
   (`noteSaved`). A save whose answer was lost is recognised (the cloud already holds the same content).
 - The conflict sheet: Save mine anyway saves over theirs; Cancel, Pull theirs or closing it sets the held save aside.
+- Every Firebase call goes through `js/cloud.js`, and only `js/unsent.js` calls its saves; `test/adapter.test.mjs` fails
+  if another module loads the SDK, reads `firebase-config.js` or saves around the outbox (checked 25 Oct 2026: none did).
 - Only the outbox, sign-out gate and `canReload` of app-sync are used (whole documents, no listeners or deltas).
 - Sign-out refuses while any save is unsent, then `forgetDevice` forgets the outbox (also runs its clean-up when the
   outbox could not load). The roster in this browser stays, as before.

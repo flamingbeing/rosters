@@ -69,6 +69,10 @@ const crafted = (() => {
   for (let k = 0; k < 8; k++) M.setCell(s, dd[k], a.id, { a: k === 3 ? [call] : [post], r: [], auto: [] });
   M.setCell(s, dd[9], a.id, { a: [shifts[0]], r: [], auto: [] });   // then two days not planned yet, past the edge of the range
   for (const k of [10, 11]) M.setCell(s, dd[k], a.id, { a: [], r: [], auto: [], note: '', lock: false });
+  // many call / no-call requests for one person (the first few count in full where an app weighs them), one marked '!'
+  const fair = ['Cr', 'Nc'].filter(x => M.dutyMap(s).has(x));
+  for (let k = 12; k < 20 && fair.length; k++) M.setCell(s, dd[k], b.id, { a: [], r: [fair[k % fair.length]], auto: [], ...(k === 18 ? { rp: { [fair[k % fair.length]]: '!' } } : {}) });
+  if (fair.length) M.setCell(s, dd[14], b.id, { a: [shifts[0]] });
   const g2 = (s.groups || []).find(g => g.id !== c.group);
   s.sheets = { ...(s.sheets || {}), [next]: { inSheet: (s.staff || []).map(p => p.id).filter(id => id !== b.id), known: (s.staff || []).map(p => p.id), grades: { [c.id]: g2 && g2.id } } };
   return s;

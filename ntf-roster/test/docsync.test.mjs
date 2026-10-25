@@ -1,15 +1,18 @@
-// Unsent saves (js/docsync.js on app-sync's write queue and outbox): a save made offline is kept and sent later,
+// Unsent saves (lib/roster-core/docsync.js on app-sync's createApp): a save made offline is kept and sent later,
 // a newer copy is never overwritten unasked, sign-out refuses while saves are unsent and then forgets the device,
 // and a new app version waits for a quiet moment. Run: node ntf-roster/test/docsync.test.mjs
 import assert from 'node:assert/strict';
 import { installFakeStorage, loadAppSync } from '../../tools/app-sync-for-tests.mjs';
-import { createDocSync, canReloadNow } from '../js/docsync.js';
+import { createDocSync, canReloadNow } from '../../lib/roster-core/docsync.js';
 
 const storage = installFakeStorage();
-const sync = await loadAppSync();
+const sync = await loadAppSync('0.6.0');
 let n = 0;
 const ok = (v, name) => { n++; assert.ok(v, name); };
 const eq = (a, b, name) => { n++; assert.deepEqual(a, b, name); };
+// the app's own Firebase SDK, faked: the signed-in account, and a sign-out that clears it
+const signedOut = [];
+const fakeSdk = user => async () => ({ A: { onAuthStateChanged() {}, signOut: async () => { signedOut.push(user()); } }, auth: { currentUser: null }, F: {}, db: {}, emulator: true });
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const delay = ms => new Promise(r => setTimeout(r, Math.min(ms, 20)));
 class Conflict extends Error { constructor(current) { super('Someone else saved first.'); this.current = current; } }
@@ -24,7 +27,7 @@ function world() {
     w.copy = { at: w.copy.at + 1, body };
     return { at: w.copy.at };
   };
-  w.make = (extra = {}) => createDocSync({ sync, name: w.outbox, getOwner: () => w.user, write: w.write, isConflict: e => e instanceof Conflict,
+  w.make = (extra = {}) => createDocSync({ sync, name: w.outbox, sdk: fakeSdk(() => w.user), getOwner: () => w.user, write: w.write, isConflict: e => e instanceof Conflict,
     online: () => w.online, delay, fromRemote: r => new Conflict(r.current), ...extra });
   return w;
 }
@@ -46,7 +49,7 @@ function world() {
   eq(w.calls.length, 0, 'offline: nothing written to the team');
   ok(d.unsent().waiting === 1, 'one save waits');
   ok(!(await d.signOut()), 'sign-out refuses while a save is unsent');
-  ok(Object.keys(storage).some(k => k.startsWith('test-outbox:')), 'the unsent save is in the device outbox');
+  ok(Object.keys(storage).some(k => k.startsWith('test-outbox-outbox:')), 'the unsent save is in the device outbox');
   ok(!canReloadNow({ doc: null, unsent: () => d.unsent().waiting }), 'a new version does not reload while a save waits');
   w.online = true; d.queue.kick(); await sleep(150);
   eq(w.calls.length, 1, 'back online: written once');
@@ -103,9 +106,10 @@ function world() {
 {
   const w = world(); w.outbox = 'test-outbox-6'; const d = w.make(); let extra = 0;
   await d.save('roster', 'd', { v: 1 }, 100);
-  ok(Object.keys(storage).some(k => k.startsWith('test-outbox-6:')) || true, 'outbox holds the finished save');
+  ok(Object.keys(storage).some(k => k.startsWith('test-outbox-6-outbox:')) || true, 'outbox holds the finished save');
   ok(await d.signOut({ extra: async () => { extra++; } }) === true && extra === 1, 'sign-out goes ahead with nothing unsent and runs the app\'s own clean-up');
-  ok(!Object.keys(storage).some(k => k.startsWith('test-outbox-6:')), 'the outbox is forgotten at sign-out');
+  ok(!Object.keys(storage).some(k => k.startsWith('test-outbox-6-outbox:')), 'the outbox is forgotten at sign-out');
+  ok(signedOut.length === 1, 'and the account is signed out, after the clean-up');
   const gone = await w.make().save('roster', 'd', { v: 3 }, 101);
   ok(gone.sent, 'the next sign-in starts clean');
 }
@@ -133,7 +137,7 @@ function world() {
 
 // sign-out when the outbox module could not be loaded: the app's clean-up still runs (unsent.js leave)
 {
-  const { leaveWith } = await import('../js/docsync.js');
+  const { leaveWith } = await import('../../lib/roster-core/docsync.js');
   let extra = 0;
   ok(await leaveWith(null, { extra: async () => { extra++; } }) === true && extra === 1, 'no outbox: sign-out still runs the clean-up');
   ok(await leaveWith({ signOut: async o => { await o.extra(); return true; } }, { extra: async () => { extra++; } }) === true && extra === 2, 'with an outbox it goes through its sign-out');

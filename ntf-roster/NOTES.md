@@ -169,11 +169,13 @@ The engine is shared with nuh-junior-monthly in `lib/roster-core/` (`/lib/` on e
 words, checks and the cell helpers, recorded from the app's own files before each move (re-record with `--write` only when a change to
 the results is meant). Fix the engine once, in `lib/roster-core/`.
 
-## Unsent saves (25 Oct 2026, app-sync 0.4.1 "document" profile)
+## Unsent saves (25 Oct 2026, app-sync 0.6.0 `createApp`)
 
-The same as NUH junior monthly (its NOTES.md "Unsent saves"); what differs here is marked.
-- Save to cloud goes through `js/unsent.js` > `js/docsync.js`: app-sync's write queue and outbox, exact pin
-  `core.anawj.com/sync/0.4.1/`, every module precached in `sw.js`. The write is still `cloud.saveAll` (staff list, rules
+The same as NUH junior monthly (its NOTES.md "Unsent saves"); what differs here is marked. Here sign-in too is
+createApp's (`cloud.signIn` → `app.signIn`: popup, or redirect in the installed app and when a popup is blocked; this host is
+the auth domain); with core.anawj.com unreachable it is the plain popup.
+- Save to cloud goes through `js/unsent.js` > `lib/roster-core/docsync.js` (one copy for the roster apps): app-sync's
+  `createApp` with the app's own write as its `commit`, exact pin `core.anawj.com/sync/0.6.0/`, every module precached in `sw.js`. The write is still `cloud.saveAll` (staff list, rules
   and changed months in one transaction, with its per-document "someone saved first" check and sheet prompt). Offline or
   cut off: the save is kept on the device ("Kept on this device"), the Team sharing panel shows how many wait (Retry;
   Set aside when one failed), and it is sent when the connection returns; this browser then counts it as saved.
@@ -183,7 +185,7 @@ The same as NUH junior monthly (its NOTES.md "Unsent saves"); what differs here 
   sets the held save aside (Merge then saves the merged roster anew).
 - Sign-out refuses while any save is unsent, then `forgetDevice` forgets the outbox (also runs its clean-up when the
   outbox could not load). The roster in this browser stays, as before.
-- Back-to-back offline saves carry the same seen copy; docsync sends each later one against the time the previous one
+- Back-to-back offline saves carry the same seen copy; `docsync.js` sends each later one against the time the previous one
   wrote, so it does not conflict with this device's own save.
 - Update module 0.2.0 with `canReload`: a new version waits while someone is typing, a dialog or sheet is open, or a save
   waits to be sent; it is tried again on leaving a field and when the unsent count changes.

@@ -14,14 +14,14 @@ const SHELL = [
   './', 'style.css', 'manifest.webmanifest', 'guide.html',
   'https://design.anawj.com/v1/tokens.css', 'https://design.anawj.com/v1/app.css', 'https://design.anawj.com/v1/app.js',
   'js/app.js', 'js/engine.js', 'js/layout.js', 'js/xlsxio.js', 'js/monthly.js', 'js/rotations.js', 'js/cloud.js', 'js/firebase-config.js',
-  'js/unsent.js', 'js/docsync.js', 'js/demo.js', 'js/pdfout.js', 'js/pngout.js', 'js/ics.js', 'js/store.js', 'js/help.js',
+  'js/unsent.js', '../lib/roster-core/docsync.js', 'js/demo.js', 'js/pdfout.js', 'js/pngout.js', 'js/ics.js', 'js/store.js', 'js/help.js',
   'js/ui-core.js', 'js/ui-practice.js', 'js/ui-screen.js', 'js/ui-tour.js', 'js/ui-staff.js', 'js/ui-cases.js', 'js/ui-roster.js',
   'js/ui-tags.js', 'js/ui-person.js', 'js/ui-general.js', 'js/ui-monthly.js', 'js/ui-myday.js', 'js/ui-rotations.js', 'js/ui-today.js',
   'js/ui-premed.js', 'js/ui-problems.js', 'js/ui-export.js', 'js/ui-settings.js', 'js/ui-team.js',
   'icons/icon-192.png', 'icons/icon-512.png', 'icons/maskable-512.png', 'icons/apple-touch-icon.png', 'icons/favicon-32.png', 'icons/icon.svg',
   // the page side of app-update and the sync engine (exact versions), so the app opens offline
   'https://core.anawj.com/update/0.2.0/register.js',
-  'https://core.anawj.com/sync/0.4.1/index.js', 'https://core.anawj.com/sync/0.4.1/src/sync.js', 'https://core.anawj.com/sync/0.4.1/src/writes.js', 'https://core.anawj.com/sync/0.4.1/src/conflict.js', 'https://core.anawj.com/sync/0.4.1/src/store.js', 'https://core.anawj.com/sync/0.4.1/src/outbox.js', 'https://core.anawj.com/sync/0.4.1/src/watchdog.js', 'https://core.anawj.com/sync/0.4.1/src/persist.js', 'https://core.anawj.com/sync/0.4.1/src/status.js', 'https://core.anawj.com/sync/0.4.1/src/forget.js', 'https://core.anawj.com/sync/0.4.1/src/firestore.js',
+  'https://core.anawj.com/sync/0.6.0/index.js', 'https://core.anawj.com/sync/0.6.0/src/sync.js', 'https://core.anawj.com/sync/0.6.0/src/writes.js', 'https://core.anawj.com/sync/0.6.0/src/conflict.js', 'https://core.anawj.com/sync/0.6.0/src/store.js', 'https://core.anawj.com/sync/0.6.0/src/outbox.js', 'https://core.anawj.com/sync/0.6.0/src/watchdog.js', 'https://core.anawj.com/sync/0.6.0/src/persist.js', 'https://core.anawj.com/sync/0.6.0/src/status.js', 'https://core.anawj.com/sync/0.6.0/src/forget.js', 'https://core.anawj.com/sync/0.6.0/src/firestore.js', 'https://core.anawj.com/sync/0.6.0/src/registry.js', 'https://core.anawj.com/sync/0.6.0/src/report.js', 'https://core.anawj.com/sync/0.6.0/src/app.js',
 ];
 const MANIFEST = {};
 

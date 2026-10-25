@@ -30,7 +30,7 @@ Setup steps (first admin, deploy) are in [README.md](README.md). What is happeni
 | `js/pngout.js` | The roster as an image (canvas) from the layout. |
 | `js/demo.js` | Demo data (invented names). |
 | `js/cloud.js` | Firebase wrapper. |
-| `js/unsent.js`, `js/docsync.js` | Unsent saves: the roster and team saves go through app-sync's outbox (see "Unsent saves" below). |
+| `js/unsent.js`, `lib/roster-core/docsync.js` | Unsent saves: the roster and team saves go through app-sync's outbox (see "Unsent saves" below). |
 | `js/app.js` | The UI. |
 
 ## Testing
@@ -66,23 +66,26 @@ Setup steps (first admin, deploy) are in [README.md](README.md). What is happeni
   once. Without the secrets `ROSTER_SA_EMAIL` and `ROSTER_SA_KEY` both answer 503 and everything runs on the members entry.
 - `members/{email}.v`: 1 when added, one more on each role change (rules-checked; older entries without one count as 0).
 
-## Unsent saves (25 Oct 2026, app-sync 0.4.1 "document" profile)
+## Unsent saves (25 Oct 2026, app-sync 0.6.0 `createApp`)
 
-- Saving the roster for a date and "Save for the team" go through `js/unsent.js` > `js/docsync.js`: app-sync's write
-  queue and outbox (IndexedDB, then localStorage), exact pin `core.anawj.com/sync/0.4.1/`, every module precached in
+- Saving the roster for a date and "Save for the team" go through `js/unsent.js` > `lib/roster-core/docsync.js` (one copy
+  for the roster apps): app-sync's `createApp` with these writes as its `commit` (outbox in IndexedDB, then localStorage),
+  exact pin `core.anawj.com/sync/0.6.0/`, every module precached in
   `sw.js`. The write itself is still `cloud.saveRoster` / `saveTeamAll` (one transaction, the same "someone saved first"
   check and confirm). Offline or cut off: the save is kept on the phone ("Kept on this phone"), a chip in the cloud bar
   shows how many wait (Retry; Set aside when one failed), and it is sent when the connection returns. A save whose answer
   was lost is recognised (the team's copy already holds the same content) and not shown as a conflict.
 - Not the delta hub: the data is a few large documents read whole (no listeners, no `updatedAt` deltas); only the
-  outbox, the sign-out gate and `canReload` are used.
-- Sign-out (both buttons) refuses while any save is unsent, then `forgetDevice` forgets the outbox (and, for "Sign out
+  outbox, the sign-out gate, the claims refresh and `canReload` are used (`createApp` gets a no-op adapter, so sign-out never
+  clears the SDK's cache or reloads). Sign-in stays the plain popup in `cloud.js`: createApp would fall back to a redirect,
+  which doesn't work across `firebaseapp.com`. `membership()` hands the entry it read to `refreshClaims` (no second read).
+- Sign-out (both buttons) refuses while any save is unsent, then createApp's sign-out forgets the outbox and signs the account out (and, for "Sign out
   and clear this computer", the roster, staff list and name in this browser).
 - Update module 0.2.0 with `canReload`: a new version waits while someone is typing in a field or cell, a dialog or the
   person box is open, or a save waits. It is tried again when the field loses focus or the outbox empties.
 - If core.anawj.com can't be reached the saves go straight to the team's copy as before (no outbox); sign-out still runs
   its own clean-up then (`leaveWith`).
-- Back-to-back offline saves of one document carry the same seen copy; docsync sends each later one against the time the
+- Back-to-back offline saves of one document carry the same seen copy; `docsync.js` sends each later one against the time the
   previous one wrote, so it does not conflict with this device's own save.
 - Limit: a save that is sent after the page was reloaded is in the team's copy, but the page does not know its time
   (the next save shows "someone saved first" with the person's own name; OK saves over it).

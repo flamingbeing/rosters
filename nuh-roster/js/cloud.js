@@ -22,7 +22,7 @@ export const enabled = !!(FIREBASE_CONFIG && FIREBASE_CONFIG.apiKey && FIREBASE_
   && typeof location !== 'undefined' && !new URLSearchParams(location.search).has('demo');
 
 let fb = null;
-async function sdk() {
+export async function sdk() {
   if (fb) return fb;
   const [app, auth, fs] = await Promise.all([
     import(SDK + 'firebase-app.js'),
@@ -56,20 +56,30 @@ export async function signOut() {
   await A.signOut(auth);
 }
 
+// app-sync's createApp, once unsent.js has it (core.anawj.com loaded): the role claims go through it. Without it nothing
+// refreshes them and the rules read the members entry.
+let appOf = async () => null;
+export const useApp = fn => { appOf = fn; };
+
 // This account's members entry, or null. Also brings the token's role claim up to date when the entry is newer (quietly;
 // see the top of this file).
+let fresh;   // the entry membership() has just read, so the claims check does not read it again
 export async function membership(email) {
+  const entry = await readMember(email);
+  fresh = entry;
+  await (await appOf())?.refreshClaims();
+  fresh = undefined;
+  return entry;
+}
+async function readMember(email) {
   const { db, F } = await sdk();
   const snap = await F.getDoc(F.doc(db, 'members', email.toLowerCase()));
-  const entry = snap.exists() ? snap.data() : null;
-  await syncClaims(entry);
-  return entry;
+  return snap.exists() ? snap.data() : null;
 }
 
 // The Worker's claims routes answer on the app's own address only; anywhere else (local tests, previews) they are skipped.
 const CLAIMS_HOST = 'nuhroster.anawj.com';
 const onClaimsHost = () => typeof location !== 'undefined' && location.hostname === CLAIMS_HOST;
-let claimsAsked = '';   // uid:v last asked for, so a failing Worker is asked once per page, not on every check
 
 // Does the token need asking again? Yes when the entry's v is ahead of the claim's, or a member has no claim yet.
 export function claimsBehind(entry, tokenClaims = {}) {
@@ -78,20 +88,11 @@ export function claimsBehind(entry, tokenClaims = {}) {
   return !(tokenClaims.g && tokenClaims.g._) || !(Number(tokenClaims.v) >= v);
 }
 
-async function syncClaims(entry) {
-  if (!onClaimsHost()) return;
-  try {
-    const { auth } = await sdk();
-    const u = auth.currentUser;
-    if (!u) return;
-    const { claims } = await u.getIdTokenResult();
-    const key = `${u.uid}:${entry ? entry.v ?? 0 : '-'}`;
-    if (!claimsBehind(entry, claims) || claimsAsked === key) return;
-    claimsAsked = key;
-    const r = await fetch('/api/claims', { method: 'POST', headers: { Authorization: 'Bearer ' + await u.getIdToken() } });
-    if (r.ok) await u.getIdToken(true);
-  } catch (e) { console.warn('claims not updated', e); }
-}
+// createApp's claims option
+export const claimsConfig = {
+  url: '/api/claims', when: onClaimsHost, behind: claimsBehind,
+  entry: async user => { if (fresh !== undefined) { const e = fresh; fresh = undefined; return e; } return readMember(user.email); },
+};
 
 // After an admin adds, changes or removes someone: the Worker cuts off that person's older claim at once.
 async function tellWorker(email) {

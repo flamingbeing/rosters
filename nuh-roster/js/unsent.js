@@ -2,9 +2,9 @@
 // save made offline, or cut off, is kept on this phone and sent again, and signing out refuses while any are unsent.
 // If core.anawj.com can't be reached the saves go straight to the team's copy, as before.
 import * as cloud from './cloud.js';
-import { createDocSync, canReloadNow, leaveWith } from './docsync.js';
+import { createDocSync, canReloadNow, leaveWith } from '../../lib/roster-core/docsync.js';
 
-export const SYNC_URL = 'https://core.anawj.com/sync/0.4.1/index.js';
+export const SYNC_URL = 'https://core.anawj.com/sync/0.6.0/index.js';
 export const MODAL = 'dialog[open], .tag-editor';
 
 const plain = o => JSON.parse(JSON.stringify(o));
@@ -38,10 +38,11 @@ export const onUnsentChange = fn => { listeners.add(fn); return () => listeners.
 export function setOwner(fn) { getOwner = fn; }
 export function load() {
   return loading ||= import(SYNC_URL).then(sync => {
-    docs = createDocSync({ sync, name: 'nuh-roster-outbox', getOwner: () => getOwner(), write, isConflict: e => e instanceof cloud.Conflict,
+    docs = createDocSync({ sync, name: 'nuh-roster', sdk: cloud.sdk, claims: cloud.claimsConfig, getOwner: () => getOwner(), write, isConflict: e => e instanceof cloud.Conflict,
       already: (kind, body) => already(kind, body, sync.recordSignature),
       fromRemote: r => new cloud.Conflict(r.current) });
     docs.queue.onChange(() => listeners.forEach(fn => fn()));
+    cloud.useApp(async () => docs.app);
     return docs;
   }).catch(err => { console.warn('Unsent-saves outbox not loaded', err); return null; });
 }

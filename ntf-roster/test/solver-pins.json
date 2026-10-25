@@ -1,0 +1,132 @@
+{
+ "seed1": {
+  "assignments": "32afdef1248af4f0",
+  "before": {
+   "hard": 0,
+   "soft": 39,
+   "score": 217.6
+  },
+  "after": {
+   "hard": 0,
+   "soft": 11,
+   "score": 48.7
+  },
+  "unfilled": [],
+  "iterations": 27776,
+  "codes": [
+   "C",
+   "P",
+   "SMO",
+   "OTC",
+   "PHD",
+   "HC"
+  ],
+  "applied": "f874c8b77f0ad81a",
+  "diff": {
+   "added": 94,
+   "removed": 94,
+   "cells": 187
+  }
+ },
+ "seed4": {
+  "assignments": "94720b9789bf06a8",
+  "before": {
+   "hard": 0,
+   "soft": 39,
+   "score": 217.6
+  },
+  "after": {
+   "hard": 0,
+   "soft": 9,
+   "score": 52.3
+  },
+  "unfilled": [],
+  "iterations": 41000,
+  "codes": [
+   "C",
+   "P",
+   "SMO",
+   "OTC",
+   "PHD",
+   "HC"
+  ],
+  "applied": "da7c8b0338dbdae6",
+  "diff": {
+   "added": 91,
+   "removed": 91,
+   "cells": 180
+  }
+ },
+ "codes_C": {
+  "assignments": "4835b89694e61235",
+  "before": {
+   "hard": 0,
+   "soft": 39,
+   "score": 217.6
+  },
+  "after": {
+   "hard": 0,
+   "soft": 15,
+   "score": 68.7
+  },
+  "unfilled": [],
+  "iterations": 30000,
+  "codes": [
+   "C"
+  ],
+  "applied": "fa9f9c5bde1ab65c",
+  "diff": {
+   "added": 74,
+   "removed": 96,
+   "cells": 170
+  }
+ },
+ "codes_P": {
+  "assignments": "17ab124f1058ff4c",
+  "before": {
+   "hard": 0,
+   "soft": 39,
+   "score": 217.6
+  },
+  "after": {
+   "hard": 0,
+   "soft": 35,
+   "score": 197.6
+  },
+  "unfilled": [],
+  "iterations": 7296,
+  "codes": [
+   "P"
+  ],
+  "applied": "a259f0e68f1b87a8",
+  "diff": {
+   "added": 16,
+   "removed": 108,
+   "cells": 124
+  }
+ },
+ "codes_SMO": {
+  "assignments": "e594cde88449d9d2",
+  "before": {
+   "hard": 0,
+   "soft": 39,
+   "score": 217.6
+  },
+  "after": {
+   "hard": 0,
+   "soft": 39,
+   "score": 217.6
+  },
+  "unfilled": [],
+  "iterations": 7296,
+  "codes": [
+   "SMO"
+  ],
+  "applied": "e4cba06fac1c7976",
+  "diff": {
+   "added": 0,
+   "removed": 112,
+   "cells": 112
+  }
+ }
+}

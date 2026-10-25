@@ -23,7 +23,7 @@ repo; never copy anything from there into this repo, a PR or an issue (neutral p
   the only shared folder: exceljs, and `lib/roster-core/` (the roster core, below). Never put an app's own file in `lib/`: nuh-roster has its own `vendor/` at `/vendor/`.
 - `lib/roster-core/` is the engine nuh-junior-monthly and ntf-roster share (so far `solver.js`: `createSolver(deps, cfg)`). A fix to it
   goes there once; what differs between apps is an option of `createSolver`, not a fork. An app wraps it in its own
-  `js/solver.js` and lists `../lib/roster-core/<file>` in its `sw.js` SHELL. ntf-roster still has its own copy (waits for its owner's OK to switch).
+  `js/solver.js` and lists `../lib/roster-core/<file>` in its `sw.js` SHELL. nuh-junior-monthly and ntf-roster both wrap it (pinned outputs in each `test/solver-pins.test.mjs`).
 - The NUHS design kit is loaded from `https://design.anawj.com/v1/` (another repo); never copy it in. A kit change
   that breaks these pages goes to `/v2/` there.
 - ntfroster.anawj.com signs in through its own host: `__/auth/` (Firebase's helper pages) and `ntf-auth/firebase/init.json`
@@ -41,7 +41,7 @@ repo; never copy anything from there into this repo, a PR or an issue (neutral p
 
 ```
 node tools/check.mjs                          # repo checks + Worker tests
-for f in */test/*.test.mjs lib/roster-core/test/*.test.mjs; do node "$f" || break; done   # unit tests
+for f in */test/*.test.mjs; do node "$f" || break; done   # unit tests
 node tools/proofread.mjs                      # page and doc mistakes
 python3 -m http.server 8080 &                 # then the touched app's browser tests, e.g.
 node ntf-roster/test/e2e.mjs                  # (PLAYWRIGHT_PATH=... CHROMIUM_PATH=... in a cloud session)

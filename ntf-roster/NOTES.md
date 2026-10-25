@@ -156,3 +156,10 @@ restriction" (same day, following days, between two people, and ready-made ones)
 | [docs/data.md](docs/data.md) | Excel (`js/io.js`); Rotations from APMES People (`js/rotations.js`, `js/people-pull.js`); Storage, practice and team sharing; Month lock and header; Sign-in on this host; One roster at a time |
 | [docs/speed.md](docs/speed.md), [docs/walkthrough.md](docs/walkthrough.md) | Speed; first-time help |
 | [SPEC.md](SPEC.md) | The module contract (state shape, exports, rule types) |
+
+## Auto-fill engine (roster core)
+
+The solver's engine is `lib/roster-core/solver.js` (`createSolver(deps, cfg)`, shared with nuh-junior-monthly); `js/solver.js` is a thin
+wrapper giving it this app's model and rules (`fillOption: 'codes'`, `keepOtherAuto`, `reach: 1`, no up-front blocks), and `sw.js` SHELL lists the core
+file. `test/solver-pins.test.mjs` pins the output on fixed inputs, recorded from the app's own solver before the move (re-record with `--write`
+only when a change to the results is meant). Fix the engine once, in `lib/roster-core/`.

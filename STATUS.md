@@ -15,6 +15,9 @@
 2. anawj-site drops the three hosts and its copies.
 
 ## Recently done
+- 25 Oct 2026: nuh-junior-monthly on app-sync 0.6.0 `createApp` (new-app-core C1): its unsent-saves layer is the shared
+  `lib/roster-core/docsync.js`, the claims refresh goes through createApp, sign-out through its gate. nuh-roster and
+  ntf-roster next, one PR each (ntf-roster waits for the owner).
 - 25 Oct 2026: ntf-roster on the roster core's rules and model too (request priorities and "consultants" are its
   options); rule list, words, checks and auto-fill pinned identical. Both roster apps now share solver, rules and model.
 - 25 Oct 2026: roster core takes the rules and model too: `lib/roster-core/rules.js` (`createRules`, the differences

@@ -37,7 +37,7 @@ const MONTH_RE = /^\d{4}-(0[1-9]|1[0-2])$/;
 const MAX_DOC = 900000; // Firestore's limit is 1 MiB a document; stop well before it with a clear message
 
 let fb = null;
-async function sdk() {
+export async function sdk() {
   if (!enabled) throw new Error('The cloud is not switched on.');
   if (fb) return fb;
   const [app, auth, fs] = await Promise.all([
@@ -117,6 +117,11 @@ export async function signIn() {
   return (await A.signInWithPopup(auth, provider)).user;
 }
 
+// app-sync's createApp, once unsent.js has it (core.anawj.com loaded): the role claims go through it. Without it nothing
+// refreshes them and the rules read the members entry.
+let appOf = async () => null;
+export const useApp = fn => { appOf = fn; };
+
 // An access token for the Google Sheets API (the person's own, valid about an hour, kept in memory by gsheets.js only).
 // Asks Google in a pop-up for the Sheets scope; works for any Google account, whether or not it is on the team list.
 export async function getSheetsToken() {
@@ -145,19 +150,23 @@ export async function currentUser() {
 // This account's entry in members ({ email, role, name, staffId?, v }), or null if it isn't a member. Also brings the
 // token's role claim up to date when the entry is newer (quietly; see the top of this file).
 export async function myMember() {
-  const { db, F } = await sdk();
   const { email } = await me();
-  const snap = await F.getDoc(F.doc(db, 'members', email));
-  const entry = snap.exists() ? { email, ...snap.data() } : null;
-  await syncClaims(entry);
+  const entry = await readMember(email);
+  fresh = entry;
+  await (await appOf())?.refreshClaims();
+  fresh = undefined;
   return entry;
+}
+async function readMember(email) {
+  const { db, F } = await sdk();
+  const snap = await F.getDoc(F.doc(db, 'members', email));
+  return snap.exists() ? { email, ...snap.data() } : null;
 }
 
 // The Worker's claims routes answer on the app's own address only; anywhere else (local tests, the old shared host)
 // they are skipped.
 const CLAIMS_HOST = 'nuhjuniormonthly.anawj.com';
 const onClaimsHost = () => typeof location !== 'undefined' && location.hostname === CLAIMS_HOST;
-let claimsAsked = '';   // uid:v last asked for, so a failing Worker is asked once per page, not on every check
 
 // Does the token need asking again? Yes when the entry's v is ahead of the claim's, or a member has no claim yet.
 export function claimsBehind(entry, tokenClaims = {}) {
@@ -166,20 +175,12 @@ export function claimsBehind(entry, tokenClaims = {}) {
   return !(tokenClaims.g && tokenClaims.g._) || !(Number(tokenClaims.v) >= v);
 }
 
-async function syncClaims(entry) {
-  if (!onClaimsHost()) return;
-  try {
-    const { auth } = await sdk();
-    const u = auth.currentUser;
-    if (!u) return;
-    const { claims } = await u.getIdTokenResult();
-    const key = `${u.uid}:${entry ? entry.v ?? 0 : '-'}`;
-    if (!claimsBehind(entry, claims) || claimsAsked === key) return;
-    claimsAsked = key;
-    const r = await fetch('/api/claims', { method: 'POST', headers: { Authorization: 'Bearer ' + await u.getIdToken() } });
-    if (r.ok) await u.getIdToken(true);
-  } catch (e) { console.warn('claims not updated', e); }
-}
+// createApp's claims option: after sign-in, and on myMember(), the token's role is brought up to date through the Worker
+let fresh;   // the entry myMember() has just read, so the claims check does not read it again
+export const claimsConfig = {
+  url: '/api/claims', when: onClaimsHost, behind: claimsBehind,
+  entry: async user => { if (fresh !== undefined) { const e = fresh; fresh = undefined; return e; } return readMember(user.email); },
+};
 
 // After an admin adds, changes or removes someone: the Worker cuts off that person's older claim at once.
 async function tellWorker(email) {

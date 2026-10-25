@@ -91,10 +91,10 @@ in the Checks `rules` job.
 
 What is happening now and the owner's dated decisions are kept outside this repo.
 
-## Unsent saves (25 Oct 2026, app-sync 0.4.1 "document" profile)
+## Unsent saves (25 Oct 2026, app-sync 0.6.0 `createApp`)
 
-- Save to cloud goes through `js/unsent.js` > `js/docsync.js`: app-sync's write queue and outbox, exact pin
-  `core.anawj.com/sync/0.4.1/`, every module precached in `sw.js`. The write is still `cloud.saveAll` (staff list, rules
+- Save to cloud goes through `js/unsent.js` > `lib/roster-core/docsync.js` (one copy for the roster apps): app-sync's
+  `createApp` with the app's own write as its `commit`, exact pin `core.anawj.com/sync/0.6.0/`, every module precached in `sw.js`. The write is still `cloud.saveAll` (staff list, rules
   and changed months in one transaction, with its per-document "someone saved first" check and sheet prompt). Offline or
   cut off: the save is kept on the device ("Kept on this device"), the Team sharing panel shows how many wait (Retry;
   Set aside when one failed), and it is sent when the connection returns; this browser then counts it as saved
@@ -102,10 +102,14 @@ What is happening now and the owner's dated decisions are kept outside this repo
 - The conflict sheet: Save mine anyway saves over theirs; Cancel, Pull theirs or closing it sets the held save aside.
 - Every Firebase call goes through `js/cloud.js`, and only `js/unsent.js` calls its saves; `test/adapter.test.mjs` fails
   if another module loads the SDK, reads `firebase-config.js` or saves around the outbox (checked 25 Oct 2026: none did).
-- Only the outbox, sign-out gate and `canReload` of app-sync are used (whole documents, no listeners or deltas).
-- Sign-out refuses while any save is unsent, then `forgetDevice` forgets the outbox (also runs its clean-up when the
+- Only the outbox, sign-out gate, claims refresh and `canReload` of app-sync are used (whole documents, no listeners or
+  deltas): `createApp` gets a no-op adapter, so sign-out never clears the SDK's cache or reloads. Sign-in stays the
+  plain popup in `cloud.js` (createApp would fall back to a redirect, which doesn't work across `firebaseapp.com`).
+- The role claims (`cloud.claimsConfig`) are refreshed through createApp's `refreshClaims` when `myMember()` has read the
+  entry (no second read).
+- Sign-out refuses while any save is unsent, then createApp's sign-out forgets the outbox and signs the account out (also runs its clean-up when the
   outbox could not load). The roster in this browser stays, as before.
-- Back-to-back offline saves of the roster carry the same seen copy; docsync sends each later one against the time the
+- Back-to-back offline saves of the roster carry the same seen copy; `docsync.js` sends each later one against the time the
   previous one wrote, so it does not conflict with this device's own save.
 - Update module 0.2.0 with `canReload`: a new version waits while someone is typing, a dialog or sheet is open, or a save
   waits; tried again on focus loss and when the outbox empties. "Get the latest version" is unchanged.

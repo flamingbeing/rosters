@@ -2,9 +2,9 @@
 // or cut off, is kept on this device and sent again, and signing out refuses while any are unsent. If core.anawj.com
 // can't be reached the save goes straight to the team's copy, as before.
 import * as cloud from './cloud.js';
-import { createDocSync, canReloadNow, leaveWith } from './docsync.js';
+import { createDocSync, canReloadNow, leaveWith } from '../../lib/roster-core/docsync.js';
 
-export const SYNC_URL = 'https://core.anawj.com/sync/0.4.1/index.js';
+export const SYNC_URL = 'https://core.anawj.com/sync/0.6.0/index.js';
 export const MODAL = 'dialog[open], .sheet-back';
 
 const plain = o => JSON.parse(JSON.stringify(o));
@@ -37,11 +37,12 @@ export const onUnsentChange = fn => { listeners.add(fn); return () => listeners.
 // the outbox, once core.anawj.com has answered; null when it can't be loaded (saves then go straight through)
 export function load() {
   return loading ||= import(SYNC_URL).then(sync => {
-    docs = createDocSync({ sync, name: 'nuh-junior-monthly-outbox', getOwner: () => owner, write, isConflict: e => e instanceof cloud.Conflict,
+    docs = createDocSync({ sync, name: 'nuh-junior-monthly', sdk: cloud.sdk, claims: cloud.claimsConfig, getOwner: () => owner, write, isConflict: e => e instanceof cloud.Conflict,
       already: (kind, body) => already(kind, body, sync.recordSignature),
       toRemote: e => ({ current: e.current, what: e.what, month: e.month }),
       fromRemote: r => new cloud.Conflict(r.what, r.current, r.month) });
     docs.queue.onChange(() => listeners.forEach(fn => fn()));
+    cloud.useApp(async () => docs.app);
     return docs;
   }).catch(err => { console.warn('Unsent-saves outbox not loaded', err); return null; });
 }

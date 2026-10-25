@@ -30,13 +30,14 @@ Setup steps (first admin, deploy) are in [README.md](README.md). What is happeni
 | `js/pngout.js` | The roster as an image (canvas) from the layout. |
 | `js/demo.js` | Demo data (invented names). |
 | `js/cloud.js` | Firebase wrapper. |
+| `js/unsent.js`, `js/docsync.js` | Unsent saves: the roster and team saves go through app-sync's outbox (see "Unsent saves" below). |
 | `js/app.js` | The UI. |
 
 ## Testing
 
 - `node nuh-roster/test/engine.test.mjs`: engine, monthly, duplicates, import planning. Fake names only.
 - `node nuh-roster/test/e2e.mjs` (serve the repo on port 8080 first, `python3 -m http.server 8080`; `PORT=` to change,
-  `SHOTS=<dir>` for screenshots): Practice with Firebase blocked, desktop and phone. 41 checks: every tour target exists,
+  `SHOTS=<dir>` for screenshots): Practice with Firebase blocked, desktop and phone. 49 checks: every tour target exists,
   the live double-cover check and its fix, changes since sent and the "Updated" stamp, keyboard focus in the person
   box, the Fix 3 problems exercise, the practice draft through Do it all, monthly clashes and Undo, axe on every tab,
   phone sizes (16px fields, 30px targets, no sideways scroll), My day (copy for logbook, My week), the welcome card.
@@ -46,6 +47,7 @@ Setup steps (first admin, deploy) are in [README.md](README.md). What is happeni
   depends on the day (free seniors, who is on leave) must not assume a fixed outcome: start from "Reset this day" and
   allow for randomness (14 Oct: Fix 3 problems failed every PR when the day was short of a senior; #491).
 - Real sample files (rosters, the contact list, HMS PDFs) must stay out of the repo.
+- `node nuh-roster/test/docsync.test.mjs` (offline save kept and sent later, kept across a reload, a newer copy never overwritten unasked, sign-out gate and forget, reload waits while typing) and `precache.test.mjs` (sw.js holds every app-sync module at the pinned version). Both load app-sync's tag with `tools/app-sync-for-tests.mjs` (a shallow clone; `APP_SYNC_DIR=<checkout>` skips the clone).
 - `node nuh-roster/test/claims.test.mjs`: when the page asks the Worker for its role claim, and the members entry's `v`.
 - Rules: `bash tools/test-rules.sh` (`test/rules.emulator.mjs`, the kit's shared suite `test/rules.kit.emulator.mjs`,
   and the Worker's claims routes end to end in `worker/test/roster.emulator.mjs`), in the Checks `rules` job.
@@ -63,3 +65,21 @@ Setup steps (first admin, deploy) are in [README.md](README.md). What is happeni
   (admins, after a change) writes `revoked/{uid}` for a removed or lowered member, so their older claim is refused at
   once. Without the secrets `ROSTER_SA_EMAIL` and `ROSTER_SA_KEY` both answer 503 and everything runs on the members entry.
 - `members/{email}.v`: 1 when added, one more on each role change (rules-checked; older entries without one count as 0).
+
+## Unsent saves (25 Oct 2026, app-sync 0.4.0 "document" profile)
+
+- Saving the roster for a date and "Save for the team" go through `js/unsent.js` > `js/docsync.js`: app-sync's write
+  queue and outbox (IndexedDB, then localStorage), exact pin `core.anawj.com/sync/0.4.0/`, every module precached in
+  `sw.js`. The write itself is still `cloud.saveRoster` / `saveTeamAll` (one transaction, the same "someone saved first"
+  check and confirm). Offline or cut off: the save is kept on the phone ("Kept on this phone"), a chip in the cloud bar
+  shows how many wait (Retry; Set aside when one failed), and it is sent when the connection returns. A save whose answer
+  was lost is recognised (the team's copy already holds the same content) and not shown as a conflict.
+- Not the delta hub: the data is a few large documents read whole (no listeners, no `updatedAt` deltas); only the
+  outbox, the sign-out gate and `canReload` are used.
+- Sign-out (both buttons) refuses while any save is unsent, then `forgetDevice` forgets the outbox (and, for "Sign out
+  and clear this computer", the roster, staff list and name in this browser).
+- Update module 0.2.0 with `canReload`: a new version waits while someone is typing in a field or cell, a dialog or the
+  person box is open, or a save waits. It is tried again when the field loses focus or the outbox empties.
+- If core.anawj.com can't be reached the saves go straight to the team's copy as before (no outbox).
+- Limit: a save that is sent after the page was reloaded is in the team's copy, but the page does not know its time
+  (the next save shows "someone saved first" with the person's own name; OK saves over it).

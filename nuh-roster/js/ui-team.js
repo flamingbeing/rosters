@@ -1,6 +1,7 @@
 // The team file, team sign-in and rosters shared through the cloud.
 import { DEFAULT_SETTINGS, DEFAULT_ROOMS, matchName } from './engine.js';
 import * as cloud from './cloud.js';
+import * as unsent from './unsent.js';
 import { emptyRotations } from './rotations.js';
 import { blankState, cleanStaffNames, clone, DEMO, download, h, migrateRooms, saveTimer, select, setClearedForGood, setNextId, setState, state, syncRooms, toast, undoToast } from './ui-core.js';
 import { dayHash, markSaved, render, setHashPending, switchDate } from './ui-screen.js';
@@ -77,6 +78,31 @@ const me = () => ({ email: cs.user.email, displayName: cs.user.displayName, rost
 export const when = ms => new Date(ms).toLocaleString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
 const byName = b => b?.name || b?.email || 'someone';
 
+// Saves kept on this phone that the team doesn't have yet (offline, or cut off): say so, with Retry and Set aside
+function unsentChip() {
+  const { waiting, attention } = unsent.counts();
+  if (!waiting) return null;
+  return h('span', { class: 'seen unsent', role: 'status' },
+    `${waiting} save${waiting > 1 ? 's' : ''} ${attention ? 'could not be sent' : 'waiting to send'}. `,
+    h('button', { class: 'small', onclick: () => unsent.retryAll() }, 'Retry'), ' ',
+    attention ? h('button', { class: 'small', title: 'Stop trying to send them; the roster stays on screen and can be saved again', onclick: () => unsent.discardAll() }, 'Set aside') : null);
+}
+// saves that finished later (the phone came back online): mark them saved, as if they had gone straight through
+const inflight = new Map(); // job key -> { kind, id, hash }
+unsent.onUnsentChange(() => {
+  for (const [key, w] of inflight) {
+    const done = unsent.finished(key);
+    if (!done) continue;
+    inflight.delete(key);
+    if (done.state === 'synced' && done.result?.at) {
+      if (w.kind === 'roster') { state.cloudBase[w.id] = done.result.at; markSaved(w.id, done.result.at, w.hash); delete cs.meta[w.id]; delete cs.versions[w.id]; cs.recent = null; }
+      else { state.teamSyncedAt = done.result.at; state.teamSyncedHash = w.hash; }
+      toast(w.kind === 'roster' ? `Sent the ${w.id} roster to the team.` : 'Sent the staff list, rooms and settings to the team.');
+    }
+  }
+  render();
+});
+
 // Cloud errors in words someone can act on; the technical message goes to the console.
 export function cloudError(e) {
   console.error(e);
@@ -107,7 +133,7 @@ export function renderCloudBar() {
     return;
   }
   const out = h('span', { class: 'signout' },
-    h('button', { onclick: () => cloud.signOut() }, 'Sign out'),
+    h('button', { onclick: signOutPlain }, 'Sign out'),
     h('button', { class: 'small', title: 'For a shared computer: also removes the roster, staff list and your name from this browser', onclick: signOutAndClear }, 'Sign out and clear this computer'));
   if (!cs.member) {
     if (!cs.memberError) {
@@ -135,6 +161,7 @@ export function renderCloudBar() {
         storeName(e.target.value);
       } })),
     h('span', { class: 'seen', title: cs.user.email }, isAdmin() ? 'admin' : ''),
+    unsentChip(),
     isAdmin() && Array.isArray(cs.requests) && cs.requests.length
       ? h('button', { onclick: () => { state.tab = 'settings'; render(); document.getElementById('requests')?.scrollIntoView(); } }, `${cs.requests.length} access request${cs.requests.length > 1 ? 's' : ''}`)
       : null,
@@ -142,9 +169,11 @@ export function renderCloudBar() {
 }
 
 cloud.watchUser(async user => {
+  unsent.setOwner(() => cs.user?.email?.toLowerCase() || null);
   cs.user = user; cs.member = null; cs.meta = {}; cs.versions = {}; cs.recent = null; cs.members = null; cs.request = null; cs.requests = null;
   if (user) {
     cs.memberError = null;
+    unsent.resume();
     try { cs.member = await cloud.membership(user.email); } catch (e) { cs.memberError = e?.code || String(e); console.error(e); }
     rostererName = '';
     try { rostererName = localStorage.getItem(nameKey()) || ''; } catch { /* no storage */ }
@@ -173,17 +202,28 @@ export function teamSyncBar() {
     h('button', { onclick: () => loadTeamFromCloud(true) }, 'Load team version'));
 }
 
+// Sign out: refused while saves are unsent (they are kept here and sent when the phone is online), then the outbox is
+// forgotten with the sign-in.
+const UNSENT_MSG = 'Some saves have not reached the team yet. Wait for the connection (or press Retry), then sign out.';
+async function signOutPlain() {
+  if (!(await unsent.leave())) { toast(UNSENT_MSG); return; }
+  try { await cloud.signOut(); } catch (e) { cloudError(e); }
+}
+
 // A shared OT computer: sign out and leave nothing of the roster behind in this browser.
 async function signOutAndClear() {
   const unsavedDay = (date, day, roster) => roster && state.cloudHash?.[date]?.hash !== dayHash(day, roster);
-  const unsaved = state.teamSyncedHash !== teamHash() || unsavedDay(state.day.date, state.day, state.roster)
+  const unsavedHere = state.teamSyncedHash !== teamHash() || unsavedDay(state.day.date, state.day, state.roster)
     || Object.entries(state.days || {}).some(([d, rec]) => unsavedDay(d, rec.day, rec.roster));
-  if (!confirm(`Sign out and remove the roster, staff list and your name from this browser?${unsaved ? '\n\nSome changes here are not saved for the team: press Cancel and save them (or Download everything) first.' : ''}`)) return;
-  try {
-    for (const k of Object.keys(localStorage)) if (/^(ot-roster|nuh-roster)/.test(k)) localStorage.removeItem(k);
-  } catch { /* no storage */ }
-  clearTimeout(saveTimer); setClearedForGood(true);
-  window.onbeforeunload = null;
+  if (!confirm(`Sign out and remove the roster, staff list and your name from this browser?${unsavedHere ? '\n\nSome changes here are not saved for the team: press Cancel and save them (or Download everything) first.' : ''}`)) return;
+  const wiped = await unsent.leave({ extra: async () => {
+    try {
+      for (const k of Object.keys(localStorage)) if (/^(ot-roster|nuh-roster)/.test(k)) localStorage.removeItem(k);
+    } catch { /* no storage */ }
+    clearTimeout(saveTimer); setClearedForGood(true);
+    window.onbeforeunload = null;
+  } });
+  if (!wiped) { toast(UNSENT_MSG); return; }
   try { await cloud.signOut(); } catch { /* signed out anyway */ }
   location.reload();
 }
@@ -192,18 +232,24 @@ async function saveTeamToCloud(force = false) {
   try {
     const team = { settings: state.settings, staff: state.staff, roomTemplate: state.roomTemplate, roomsVersion: state.roomsVersion, staffLog: state.staffLog || [] };
     const hash = teamHash(); // what is being sent
-    let doc;
+    const body = { team, months: state.monthly || {}, rotations: state.rotations || emptyRotations(), user: me() };
+    let sent;
     try {
-      doc = await cloud.saveTeamAll({ team, months: state.monthly || {}, rotations: state.rotations || emptyRotations() }, me(), { expectedUpdatedAt: state.teamSyncedAt ?? null, force });
+      sent = await unsent.save('team', 'main', body, state.teamSyncedAt ?? null, { over: force ? { current: { updatedAt: state.teamSyncedAt } } : null });
     } catch (e) {
       if (!(e instanceof cloud.Conflict)) throw e;
       // someone saved the team list after this browser last loaded it: don't overwrite their work unasked
       const c = e.current;
-      if (confirm(`${byName(c.updatedBy)} saved the team's staff list, rooms and monthly rosters ${when(c.updatedAt)}, after this browser last loaded them.\n\nOK: replace theirs with this browser's version.\nCancel: keep theirs (you can then load it, or download yours first).`)) return saveTeamToCloud(true);
-      toast('Not saved. The team version is newer.', { label: 'Load team version', run: () => loadTeamFromCloud(true) });
-      return;
+      if (confirm(`${byName(c.updatedBy)} saved the team's staff list, rooms and monthly rosters ${when(c.updatedAt)}, after this browser last loaded them.\n\nOK: replace theirs with this browser's version.\nCancel: keep theirs (you can then load it, or download yours first).`)) {
+        sent = await unsent.save('team', 'main', body, null, { over: e });
+      } else {
+        await unsent.dismiss(e.key);
+        toast('Not saved. The team version is newer.', { label: 'Load team version', run: () => loadTeamFromCloud(true) });
+        return;
+      }
     }
-    state.teamSyncedAt = doc.updatedAt;
+    if (!sent.sent) { inflight.set(sent.key, { kind: 'team', id: 'main', hash }); render(); toast('Kept on this phone. It will be sent to the team when you are back online.'); return; }
+    state.teamSyncedAt = sent.result.at;
     state.teamSyncedHash = hash;
     render();
     toast(`Saved for the team: ${state.staff.length} staff, ${state.roomTemplate.length} rooms and settings.`);
@@ -251,18 +297,20 @@ export async function saveRosterToCloud() {
     if (!n) return;
     storeName(n.trim());
   }
-  const data = { day: state.day, roster: state.roster };
+  const body = { date, day: state.day, roster: state.roster, user: me() };
   const hash = dayHash(); // what is being sent: edits made during the save stay "not saved"
   try {
-    let ts;
+    let sent;
     try {
-      ts = await cloud.saveRoster(date, data, me(), { expectedUpdatedAt: state.cloudBase[date] ?? null });
+      sent = await unsent.save('roster', date, body, state.cloudBase[date] ?? null);
     } catch (e) {
       if (!(e instanceof cloud.Conflict)) throw e;
       const c = e.current;
-      if (!confirm(`${byName(c.updatedBy)} saved the ${date} roster at ${when(c.updatedAt)}, after you opened it.\n\nOK: save yours as the latest (theirs stays in the history).\nCancel: don't save, so you can open theirs from the history first.`)) return;
-      ts = await cloud.saveRoster(date, data, me(), { force: true });
+      if (!confirm(`${byName(c.updatedBy)} saved the ${date} roster at ${when(c.updatedAt)}, after you opened it.\n\nOK: save yours as the latest (theirs stays in the history).\nCancel: don't save, so you can open theirs from the history first.`)) { await unsent.dismiss(e.key); return; }
+      sent = await unsent.save('roster', date, body, null, { over: e });
     }
+    if (!sent.sent) { inflight.set(sent.key, { kind: 'roster', id: date, hash }); render(); toast(`Kept on this phone. The ${date} roster will be sent to the team when you are back online.`); return; }
+    const ts = sent.result.at;
     state.cloudBase[date] = ts;
     markSaved(date, ts, hash);
     delete cs.meta[date]; delete cs.versions[date]; cs.recent = null;

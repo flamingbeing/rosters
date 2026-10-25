@@ -90,3 +90,21 @@ in the Checks `rules` job.
 - [docs/screens.md](docs/screens.md): header, tabs, cell marks, colours, per-month grades and who is shown.
 
 What is happening now and the owner's dated decisions are kept outside this repo.
+
+## Unsent saves (25 Oct 2026, app-sync 0.4.0 "document" profile)
+
+- Save to cloud goes through `js/unsent.js` > `js/docsync.js`: app-sync's write queue and outbox, exact pin
+  `core.anawj.com/sync/0.4.0/`, every module precached in `sw.js`. The write is still `cloud.saveAll` (staff list, rules
+  and changed months in one transaction, with its per-document "someone saved first" check and sheet prompt). Offline or
+  cut off: the save is kept on the device ("Kept on this device"), the Team sharing panel shows how many wait (Retry;
+  Set aside when one failed), and it is sent when the connection returns; this browser then counts it as saved
+  (`noteSaved`). A save whose answer was lost is recognised (the cloud already holds the same content).
+- The conflict sheet: Save mine anyway saves over theirs; Cancel, Pull theirs or closing it sets the held save aside.
+- Only the outbox, sign-out gate and `canReload` of app-sync are used (whole documents, no listeners or deltas).
+- Sign-out refuses while any save is unsent, then `forgetDevice` forgets the outbox. The roster in this browser stays, as before.
+- Update module 0.2.0 with `canReload`: a new version waits while someone is typing, a dialog or sheet is open, or a save
+  waits; tried again on focus loss and when the outbox empties. "Get the latest version" is unchanged.
+- Tests: `test/docsync.test.mjs` and `test/precache.test.mjs` (as in nuh-roster; they load app-sync's tag with
+  `tools/app-sync-for-tests.mjs`).
+- Limit: a save sent after the page was reloaded is in the cloud, but this browser does not know its time, so the next
+  Save asks "someone else saved first" about the person's own save (Save mine anyway).

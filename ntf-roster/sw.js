@@ -1,4 +1,4 @@
-// Offline app shell for NTF Roster, on the shared update module (app-update 0.1.0: sw-core.js does the work; its README has
+// Offline app shell for NTF Roster, on the shared update module (app-update 0.2.0: sw-core.js does the work; its README has
 // the rules): the app opens with poor or no signal, with the roster this browser has saved. The deploy stamps VERSION and MANIFEST (tools/stamp-versions.mjs: a hash of the app's files,
 // and one per SHELL file so a phone fetches only the changed ones); never change them by hand. Change the v<N> only when
 // this file's own logic changes.
@@ -8,20 +8,21 @@
 //   the design tokens: same-origin files, refreshed in the background) and the design kit's /v1/ files.
 // - sw.js itself is never cached ("Get the latest version" checks for signal with it).
 
-const VERSION = 'ntf-roster-v2';
+const VERSION = 'ntf-roster-v3';
 // the big vendor files (Excel, PDF) are cached the first time they're used, not on install
 const SHELL = [
   './', 'style.css', 'css/rules.css', 'manifest.webmanifest', 'css/tokens.css',
   'js/app.js', 'js/store.js', 'js/model.js', 'js/rules.js', '../lib/roster-core/model.js', '../lib/roster-core/rules.js', 'js/reqprio.js', 'js/solver.js', '../lib/roster-core/solver.js', 'js/solver-worker.js',
   'js/ui-roster.js', 'js/ui-day.js', 'js/ui-rules.js', 'js/ui-people.js', 'js/ui-check.js', 'js/ui-more.js',
-  'js/io.js', 'js/jpool.js', 'js/aps.js', 'js/ui-jpool.js', 'js/ui-aps.js', 'js/ui-requests.js', 'js/ui-reqprio.js', 'js/ui-ruleprio.js', 'js/rules-share.js', 'js/rules-text.js', 'js/rotations.js', 'js/people-pull.js', 'js/demo.js', 'js/cloud.js', 'js/firebase-config.js', 'js/ui-team.js', 'js/cloudstate.js', 'js/version.js', 'js/guide.js', 'js/tour.js',
+  'js/io.js', 'js/jpool.js', 'js/aps.js', 'js/ui-jpool.js', 'js/ui-aps.js', 'js/ui-requests.js', 'js/ui-reqprio.js', 'js/ui-ruleprio.js', 'js/rules-share.js', 'js/rules-text.js', 'js/rotations.js', 'js/people-pull.js', 'js/unsent.js', 'js/docsync.js', 'js/demo.js', 'js/cloud.js', 'js/firebase-config.js', 'js/ui-team.js', 'js/cloudstate.js', 'js/version.js', 'js/guide.js', 'js/tour.js',
   'icons/icon-192.png', 'icons/icon-512.png', 'icons/maskable-512.png', 'icons/apple-touch-icon.png', 'icons/favicon-32.png', 'icons/icon.svg',
-  // the page side of app-update (one exact version), so the app opens offline
-  'https://core.anawj.com/update/0.1.0/register.js',
+  // the page side of app-update and the sync engine (exact versions), so the app opens offline
+  'https://core.anawj.com/update/0.2.0/register.js',
+  'https://core.anawj.com/sync/0.4.1/index.js', 'https://core.anawj.com/sync/0.4.1/src/sync.js', 'https://core.anawj.com/sync/0.4.1/src/writes.js', 'https://core.anawj.com/sync/0.4.1/src/conflict.js', 'https://core.anawj.com/sync/0.4.1/src/store.js', 'https://core.anawj.com/sync/0.4.1/src/outbox.js', 'https://core.anawj.com/sync/0.4.1/src/watchdog.js', 'https://core.anawj.com/sync/0.4.1/src/persist.js', 'https://core.anawj.com/sync/0.4.1/src/status.js', 'https://core.anawj.com/sync/0.4.1/src/forget.js', 'https://core.anawj.com/sync/0.4.1/src/firestore.js',
 ];
 const MANIFEST = {};
 
-importScripts('https://core.anawj.com/update/0.1.0/sw-core.js');
+importScripts('https://core.anawj.com/update/0.2.0/sw-core.js');
 AppUpdate.init({
   app: 'ntf-roster', version: VERSION, shell: SHELL, manifest: MANIFEST,
   never: [/\/sw\.js$/],

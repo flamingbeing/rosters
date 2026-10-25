@@ -24,7 +24,7 @@ async function newPage(viewport, tag, extra = {}) {
   await ctx.addInitScript(() => { try { localStorage.setItem('ntf-roster-tour', JSON.stringify({ v: 1, done: true })); } catch (e) { /* ignore */ } });
   const page = await ctx.newPage();
   page.on('pageerror', e => errors.push(`[${tag}] ${e.message}`));
-  page.on('console', m => { if (m.type() === 'error' && !/Failed to load resource.*gstatic/.test(m.text())) errors.push(`[${tag}] console: ${m.text()}`); });
+  page.on('console', m => { if (m.type() === 'error' && !(/Failed to load resource/.test(m.text()) && /gstatic/.test(m.text() + m.location().url))) errors.push(`[${tag}] console: ${m.text()}`); });
   return page;
 }
 const shot = async (page, name) => { if (SHOTS) await page.screenshot({ path: `${SHOTS}/${String(++n).padStart(2, '0')}-${name}.png` }); };

@@ -849,6 +849,7 @@ async function start() {
   }
 
   // Offline app shell (sw.js): a new version takes over at once and the page reloads once (version.js).
+  import('./unsent.js').then(m => m.start()).catch(e => console.warn('unsent.js not loaded', e));
   import('./version.js')
     .then(m => m.registerSW())
     .catch(e => console.warn('version.js not loaded', e));

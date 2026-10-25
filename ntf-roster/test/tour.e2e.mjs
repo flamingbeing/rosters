@@ -21,7 +21,7 @@ async function newPage(tag, extra = { viewport: { width: 1300, height: 900 } }) 
   await ctx.route('https://www.gstatic.com/**', r => r.abort());
   const page = await ctx.newPage();
   page.on('pageerror', e => errors.push(`[${tag}] ${e.message}`));
-  page.on('console', m => { if (m.type() === 'error' && !/Failed to load resource.*gstatic/.test(m.text())) errors.push(`[${tag}] console: ${m.text()}`); });
+  page.on('console', m => { if (m.type() === 'error' && !(/Failed to load resource/.test(m.text()) && /gstatic/.test(m.text() + m.location().url))) errors.push(`[${tag}] console: ${m.text()}`); });
   return page;
 }
 const ready = page => page.waitForFunction(() => document.body.classList.contains('ready'));

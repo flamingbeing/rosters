@@ -6,6 +6,8 @@
 //    clears this app's own saved copy (its service worker and its 'ntf-roster-' caches), never the roster saved in
 //    this browser (localStorage, IndexedDB) or sign-in.
 
+import { canReload, onUnsentChange } from './unsent.js';
+
 const PREFIX = 'ntf-roster-';
 // the app's folder: '/ntf-roster/' on anawj.com, '/' on ntfroster.anawj.com (this file is in js/)
 const APP_ROOT = new URL('../', import.meta.url).href;
@@ -74,11 +76,16 @@ export function renderVersion(el) {
 // Register sw.js everywhere except ?nosw (and file://), through app-update's register.js: it checks for a new version on
 // every return to the tab and every 3 h, and reloads the page once when one takes over. Loaded with import(), so a
 // blocked core.anawj.com never stops the app; offline it comes from the saved copy (sw.js SHELL).
-export const UPDATE = 'https://core.anawj.com/update/0.1.0/register.js';
+export const UPDATE = 'https://core.anawj.com/update/0.2.0/register.js';
 export async function registerSW() {
   if (!('serviceWorker' in navigator) || location.protocol === 'file:' || new URLSearchParams(location.search).has('nosw')) return null;
   try {
     const m = await import(UPDATE);
-    return await m.register({ app: PREFIX.slice(0, -1), sw: SW_URL, scope: APP_ROOT });
+    // a new version takes over only when nobody is typing, no sheet is open and no save is waiting to be sent
+    const reg = await m.register({ app: PREFIX.slice(0, -1), sw: SW_URL, scope: APP_ROOT, canReload: () => canReload(() => false) });
+    const later = () => setTimeout(m.retryUpdate, 400);
+    document.addEventListener('focusout', later);
+    onUnsentChange(later);
+    return reg;
   } catch (err) { console.warn('Service worker not registered', err); return null; }
 }

@@ -168,3 +168,26 @@ The engine is shared with nuh-junior-monthly in `lib/roster-core/` (`/lib/` on e
 `sw.js` SHELL lists the three core files. `test/solver-pins.test.mjs` and `test/core-pins.test.mjs` pin auto-fill, the rule list, its
 words, checks and the cell helpers, recorded from the app's own files before each move (re-record with `--write` only when a change to
 the results is meant). Fix the engine once, in `lib/roster-core/`.
+
+## Unsent saves (25 Oct 2026, app-sync 0.4.1 "document" profile)
+
+The same as NUH junior monthly (its NOTES.md "Unsent saves"); what differs here is marked.
+- Save to cloud goes through `js/unsent.js` > `js/docsync.js`: app-sync's write queue and outbox, exact pin
+  `core.anawj.com/sync/0.4.1/`, every module precached in `sw.js`. The write is still `cloud.saveAll` (staff list, rules
+  and changed months in one transaction, with its per-document "someone saved first" check and sheet prompt). Offline or
+  cut off: the save is kept on the device ("Kept on this device"), the Team sharing panel shows how many wait (Retry;
+  Set aside when one failed), and it is sent when the connection returns; this browser then counts it as saved.
+- A save whose answer was lost is recognised (the cloud already holds the same staff list, days, status and, here,
+  each pool's lock), so it is not saved twice.
+- The conflict sheet: Save mine anyway saves over theirs; Merge (here: keep my pool), Pull theirs, Cancel or closing it
+  sets the held save aside (Merge then saves the merged roster anew).
+- Sign-out refuses while any save is unsent, then `forgetDevice` forgets the outbox (also runs its clean-up when the
+  outbox could not load). The roster in this browser stays, as before.
+- Back-to-back offline saves carry the same seen copy; docsync sends each later one against the time the previous one
+  wrote, so it does not conflict with this device's own save.
+- Update module 0.2.0 with `canReload`: a new version waits while someone is typing, a dialog or sheet is open, or a save
+  waits to be sent; it is tried again on leaving a field and when the unsent count changes.
+- Every Firebase call goes through `js/cloud.js`, and only `js/unsent.js` calls its saves; `test/adapter.test.mjs` fails
+  if another module loads the SDK, reads `firebase-config.js` or saves around the outbox. Admin actions (roles, access
+  requests) stay direct and online-only, as before.
+- Tests: `test/docsync.test.mjs`, `test/unsent.test.mjs`, `test/precache.test.mjs`, `test/adapter.test.mjs`.

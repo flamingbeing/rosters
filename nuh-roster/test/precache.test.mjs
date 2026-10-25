@@ -6,7 +6,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadAppSync } from '../../tools/app-sync-for-tests.mjs';
 
-const APP_SYNC_VERSION = '0.6.0';
+const APP_SYNC_VERSION = '0.6.3';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const read = f => readFileSync(join(root, f), 'utf8');

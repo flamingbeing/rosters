@@ -15,6 +15,9 @@
 2. anawj-site drops the three hosts and its copies.
 
 ## Recently done
+- 25 Oct 2026: roster core started: the auto-fill engine moved to `lib/roster-core/solver.js` (the ~40 lines that differ
+  between nuh-junior-monthly and ntf-roster are `createSolver` options); nuh-junior-monthly uses it, results pinned identical.
+  ntf-roster untouched. Next for the core: rules and model (they differ by ~300-600 lines, so shared parts first).
 - 25 Oct 2026: nuh-roster and nuh-junior-monthly unsent saves, two small losses fixed: sign-out clean-up now runs even
   when the outbox did not load, and a second offline save of one document no longer conflicts with the first.
 - 25 Oct 2026: ntf-roster on the rules kit too (`worker/ntf.js`); all three apps now take role claims. Its Worker

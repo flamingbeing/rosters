@@ -13,7 +13,7 @@ const VERSION = 'nuh-junior-monthly-v3';
 const SHELL = [
   './', 'style.css', 'css/rules.css', 'manifest.webmanifest',
   'https://design.anawj.com/v1/tokens.css', 'https://design.anawj.com/v1/app.css', 'https://design.anawj.com/v1/app.js',
-  'js/app.js', 'js/store.js', 'js/model.js', 'js/rules.js', 'js/solver.js', 'js/solver-worker.js',
+  'js/app.js', 'js/store.js', 'js/model.js', 'js/rules.js', 'js/solver.js', '../lib/roster-core/solver.js', 'js/solver-worker.js',
   'js/ui-roster.js', 'js/ui-day.js', 'js/ui-rules.js', 'js/ui-people.js', 'js/ui-check.js', 'js/ui-more.js', 'js/ui-leave.js', 'js/waitlist.js', 'js/pools.js', 'js/sheetgen.js', 'js/sheetgen-state.js', 'js/sheetgen-xlsx.js', 'js/sheetgen-gsheets.js', 'js/gsheets.js', 'js/sheet.js',
   'js/io.js', 'js/unsent.js', 'js/docsync.js', 'js/demo.js', 'js/cloud.js', 'js/firebase-config.js', 'js/ui-team.js', 'js/version.js', 'js/guide.js', 'js/tour.js', 'js/apmes.js', 'js/people-pull.js',
   'icons/icon-192.png', 'icons/icon-512.png', 'icons/maskable-512.png', 'icons/apple-touch-icon.png', 'icons/favicon-32.png', 'icons/icon.svg',

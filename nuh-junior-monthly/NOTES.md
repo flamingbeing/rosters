@@ -111,3 +111,10 @@ What is happening now and the owner's dated decisions are kept outside this repo
   `tools/app-sync-for-tests.mjs`).
 - Limit: a save sent after the page was reloaded is in the cloud, but this browser does not know its time, so the next
   Save asks "someone else saved first" about the person's own save (Save mine anyway).
+
+## Auto-fill engine (roster core)
+
+The solver's engine is `lib/roster-core/solver.js` (`createSolver(deps, cfg)`), shared with ntf-roster's future switch; `js/solver.js` is a
+thin wrapper giving it this app's model and rules, and `sw.js` SHELL lists the core file. `test/solver-pins.test.mjs` pins the output on fixed
+inputs (re-record with `--write` only when a change to the results is meant). `lib/roster-core/test/solver.test.mjs` shows the core's NTF
+flavour equals ntf-roster's own solver, so that app can switch with no change to its results.

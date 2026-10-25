@@ -44,7 +44,7 @@
     "deny": [
       "Read(./__/**)",
       "Read(**/vendor/**)",
-      "Read(./lib/**)"
+      "Read(./lib/exceljs*)"
     ]
   }
 }

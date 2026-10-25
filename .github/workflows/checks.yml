@@ -21,12 +21,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: flamingbeing/app-devkit/setup-node@v1
+      - uses: flamingbeing/app-devkit/setup-tools@v1.6.0
       - name: Repo check
-        run: node tools/check.mjs
+        run: node .devkit/tools/check.mjs
       - name: Unit tests
         run: for f in nuh-roster/test/*.test.mjs ntf-roster/test/*.test.mjs nuh-junior-monthly/test/*.test.mjs; do echo "== $f"; node "$f" || exit 1; done
       - name: Proof-read (pages and documents)
-        run: node tools/proofread.mjs
+        run: node .devkit/tools/proofread.mjs
 
   rules:
     # Firestore rules in the emulators (tools/test-rules.sh): for every app its own checks, the rules kit's shared suite,

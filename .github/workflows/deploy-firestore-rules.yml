@@ -18,7 +18,7 @@ permissions:
 
 jobs:
   changes:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       roster: ${{ steps.filter.outputs.roster }}
       junior: ${{ steps.filter.outputs.junior }}
@@ -35,7 +35,7 @@ jobs:
 
   deploy:
     needs: changes
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:

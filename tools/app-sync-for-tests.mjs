@@ -6,7 +6,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
-export const APP_SYNC_VERSION = '0.4.0';
+export const APP_SYNC_VERSION = '0.4.1';
 export async function loadAppSync() {
   let dir = process.env.APP_SYNC_DIR;
   if (!dir) {

@@ -91,10 +91,10 @@ in the Checks `rules` job.
 
 What is happening now and the owner's dated decisions are kept outside this repo.
 
-## Unsent saves (25 Oct 2026, app-sync 0.4.0 "document" profile)
+## Unsent saves (25 Oct 2026, app-sync 0.4.1 "document" profile)
 
 - Save to cloud goes through `js/unsent.js` > `js/docsync.js`: app-sync's write queue and outbox, exact pin
-  `core.anawj.com/sync/0.4.0/`, every module precached in `sw.js`. The write is still `cloud.saveAll` (staff list, rules
+  `core.anawj.com/sync/0.4.1/`, every module precached in `sw.js`. The write is still `cloud.saveAll` (staff list, rules
   and changed months in one transaction, with its per-document "someone saved first" check and sheet prompt). Offline or
   cut off: the save is kept on the device ("Kept on this device"), the Team sharing panel shows how many wait (Retry;
   Set aside when one failed), and it is sent when the connection returns; this browser then counts it as saved

@@ -66,10 +66,10 @@ Setup steps (first admin, deploy) are in [README.md](README.md). What is happeni
   once. Without the secrets `ROSTER_SA_EMAIL` and `ROSTER_SA_KEY` both answer 503 and everything runs on the members entry.
 - `members/{email}.v`: 1 when added, one more on each role change (rules-checked; older entries without one count as 0).
 
-## Unsent saves (25 Oct 2026, app-sync 0.4.0 "document" profile)
+## Unsent saves (25 Oct 2026, app-sync 0.4.1 "document" profile)
 
 - Saving the roster for a date and "Save for the team" go through `js/unsent.js` > `js/docsync.js`: app-sync's write
-  queue and outbox (IndexedDB, then localStorage), exact pin `core.anawj.com/sync/0.4.0/`, every module precached in
+  queue and outbox (IndexedDB, then localStorage), exact pin `core.anawj.com/sync/0.4.1/`, every module precached in
   `sw.js`. The write itself is still `cloud.saveRoster` / `saveTeamAll` (one transaction, the same "someone saved first"
   check and confirm). Offline or cut off: the save is kept on the phone ("Kept on this phone"), a chip in the cloud bar
   shows how many wait (Retry; Set aside when one failed), and it is sent when the connection returns. A save whose answer

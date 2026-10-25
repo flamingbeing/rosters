@@ -4,7 +4,7 @@
 import * as cloud from './cloud.js';
 import { createDocSync, canReloadNow } from './docsync.js';
 
-export const SYNC_URL = 'https://core.anawj.com/sync/0.4.0/index.js';
+export const SYNC_URL = 'https://core.anawj.com/sync/0.4.1/index.js';
 export const MODAL = 'dialog[open], .tag-editor';
 
 const plain = o => JSON.parse(JSON.stringify(o));

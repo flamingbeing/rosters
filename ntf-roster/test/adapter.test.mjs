@@ -1,5 +1,5 @@
 // Every call to Firebase goes through js/cloud.js (the app's one adapter), and Save to cloud goes through app-sync's
-// outbox (js/unsent.js > js/docsync.js), never straight to cloud.saveAll. Fails if a page module reaches past them.
+// outbox (js/unsent.js > lib/roster-core/docsync.js), never straight to cloud.saveAll. Fails if a page module reaches past them.
 // Run: node ntf-roster/test/adapter.test.mjs
 import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';

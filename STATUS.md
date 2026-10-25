@@ -15,6 +15,7 @@
 2. anawj-site drops the three hosts and its copies.
 
 ## Recently done
+- 25 Oct 2026: ntf-roster on app-sync 0.6.0 `createApp` too (PR waits for the owner); all three apps now share `lib/roster-core/docsync.js`.
 - 25 Oct 2026: nuh-roster on app-sync 0.6.0 `createApp` too (same shared `lib/roster-core/docsync.js`; its own copy removed).
 - 25 Oct 2026: nuh-junior-monthly on app-sync 0.6.0 `createApp` (new-app-core C1): its unsent-saves layer is the shared
   `lib/roster-core/docsync.js`, the claims refresh goes through createApp, sign-out through its gate. nuh-roster and

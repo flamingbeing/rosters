@@ -5,6 +5,7 @@ import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadAppSync } from '../../tools/app-sync-for-tests.mjs';
+import { KIT, KIT_SHELL, KIT_VERSION } from '../../lib/roster-core/kit.js';
 
 const APP_SYNC_VERSION = '1.4.0';
 
@@ -28,5 +29,10 @@ ok(sync.VERSION === APP_SYNC_VERSION, 'the pinned tag is the version it says');
 ok(/update\/1\.4\.0\/register\.js/.test(app) && sw.includes('https://core.anawj.com/update/1.4.0/register.js') && sw.includes("importScripts('https://core.anawj.com/update/1.4.0/sw-core.js')"), 'update module 1.4.0 in page and worker');
 ok(!/update\/0\.1\.0/.test(sw + app), 'no older update module left');
 ok(/canReload/.test(app), 'the page gives register a canReload');
-for (const f of ['js/unsent.js', '../lib/roster-core/docsync.js']) ok(sw.includes(`'${f}'`), `${f} is in the shell`);
+// the UI kit: the page links the same version, and the shell holds every kit file the page or kit.js loads
+const html = read('index.html');
+for (const f of ['theme/early.js', 'theme/theme.css', 'ui/layout.css']) ok(html.includes(`${KIT}${f}`), `index.html loads kit ${f} at ${KIT_VERSION}`);
+ok(!/core\.anawj\.com\/ui\/(?!\d[^/]*\/)/.test(html) && (html.match(/core\.anawj\.com\/ui\/([^/]+)\//g) || []).every(u => u.includes(KIT_VERSION)), 'one kit version in index.html');
+for (const u of KIT_SHELL) ok(sw.includes(`'${u}'`), `sw.js precaches ${u.slice(KIT.length)}`);
+for (const f of ['js/unsent.js', '../lib/roster-core/docsync.js', '../lib/roster-core/kit.js']) ok(sw.includes(`'${f}'`), `${f} is in the shell`);
 console.log(`nuh-junior-monthly precache: ${n} checks passed`);

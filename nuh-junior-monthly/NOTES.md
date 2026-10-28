@@ -59,6 +59,19 @@ the scripts that read them are in the owner's private notes.
   tab-separated text to paste at that top-left cell. Cells whose meaning didn't change go back exactly as typed;
   seniors' rows come back untouched; the list of changed cells is shown. Import again just before pasting if others edit.
 
+## The UI kit (28 Oct 2026, app-ui 1.0.0-rc.23)
+
+- `lib/roster-core/kit.js` (one copy for the roster apps) pins app-ui at an exact version: `startKit({ accent })` applies
+  this device's look, theme and density (default look A, NUHS navy accent), `kitSwitch(host)` puts the kit's pickers in
+  More ("Look and theme"); the roster grid keeps its own keyboard and pointer code (virtualised rows, paint, range select: more than the kit grid does yet). Each loads the kit with a dynamic import and only warns if it fails, so the app works without it.
+- `index.html` links `theme/early.js`, `theme/theme.css` and `ui/layout.css` before the NUHS kit; `sw.js` SHELL lists
+  `KIT_SHELL` (the kit's files the page loads, checked by `test/precache.test.mjs`). Bump the version in kit.js,
+  index.html and sw.js together.
+- Only theme.css and layout.css are loaded: the kit's ui.css, glass.css and gestures.css still style bare class names
+  (`.bar`, `.sheet`, `.chip`, `.small`, `.row`, `.danger`) that this app uses for its own things. Hence the small rules at
+  the end of `style.css` (the NUHS face on h1; the look switch's row layout).
+- The NUHS shell (header, tab bar, side bar) stays for now; moving it to the kit's shell is a later step.
+
 ## Roles and the rules kit (25 Oct 2026)
 
 - Rules: edit `firestore.app.rules`, then build the committed `firestore.rules` with app-devkit's

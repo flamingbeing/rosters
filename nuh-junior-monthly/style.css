@@ -1240,3 +1240,9 @@ body:not([data-tab="roster"]):not([data-tab="check"]) #autofill, body.month-lock
 .af-attempts input[type="radio"] { width: 18px; height: 18px; accent-color: var(--navy, #002f6c); }
 .af-best { margin-left: 6px; padding: 1px 6px; border-radius: 8px; font-size: 11px; background: #d9efe0; color: #1b5e32; }
 @media (max-width: 720px) { .af-attempts th, .af-attempts td { padding: 6px 4px; font-size: 13px; } }
+
+/* the UI kit gives h1 the look's heading face (serif in look A); this app keeps the NUHS face */
+h1 { font-family: var(--a-font); }
+/* the kit's look switch (its row layout is in the kit's ui.css, which this app does not load) */
+.kit-switch .theme-switch { display: flex; flex-wrap: wrap; gap: 10px 18px; }
+.kit-switch .theme-switch label { display: inline-flex; align-items: center; gap: 8px; }

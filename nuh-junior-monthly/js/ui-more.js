@@ -8,6 +8,7 @@ import * as io from './io.js';
 import * as S from './sheet.js';
 import * as G from './gsheets.js';
 import * as cloud from './cloud.js';
+import { kitSwitch } from '../../lib/roster-core/kit.js';
 import { buildSheet } from './sheetgen.js';
 import { specFromState } from './sheetgen-state.js';
 import { toWorkbook } from './sheetgen-xlsx.js';
@@ -582,6 +583,10 @@ export function mount(el, app) {
     h('div', { class: 'more-row' }, btn('Load Singapore public holidays (2026 to 2027)', loadSg)),
     holList);
 
+  const lookHost = h('div', { class: 'kit-switch' });
+  kitSwitch(lookHost);
+  const lookSec = section('more-look', 'Look and theme', 'Kept on this device only.', lookHost);
+
   // ---------- Cloud ----------
   let teamView = null;
   const teamSlot = h('div');
@@ -661,7 +666,7 @@ export function mount(el, app) {
     if (out instanceof Node && !out.parentNode) foot.append(out);
   }).catch(() => { /* version helper not there yet: show nothing */ });
 
-  root.append(teamSec, importSec, exportSheetSec, genSec, exportSec, backupSec, settingsSec, helpSec, startSec, foot);
+  root.append(teamSec, importSec, exportSheetSec, genSec, exportSec, backupSec, settingsSec, lookSec, helpSec, startSec, foot);
 
   return {
     update(state) {

@@ -153,7 +153,7 @@ export async function myMember() {
   const { email } = await me();
   const entry = await readMember(email);
   fresh = entry;
-  await (await appOf())?.refreshClaims();
+  await (await appOf())?.auth.refreshClaims();
   fresh = undefined;
   return entry;
 }

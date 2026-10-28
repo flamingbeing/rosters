@@ -15,6 +15,7 @@
 2. anawj-site drops the three hosts and its copies.
 
 ## Recently done
+- 28 Oct 2026: all three roster apps on base 1's data core (app-sync 1.4.0, update 1.4.0): `lib/roster-core/docsync.js` builds `createApp({ config, modules: [auth, sync] })` (async; `loadCore` loads the entries), sign-out is `app.auth.forget`, claims `app.auth.refreshClaims`. Pins, `sw.js` SHELL (from `entries.json`) and tests moved together. The kit (app-ui) move of the screens is not done yet (these apps still use the NUHS design kit): next.
 - 25 Oct 2026: all three roster apps pinned to app-sync 0.6.3 (pin only; held conflicts do not apply to the apps' own whole-document saves, the existing conflict sheet stays).
 - 25 Oct 2026: ntf-roster on app-sync 0.6.0 `createApp` too (PR waits for the owner); all three apps now share `lib/roster-core/docsync.js`.
 - 25 Oct 2026: nuh-roster on app-sync 0.6.0 `createApp` too (same shared `lib/roster-core/docsync.js`; its own copy removed).

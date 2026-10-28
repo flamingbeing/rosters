@@ -45,7 +45,7 @@ addEventListener('unhandledrejection', e => crashed(e.reason));
 // Loaded with import(), so a blocked core.anawj.com never stops the app; offline it comes from the saved copy.
 (function registerSW() {
   if (!('serviceWorker' in navigator) || location.protocol === 'file:' || window.ROSTER_MOVED_TO || /^(www\.)?anawj\.com$/.test(location.hostname)) return; // not at the old address (it redirects)
-  import('https://core.anawj.com/update/0.2.0/register.js').then(m => {
+  import('https://core.anawj.com/update/1.4.0/register.js').then(m => {
     // a new version takes over only when nobody is typing, no sheet is open and no save is waiting to be sent
     m.register({ app: 'nuh-roster', sw: 'sw.js', canReload: () => canReload(() => false) });
     const later = () => setTimeout(m.retryUpdate, 400);

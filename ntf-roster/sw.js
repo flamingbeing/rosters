@@ -1,4 +1,4 @@
-// Offline app shell for NTF Roster, on the shared update module (app-update 0.2.0: sw-core.js does the work; its README has
+// Offline app shell for NTF Roster, on the shared update module (app-update 1.4.0: sw-core.js does the work; its README has
 // the rules): the app opens with poor or no signal, with the roster this browser has saved. The deploy stamps VERSION and MANIFEST (tools/stamp-versions.mjs: a hash of the app's files,
 // and one per SHELL file so a phone fetches only the changed ones); never change them by hand. Change the v<N> only when
 // this file's own logic changes.
@@ -17,12 +17,12 @@ const SHELL = [
   'js/io.js', 'js/jpool.js', 'js/aps.js', 'js/ui-jpool.js', 'js/ui-aps.js', 'js/ui-requests.js', 'js/ui-reqprio.js', 'js/ui-ruleprio.js', 'js/rules-share.js', 'js/rules-text.js', 'js/rotations.js', 'js/people-pull.js', 'js/unsent.js', '../lib/roster-core/docsync.js', 'js/demo.js', 'js/cloud.js', 'js/firebase-config.js', 'js/ui-team.js', 'js/cloudstate.js', 'js/version.js', 'js/guide.js', 'js/tour.js',
   'icons/icon-192.png', 'icons/icon-512.png', 'icons/maskable-512.png', 'icons/apple-touch-icon.png', 'icons/favicon-32.png', 'icons/icon.svg',
   // the page side of app-update and the sync engine (exact versions), so the app opens offline
-  'https://core.anawj.com/update/0.2.0/register.js',
-  'https://core.anawj.com/sync/0.6.3/index.js', 'https://core.anawj.com/sync/0.6.3/src/sync.js', 'https://core.anawj.com/sync/0.6.3/src/writes.js', 'https://core.anawj.com/sync/0.6.3/src/conflict.js', 'https://core.anawj.com/sync/0.6.3/src/store.js', 'https://core.anawj.com/sync/0.6.3/src/outbox.js', 'https://core.anawj.com/sync/0.6.3/src/watchdog.js', 'https://core.anawj.com/sync/0.6.3/src/persist.js', 'https://core.anawj.com/sync/0.6.3/src/status.js', 'https://core.anawj.com/sync/0.6.3/src/forget.js', 'https://core.anawj.com/sync/0.6.3/src/firestore.js', 'https://core.anawj.com/sync/0.6.3/src/registry.js', 'https://core.anawj.com/sync/0.6.3/src/report.js', 'https://core.anawj.com/sync/0.6.3/src/app.js',
+  'https://core.anawj.com/update/1.4.0/register.js',
+  'https://core.anawj.com/sync/1.4.0/index.js', 'https://core.anawj.com/sync/1.4.0/app.js', 'https://core.anawj.com/sync/1.4.0/src/runner.js', 'https://core.anawj.com/sync/1.4.0/auth.js', 'https://core.anawj.com/sync/1.4.0/src/auth.js', 'https://core.anawj.com/sync/1.4.0/src/signin/anonymous.js', 'https://core.anawj.com/sync/1.4.0/src/signin/email-link.js', 'https://core.anawj.com/sync/1.4.0/src/signin/passcode.js', 'https://core.anawj.com/sync/1.4.0/src/signin/password.js', 'https://core.anawj.com/sync/1.4.0/src/user.js', 'https://core.anawj.com/sync/1.4.0/src/conflict.js', 'https://core.anawj.com/sync/1.4.0/src/core.js', 'https://core.anawj.com/sync/1.4.0/src/firestore.js', 'https://core.anawj.com/sync/1.4.0/src/forget.js', 'https://core.anawj.com/sync/1.4.0/src/kinds.js', 'https://core.anawj.com/sync/1.4.0/src/module-sync.js', 'https://core.anawj.com/sync/1.4.0/src/outbox.js', 'https://core.anawj.com/sync/1.4.0/src/persist.js', 'https://core.anawj.com/sync/1.4.0/src/registry.js', 'https://core.anawj.com/sync/1.4.0/src/replace.js', 'https://core.anawj.com/sync/1.4.0/src/status.js', 'https://core.anawj.com/sync/1.4.0/src/store.js', 'https://core.anawj.com/sync/1.4.0/src/sync.js', 'https://core.anawj.com/sync/1.4.0/src/view.js', 'https://core.anawj.com/sync/1.4.0/src/watchdog.js', 'https://core.anawj.com/sync/1.4.0/src/writes.js', 'https://core.anawj.com/sync/1.4.0/sync.js', 'https://core.anawj.com/sync/1.4.0/src/cache.js', 'https://core.anawj.com/sync/1.4.0/src/report.js',
 ];
 const MANIFEST = {};
 
-importScripts('https://core.anawj.com/update/0.2.0/sw-core.js');
+importScripts('https://core.anawj.com/update/1.4.0/sw-core.js');
 AppUpdate.init({
   app: 'ntf-roster', version: VERSION, shell: SHELL, manifest: MANIFEST,
   never: [/\/sw\.js$/],

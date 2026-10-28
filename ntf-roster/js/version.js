@@ -76,7 +76,7 @@ export function renderVersion(el) {
 // Register sw.js everywhere except ?nosw (and file://), through app-update's register.js: it checks for a new version on
 // every return to the tab and every 3 h, and reloads the page once when one takes over. Loaded with import(), so a
 // blocked core.anawj.com never stops the app; offline it comes from the saved copy (sw.js SHELL).
-export const UPDATE = 'https://core.anawj.com/update/0.2.0/register.js';
+export const UPDATE = 'https://core.anawj.com/update/1.4.0/register.js';
 export async function registerSW() {
   if (!('serviceWorker' in navigator) || location.protocol === 'file:' || new URLSearchParams(location.search).has('nosw')) return null;
   try {

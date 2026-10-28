@@ -6,15 +6,18 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
-export const APP_SYNC_VERSION = '0.6.3';
+export const APP_SYNC_VERSION = '1.4.0';
 export async function loadAppSync(version = APP_SYNC_VERSION) {
   let dir = process.env.APP_SYNC_DIR;
   if (!dir) {
     dir = join(mkdtempSync(join(tmpdir(), 'app-sync-')), 'app-sync');
     execFileSync('git', ['-c', 'advice.detachedHead=false', 'clone', '--quiet', '--depth', '1', '--branch', 'v' + version, 'https://github.com/flamingbeing/app-sync', dir], { stdio: 'inherit' });
   }
-  if (!existsSync(join(dir, 'index.js'))) throw new Error('No app-sync in ' + dir);
-  return import(pathToFileURL(join(dir, 'index.js')).href);
+  if (!existsSync(join(dir, 'app.js'))) throw new Error('No app-sync in ' + dir);
+  // the entries as createDocSync takes them: { createApp, auth, sync, recordSignature, VERSION }
+  const u = f => import(pathToFileURL(join(dir, f)).href);
+  const [a, au, sy, ix] = await Promise.all(['app.js', 'auth.js', 'sync.js', 'index.js'].map(u));
+  return { createApp: a.createApp, auth: au.auth, sync: sy.sync, recordSignature: ix.recordSignature, VERSION: a.VERSION, dir };
 }
 
 // localStorage for Node (the outbox falls back to it when there is no IndexedDB)

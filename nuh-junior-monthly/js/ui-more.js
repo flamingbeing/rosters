@@ -666,7 +666,7 @@ export function mount(el, app) {
     if (out instanceof Node && !out.parentNode) foot.append(out);
   }).catch(() => { /* version helper not there yet: show nothing */ });
 
-  root.append(teamSec, importSec, exportSheetSec, genSec, exportSec, backupSec, settingsSec, lookSec, helpSec, startSec, foot);
+  root.append(teamSec, importSec, exportSheetSec, genSec, exportSec, backupSec, settingsSec, helpSec, startSec, lookSec, foot);   // the look switch last: the screen reads as before it was added
 
   return {
     update(state) {

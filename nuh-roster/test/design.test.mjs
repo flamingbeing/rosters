@@ -12,7 +12,7 @@ const tok = Object.fromEntries([...tokens.matchAll(/--(n-[\w-]+)\s*:\s*([^;]+);/
 
 // the shared files, in order, and offline too
 const links = [...html.matchAll(/<link rel="stylesheet" href="([^"]+)"/g)].map(m => m[1]);
-assert.deepEqual(links.slice(-3), ['https://design.anawj.com/v1/tokens.css', 'https://design.anawj.com/v1/app.css', 'style.css'], 'tokens.css, then the kit, then style.css');
+assert.deepEqual(links.slice(-4), ['https://design.anawj.com/v1/tokens.css', 'https://design.anawj.com/v1/app.css', '../lib/roster-core/kit.css', 'style.css'], 'tokens.css, then the kit, then the UI kit bridge (kit.css), then style.css');
 assert.ok(html.includes('<script src="https://design.anawj.com/v1/app.js" defer></script>'), 'the kit\'s app.js');
 assert.match(html, /<body class="a-app">/, 'the page is an app-kit app');
 for (const f of ['https://design.anawj.com/v1/tokens.css', 'https://design.anawj.com/v1/app.css', 'https://design.anawj.com/v1/app.js']) assert.ok(sw.includes(`'${f}'`), `sw.js SHELL caches ${f}`);

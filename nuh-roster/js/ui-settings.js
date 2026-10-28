@@ -42,7 +42,8 @@ function roomEditor() {
       } }, '+ Add room'))))));
 }
 
-// this device's look, theme and density (the UI kit's switch): not a team setting, so outside Edit settings
+// this device's look, theme and density (the UI kit's switch): not a team setting, so outside Edit settings; at the
+// page end, so the screen reads as it did before the switch was added. Light only (lib/roster-core/kit.css).
 function lookCard() {
   const host = h('div', { class: 'kit-switch' });
   kitSwitch(host);
@@ -71,7 +72,6 @@ export function renderSettings() {
           : h('button', { onclick: () => { setSettingsEditing(true); render(); } }, 'Edit settings')),
       h('p', { class: 'hint', style: 'margin:0' }, settingsEditing ? 'Editing: changes apply straight away.' : 'Read only. Press Edit settings to change anything.'),
       teamSyncBar()),
-    lookCard(),
     h('fieldset', { class: 'lock', disabled: !settingsEditing },
     h('section', { class: 'card scroll' },
       h('h2', {}, 'Subspecialties'),
@@ -137,6 +137,7 @@ export function renderSettings() {
         h('button', { onclick: () => { if (confirm('Reset rules and subspecialties to the defaults? Staff are kept.')) { state.settings = clone(DEFAULT_SETTINGS); render(); } } }, 'Reset rules'),
         h('button', { onclick: () => { if (confirm('Delete everything stored in this browser (staff, day, roster)?')) { setState(blankState()); syncRooms(); render(); } } }, 'Delete all data in this browser')),
     )),
+    lookCard(),
     appVersion(),
   );
 }

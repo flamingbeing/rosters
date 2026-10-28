@@ -1,0 +1,53 @@
+/* The NUHS kit's colours from the UI kit (app-ui; lib/roster-core/kit.js), so the kit's Look switch reaches the
+   NUHS-drawn screens. Loaded after the NUHS kit (design.anawj.com/v1/), before the app's style.css.
+   Look A (the default) keeps the NUHS kit's own ink, greys, status colours and face, as the app looked before the kit
+   (the kit's palette is close but not the same: ink #1d1d1f, not #111418); only the accent follows the switch (NUHS
+   navy unless changed). Any other look takes the whole palette, ground and face.
+   Light only, as these apps are (their roster colours are fixed light values): the bridge is off when the kit paints
+   dark, and the page keeps the NUHS kit's light colours. Each pair is the same list: the first for Auto on a light
+   phone, the second for Light picked. Only under html[data-look]: before the kit paints they would be circular. */
+@media not (prefers-color-scheme: dark) {
+  :root[data-look]:not([data-theme="dark"]) {
+    --a-tint: var(--accent); --a-tint-ink: var(--on-accent); --a-focus: var(--focus);
+  }
+  :root[data-look]:not([data-look="a"], [data-theme="dark"]) {
+    --a-font: var(--font); --a-bg: var(--bg); --a-surface: var(--surface);
+    --a-surface-2: color-mix(in srgb, var(--text) 4%, var(--bg));
+    --a-bar: color-mix(in srgb, color-mix(in srgb, var(--surface), var(--bg)) 82%, transparent);
+    --a-sep: color-mix(in srgb, var(--text) 22%, transparent);
+    --a-ink: var(--text); --a-ink-2: var(--muted); --a-ink-3: color-mix(in srgb, var(--muted) 85%, var(--surface));
+    --a-tint-soft: oklch(from var(--accent) .93 .025 h);
+    --a-danger: var(--danger); --a-danger-bg: color-mix(in srgb, var(--danger) 12%, var(--surface));
+    --a-ok: var(--ok); --a-ok-bg: color-mix(in srgb, var(--ok) 14%, var(--surface));
+    --a-warn: var(--warn); --a-warn-bg: color-mix(in srgb, var(--warn) 16%, var(--surface));
+  }
+}
+:root[data-look][data-theme="light"] {
+  --a-tint: var(--accent); --a-tint-ink: var(--on-accent); --a-focus: var(--focus);
+}
+:root[data-look]:not([data-look="a"])[data-theme="light"] {
+  --a-font: var(--font); --a-bg: var(--bg); --a-surface: var(--surface);
+  --a-surface-2: color-mix(in srgb, var(--text) 4%, var(--bg));
+  --a-bar: color-mix(in srgb, color-mix(in srgb, var(--surface), var(--bg)) 82%, transparent);
+  --a-sep: color-mix(in srgb, var(--text) 22%, transparent);
+  --a-ink: var(--text); --a-ink-2: var(--muted); --a-ink-3: color-mix(in srgb, var(--muted) 85%, var(--surface));
+  --a-tint-soft: oklch(from var(--accent) .93 .025 h);
+  --a-danger: var(--danger); --a-danger-bg: color-mix(in srgb, var(--danger) 12%, var(--surface));
+  --a-ok: var(--ok); --a-ok-bg: color-mix(in srgb, var(--ok) 14%, var(--surface));
+  --a-warn: var(--warn); --a-warn-bg: color-mix(in srgb, var(--warn) 16%, var(--surface));
+}
+/* The kit's base rules on bare elements (theme.css: body face and size, h1-h3 line height, h1 heading face, button
+   and field boxes, link colour, focus ring) are off: index.html imports the kit into layer kit, and this later layer
+   puts those elements back to the browser's defaults under it. The NUHS kit and style.css (not in a layer) still win. */
+@layer kit-base-off {
+  body, h1, h2, h3, button, input, select, textarea, a, :focus-visible, ::selection { all: revert; }
+}
+/* Solid (the switch, or the glass guard): the bars are the plain surface, as glass.css would make them */
+:root[data-look]:not(.glass) { --a-bar: var(--a-surface); }
+:root[data-look]:not(.glass) :is(.a-bar, .a-tabbar) { -webkit-backdrop-filter: none; backdrop-filter: none; }
+/* the kit's Look switch on the Settings / More screen (its row layout is in the kit's ui.css, which these apps do not load) */
+.kit-switch .theme-switch { display: flex; flex-wrap: wrap; gap: 10px 18px; }
+.kit-switch .theme-switch label { display: inline-flex; align-items: center; gap: 8px; }
+/* light only: no Theme or Dark style picker (the NUHS kit would turn its own parts dark under the roster's fixed light
+   colours; the kit's switch has no light-only option yet) */
+.kit-switch .theme-switch label:has(> :is(#theme-pick, #dark-pick)) { display: none; }

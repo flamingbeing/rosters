@@ -6,6 +6,7 @@ import { demoLink } from './ui-practice.js';
 import { render } from './ui-screen.js';
 import { setSettingsEditing, settingsEditing } from './ui-cases.js';
 import { isAdmin, isMember, membersCard, teamSyncBar } from './ui-team.js';
+import { kitSwitch } from '../../lib/roster-core/kit.js';
 
 // ----- settings tab -----
 
@@ -41,6 +42,16 @@ function roomEditor() {
       } }, '+ Add room'))))));
 }
 
+// this device's look, theme and density (the UI kit's switch): not a team setting, so outside Edit settings
+function lookCard() {
+  const host = h('div', { class: 'kit-switch' });
+  kitSwitch(host);
+  return h('section', { class: 'card', 'aria-labelledby': 'look-h' },
+    h('h2', { id: 'look-h' }, 'Look and theme'),
+    h('p', { class: 'hint' }, 'Kept on this device only.'),
+    host);
+}
+
 export function renderSettings() {
   const st = state.settings;
   const subRow = s => h('tr', {},
@@ -60,6 +71,7 @@ export function renderSettings() {
           : h('button', { onclick: () => { setSettingsEditing(true); render(); } }, 'Edit settings')),
       h('p', { class: 'hint', style: 'margin:0' }, settingsEditing ? 'Editing: changes apply straight away.' : 'Read only. Press Edit settings to change anything.'),
       teamSyncBar()),
+    lookCard(),
     h('fieldset', { class: 'lock', disabled: !settingsEditing },
     h('section', { class: 'card scroll' },
       h('h2', {}, 'Subspecialties'),

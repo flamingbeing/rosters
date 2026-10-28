@@ -131,6 +131,17 @@ ok(!(await page.$('.month-issues')), 'demo month starts without clashes');
 await page.evaluate(() => { const ins = document.querySelectorAll('table.monthly tbody tr')[4].querySelectorAll('input'); ins[1].value = ins[0].value; ins[1].dispatchEvent(new Event('change', { bubbles: true })); });
 await page.waitForTimeout(300);
 ok(await page.$('td.clash'), 'two overnight duties marked');
+// the month is a kit data grid: Esc leaves a name for its cell, arrows move between cells, Enter goes into a name
+ok(await page.$eval('table.monthly', t => t.getAttribute('role')) === 'grid', 'the month is a data grid');
+const at = () => page.evaluate(() => { const a = document.activeElement; return [a.tagName, (a.closest('td') || a).cellIndex]; });
+await page.focus('table.monthly tbody tr:nth-child(5) td input');
+await page.keyboard.press('Escape');
+ok(JSON.stringify(await at()) === '["TD",2]', 'Esc leaves the name for its cell');
+await page.keyboard.press('ArrowRight');
+ok(JSON.stringify(await at()) === '["TD",3]', 'an arrow moves to the next cell');
+await page.keyboard.press('Enter');
+ok(JSON.stringify(await at()) === '["INPUT",3]', 'Enter goes into the name');
+await page.keyboard.press('Escape');
 const cells = async () => page.$$eval('table.monthly input', is => is.filter(i => i.value).length);
 const full = await cells();
 await page.click('main button:has-text("Clear")'); await page.waitForTimeout(200);

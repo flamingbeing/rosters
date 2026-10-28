@@ -8,6 +8,7 @@ import { fixNamesCard } from './ui-cases.js';
 import { nameInput, pushUndo } from './ui-roster.js';
 import { renderRotations } from './ui-rotations.js';
 import { renderToday } from './ui-today.js';
+import { rosterGrid } from '../../lib/roster-core/kit.js';
 
 // ----- monthly tab -----
 
@@ -234,19 +235,23 @@ function renderMonthlyRoster(kind) {
     const f = flagged[`${d}|${c.key}`];
     return h('td', { class: f ? (f.some(i => i.level === 'error') ? 'clash' : 'gap') : null }, nameInput({ value: v, class: v && !personByText(v) ? 'unmatched' : '', title: v && !personByText(v) ? unmatchedTitle(v) : f ? f.map(i => i.text).join(' ') : '', 'aria-invalid': f?.some(i => i.level === 'error') ? 'true' : null,
       onchange: e => set(d, c.key, cleanCell(e.target.value)),
-      onkeydown: e => { if (e.key === 'Enter') { e.preventDefault(); e.target.blur(); } } }));
+      onkeydown: e => { if (e.key === 'Enter') { e.preventDefault(); e.target.closest('td').focus(); } } }));   // Enter keeps it and goes back to the cell
   };
   const days = Array.from({ length: daysIn(month) }, (_, i) => i + 1);
-  return h('div', {}, monthlyBar(kind),
-    h('section', { class: 'card scroll' }, h('table', { class: 'monthly' },
-      h('thead', {}, h('tr', {}, ['Date', 'Day', ...def.cols.map(c => `${c.label}${c.to ? ' •' : ''}${c.night ? ' ☾' : ''}`)].map(t => h('th', {}, t)))),
-      h('tbody', {}, days.map(d => {
-        const wd = weekday(month, d);
-        return h('tr', { class: (wd === 'Sat' || wd === 'Sun' ? 'weekend' : '') + (d === today ? ' today' : '') },
-          h('td', {}, h('button', { class: 'link', title: 'Go to this day', onclick: () => { switchDate(`${month}-${String(d).padStart(2, '0')}`); } }, d)),
-          h('td', { class: 'seen' }, wd),
-          def.cols.map(c => cell(d, c)));
-      })))));
+  // the kit's data grid: the header row and the date column stay in view; arrows move, Enter or F2 edits a name
+  const table = h('table', { class: 'monthly ui-data-grid', 'data-size': 'dense', 'aria-label': `${def.title || def.label}, ${monthName(month)}` },
+    h('thead', {}, h('tr', {},
+      h('th', { scope: 'col' }, 'Date'), h('th', { scope: 'col' }, 'Day'),
+      def.cols.map(c => h('th', { scope: 'col', 'data-key': c.key }, `${c.label}${c.to ? ' •' : ''}${c.night ? ' ☾' : ''}`)))),
+    h('tbody', {}, days.map(d => {
+      const wd = weekday(month, d);
+      return h('tr', { 'data-key': String(d), class: (wd === 'Sat' || wd === 'Sun' ? 'weekend' : '') + (d === today ? ' today' : '') },
+        h('th', { scope: 'row' }, h('button', { class: 'link', title: 'Go to this day', onclick: () => { switchDate(`${month}-${String(d).padStart(2, '0')}`); } }, d)),
+        h('td', { class: 'seen' }, wd),
+        def.cols.map(c => cell(d, c)));
+    })));
+  rosterGrid(table);
+  return h('div', {}, monthlyBar(kind), h('section', { class: 'card' }, h('div', { class: 'ui-data-grid-box' }, table)));
 }
 
 let leaveFilter = '';

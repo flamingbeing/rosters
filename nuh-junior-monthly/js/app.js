@@ -686,6 +686,8 @@ function fatal(msg) {
 }
 
 async function start() {
+  // the UI kit's look, theme and density (NUHS navy); the app works without it
+  import('../../lib/roster-core/kit.js').then(k => k.startKit({ accent: '#002f6c' }), () => {});
   const demo = new URLSearchParams(location.search).has('demo');
   // Ask for every module the first screen needs at once, not one after another (each is a round trip on a slow
   // line): the model, rules, store, the practice department and the first screen's own view (from the link; phones

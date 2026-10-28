@@ -52,6 +52,19 @@ Setup steps (first admin, deploy) are in [README.md](README.md). What is happeni
 - Rules: `bash tools/test-rules.sh` (`test/rules.emulator.mjs`, the kit's shared suite `test/rules.kit.emulator.mjs`,
   and the Worker's claims routes end to end in `worker/test/roster.emulator.mjs`), in the Checks `rules` job.
 
+## The UI kit (28 Oct 2026, app-ui 1.0.0-rc.23)
+
+- `lib/roster-core/kit.js` (one copy for the roster apps) pins app-ui at an exact version: `startKit({ accent })` applies
+  this device's look, theme and density (default look A, NUHS navy accent), `kitSwitch(host)` puts the kit's pickers in
+  Settings ("Look and theme", outside the edit lock), and `rosterGrid(table)` makes the Monthly table a kit data grid (arrows between cells, Enter or F2 into a name, Esc back to its cell). Each loads the kit with a dynamic import and only warns if it fails, so the app works without it.
+- `index.html` links `theme/early.js`, `theme/theme.css` and `ui/layout.css` before the NUHS kit; `sw.js` SHELL lists
+  `KIT_SHELL` (the kit's files the page loads, checked by `test/precache.test.mjs`). Bump the version in kit.js,
+  index.html and sw.js together.
+- Only theme.css and layout.css are loaded: the kit's ui.css, glass.css and gestures.css still style bare class names
+  (`.bar`, `.sheet`, `.chip`, `.small`, `.row`, `.danger`) that this app uses for its own things. Hence the small rules at
+  the end of `style.css` (the NUHS face on h1; the look switch's row layout).
+- The NUHS shell (header, tab bar, side bar) stays for now; moving it to the kit's shell is a later step.
+
 ## Roles and the rules kit (25 Oct 2026)
 
 - Rules: edit `firestore.app.rules`, then build the committed `firestore.rules` with app-devkit's

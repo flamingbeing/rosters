@@ -8,6 +8,9 @@ import { maybeWhatsNew, setLastRows, showKey, showShortcuts, undo } from './ui-r
 import { closeTagEditor } from './ui-tags.js';
 import { openOnTheRightDay } from './ui-myday.js';
 import { canReload, onUnsentChange } from './unsent.js';
+import { startKit } from '../../lib/roster-core/kit.js';
+
+startKit({ accent: '#002f6c' });   // the UI kit: this device's look, theme and density, in NUHS navy
 
 Object.assign(hooks, { renderStoreBar, undo });
 

@@ -17,11 +17,12 @@
 <link rel="icon" href="icons/favicon-32.png" sizes="32x32">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <!-- the UI kit (app-ui, exact version; lib/roster-core/kit.js): this device's look, theme and density, before the NUHS kit -->
-<script src="https://core.anawj.com/ui/1.0.0-rc.23/theme/early.js"></script>
-<link rel="stylesheet" href="https://core.anawj.com/ui/1.0.0-rc.23/theme/theme.css">
-<link rel="stylesheet" href="https://core.anawj.com/ui/1.0.0-rc.23/ui/layout.css">
+<script src="https://core.anawj.com/ui/1.0.0-rc.29/theme/early.js"></script>
+<!-- in a cascade layer, so the kit's base rules (button, h1, body) never win over the NUHS kit or style.css -->
+<style>@import url("https://core.anawj.com/ui/1.0.0-rc.29/theme/theme.css") layer(kit); @import url("https://core.anawj.com/ui/1.0.0-rc.29/ui/layout.css") layer(kit);</style>
 <link rel="stylesheet" href="https://design.anawj.com/v1/tokens.css">
 <link rel="stylesheet" href="https://design.anawj.com/v1/app.css">
+<link rel="stylesheet" href="../lib/roster-core/kit.css">
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="css/rules.css">
 <script src="https://design.anawj.com/v1/app.js" defer></script>

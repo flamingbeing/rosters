@@ -52,17 +52,23 @@ Setup steps (first admin, deploy) are in [README.md](README.md). What is happeni
 - Rules: `bash tools/test-rules.sh` (`test/rules.emulator.mjs`, the kit's shared suite `test/rules.kit.emulator.mjs`,
   and the Worker's claims routes end to end in `worker/test/roster.emulator.mjs`), in the Checks `rules` job.
 
-## The UI kit (28 Oct 2026, app-ui 1.0.0-rc.23)
+## The UI kit (28 Oct 2026, app-ui 1.0.0-rc.29)
 
 - `lib/roster-core/kit.js` (one copy for the roster apps) pins app-ui at an exact version: `startKit({ accent })` applies
   this device's look, theme and density (default look A, NUHS navy accent), `kitSwitch(host)` puts the kit's pickers in
   Settings ("Look and theme", outside the edit lock), and `rosterGrid(table)` makes the Monthly table a kit data grid (arrows between cells, Enter or F2 into a name, Esc back to its cell). Each loads the kit with a dynamic import and only warns if it fails, so the app works without it.
-- `index.html` links `theme/early.js`, `theme/theme.css` and `ui/layout.css` before the NUHS kit; `sw.js` SHELL lists
-  `KIT_SHELL` (the kit's files the page loads, checked by `test/precache.test.mjs`). Bump the version in kit.js,
-  index.html and sw.js together.
+- `index.html` links `theme/early.js`, then imports `theme/theme.css` and `ui/layout.css` into a CSS layer (`kit`)
+  before the NUHS kit, then `lib/roster-core/kit.css`, then `style.css`; `sw.js` SHELL lists `KIT_SHELL` (the kit's files
+  the page loads, checked by `test/precache.test.mjs`) and kit.css. Bump the version in kit.js, index.html and sw.js
+  together.
+- The look matches the app before the kit (pixel diff 0.00% at 390 and 1280 px on every tab, R3 refine): the layer makes
+  every NUHS and app rule win; `kit.css` turns the kit's base element rules off (`kit-base-off` layer, `all: revert`) and
+  keeps the NUHS colours and face in look A (the default; only the accent follows the switch) and maps the NUHS `--a-*` tokens to the kit's whole palette in the other looks, light only. The app's own variables are
+  `--r-*` (`--r-accent`, `--r-line`…), because the kit's palette sets plain names (`--accent`, `--line`, `--bg`…).
+- Light only: the NUHS kit goes dark on `data-theme`, so kit.css hides the Theme and Dark style pickers. The look switch
+  sits at the end of Settings, so the screen reads as before it was added.
 - Only theme.css and layout.css are loaded: the kit's ui.css, glass.css and gestures.css still style bare class names
-  (`.bar`, `.sheet`, `.chip`, `.small`, `.row`, `.danger`) that this app uses for its own things. Hence the small rules at
-  the end of `style.css` (the NUHS face on h1; the look switch's row layout).
+  (`.bar`, `.sheet`, `.chip`, `.small`, `.row`, `.danger`) that this app uses for its own things.
 - The NUHS shell (header, tab bar, side bar) stays for now; moving it to the kit's shell is a later step.
 
 ## Roles and the rules kit (25 Oct 2026)

@@ -28,5 +28,5 @@ ok(/unsent\.save\(/.test(src['ui-team.js']), 'Save to cloud goes through unsent.
 ok(/unsent\.leave\(/.test(src['ui-team.js']), 'sign-out goes through the outbox gate (forgetDevice)');
 // app-sync is loaded in one place, at the exact pin
 ok(who(/core\.anawj\.com\/sync\//).join() === 'unsent.js', 'only unsent.js loads app-sync');
-ok(/core\.anawj\.com\/sync\/\d+\.\d+\.\d+\/index\.js/.test(src['unsent.js']), 'app-sync is pinned to an exact version');
+ok(/core\.anawj\.com\/sync\/\d+\.\d+\.\d+\//.test(src['unsent.js']), 'app-sync is pinned to an exact version');
 console.log(`ntf-roster adapter: ${n} checks passed`);

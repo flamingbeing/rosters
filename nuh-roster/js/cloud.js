@@ -67,7 +67,7 @@ let fresh;   // the entry membership() has just read, so the claims check does n
 export async function membership(email) {
   const entry = await readMember(email);
   fresh = entry;
-  await (await appOf())?.refreshClaims();
+  await (await appOf())?.auth.refreshClaims();
   fresh = undefined;
   return entry;
 }

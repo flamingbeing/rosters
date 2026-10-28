@@ -91,10 +91,10 @@ in the Checks `rules` job.
 
 What is happening now and the owner's dated decisions are kept outside this repo.
 
-## Unsent saves (25 Oct 2026, app-sync 0.6.3 `createApp`)
+## Unsent saves (25 Oct 2026, app-sync (1.4.0 since 28 Oct 2026: `createApp({ config, modules })`))
 
 - Save to cloud goes through `js/unsent.js` > `lib/roster-core/docsync.js` (one copy for the roster apps): app-sync's
-  `createApp` with the app's own write as its `commit`, exact pin `core.anawj.com/sync/0.6.3/`, every module precached in `sw.js`. The write is still `cloud.saveAll` (staff list, rules
+  `createApp` with the app's own write as its `commit`, exact pin `core.anawj.com/sync/1.4.0/`, every module precached in `sw.js`. The write is still `cloud.saveAll` (staff list, rules
   and changed months in one transaction, with its per-document "someone saved first" check and sheet prompt). Offline or
   cut off: the save is kept on the device ("Kept on this device"), the Team sharing panel shows how many wait (Retry;
   Set aside when one failed), and it is sent when the connection returns; this browser then counts it as saved
@@ -111,7 +111,7 @@ What is happening now and the owner's dated decisions are kept outside this repo
   outbox could not load). The roster in this browser stays, as before.
 - Back-to-back offline saves of the roster carry the same seen copy; `docsync.js` sends each later one against the time the
   previous one wrote, so it does not conflict with this device's own save.
-- Update module 0.2.0 with `canReload`: a new version waits while someone is typing, a dialog or sheet is open, or a save
+- Update module 1.4.0 with `canReload`: a new version waits while someone is typing, a dialog or sheet is open, or a save
   waits; tried again on focus loss and when the outbox empties. "Get the latest version" is unchanged.
 - Tests: `test/docsync.test.mjs` and `test/precache.test.mjs` (as in nuh-roster; they load app-sync's tag with
   `tools/app-sync-for-tests.mjs`).

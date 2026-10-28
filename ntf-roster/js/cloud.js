@@ -121,7 +121,7 @@ export async function watchUser(cb) {
 export async function signIn() {
   const { auth, A } = await sdk();
   const app = await appOf();
-  if (app) { await app.signIn(); return auth.currentUser; }
+  if (app) { await app.auth.signIn(); return auth.currentUser; }
   const provider = new A.GoogleAuthProvider();
   provider.setCustomParameters({ prompt: 'select_account' });
   return (await A.signInWithPopup(auth, provider)).user;
@@ -150,7 +150,7 @@ export async function myMember() {
   const { email } = await me();
   const entry = await readMember(email);
   fresh = entry;
-  await (await appOf())?.refreshClaims();
+  await (await appOf())?.auth.refreshClaims();
   fresh = undefined;
   return entry;
 }

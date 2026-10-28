@@ -66,11 +66,11 @@ Setup steps (first admin, deploy) are in [README.md](README.md). What is happeni
   once. Without the secrets `ROSTER_SA_EMAIL` and `ROSTER_SA_KEY` both answer 503 and everything runs on the members entry.
 - `members/{email}.v`: 1 when added, one more on each role change (rules-checked; older entries without one count as 0).
 
-## Unsent saves (25 Oct 2026, app-sync 0.6.3 `createApp`)
+## Unsent saves (25 Oct 2026, app-sync (1.4.0 since 28 Oct 2026: `createApp({ config, modules })`))
 
 - Saving the roster for a date and "Save for the team" go through `js/unsent.js` > `lib/roster-core/docsync.js` (one copy
   for the roster apps): app-sync's `createApp` with these writes as its `commit` (outbox in IndexedDB, then localStorage),
-  exact pin `core.anawj.com/sync/0.6.3/`, every module precached in
+  exact pin `core.anawj.com/sync/1.4.0/`, every module precached in
   `sw.js`. The write itself is still `cloud.saveRoster` / `saveTeamAll` (one transaction, the same "someone saved first"
   check and confirm). Offline or cut off: the save is kept on the phone ("Kept on this phone"), a chip in the cloud bar
   shows how many wait (Retry; Set aside when one failed), and it is sent when the connection returns. A save whose answer
@@ -81,7 +81,7 @@ Setup steps (first admin, deploy) are in [README.md](README.md). What is happeni
   which doesn't work across `firebaseapp.com`. `membership()` hands the entry it read to `refreshClaims` (no second read).
 - Sign-out (both buttons) refuses while any save is unsent, then createApp's sign-out forgets the outbox and signs the account out (and, for "Sign out
   and clear this computer", the roster, staff list and name in this browser).
-- Update module 0.2.0 with `canReload`: a new version waits while someone is typing in a field or cell, a dialog or the
+- Update module 1.4.0 with `canReload`: a new version waits while someone is typing in a field or cell, a dialog or the
   person box is open, or a save waits. It is tried again when the field loses focus or the outbox empties.
 - If core.anawj.com can't be reached the saves go straight to the team's copy as before (no outbox); sign-out still runs
   its own clean-up then (`leaveWith`).

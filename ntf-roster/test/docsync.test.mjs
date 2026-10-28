@@ -6,13 +6,13 @@ import { installFakeStorage, loadAppSync } from '../../tools/app-sync-for-tests.
 import { createDocSync, canReloadNow } from '../../lib/roster-core/docsync.js';
 
 const storage = installFakeStorage();
-const sync = await loadAppSync('0.6.3');
+const sync = await loadAppSync('1.4.0');
 let n = 0;
 const ok = (v, name) => { n++; assert.ok(v, name); };
 const eq = (a, b, name) => { n++; assert.deepEqual(a, b, name); };
 // the app's own Firebase SDK, faked: the signed-in account, and a sign-out that clears it
 const signedOut = [];
-const fakeSdk = user => async () => ({ A: { onAuthStateChanged() {}, signOut: async () => { signedOut.push(user()); } }, auth: { currentUser: null }, F: {}, db: {}, emulator: true });
+const fakeSdk = user => async () => ({ A: { onAuthStateChanged() {}, signOut: async () => { signedOut.push(user()); } }, auth: { get currentUser() { return user() ? { uid: 'u1', email: user() } : null; } }, F: {}, db: {}, emulator: true });
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const delay = ms => new Promise(r => setTimeout(r, Math.min(ms, 20)));
 class Conflict extends Error { constructor(current) { super('Someone else saved first.'); this.current = current; } }
@@ -34,7 +34,7 @@ function world() {
 
 // online: sent at once, with the answer; the write is the app's own, seen copy passed through
 {
-  const w = world(), d = w.make();
+  const w = world(), d = await w.make();
   const r = await d.save('roster', '2026-10-26', { day: 1 }, 100);
   ok(r.sent && r.result.at === 101, 'online save is sent and returns the new time');
   eq(w.calls.map(c => [c.kind, c.seen, c.force]), [['roster', 100, false]], 'the app\'s write got the copy this browser saw, not forced');
@@ -43,7 +43,7 @@ function world() {
 
 // offline: kept on this device, not written; sign-out refuses; going online sends it once
 {
-  const w = world(); w.online = false; const d = w.make();
+  const w = world(); w.online = false; const d = await w.make();
   const r = await d.save('roster', '2026-10-26', { day: 2 }, 100);
   ok(r.sent === false && r.key, 'offline save is kept (not sent) and has a key');
   eq(w.calls.length, 0, 'offline: nothing written to the team');
@@ -60,8 +60,8 @@ function world() {
 // kept across a reload: a new page picks the outbox up and sends it
 {
   const w = world(); w.online = false; w.outbox = 'test-outbox-2';
-  await w.make().save('team', 'main', { staff: ['x'] }, 100);
-  w.online = true; const d2 = w.make();
+  await (await w.make()).save('team', 'main', { staff: ['x'] }, 100);
+  w.online = true; const d2 = await w.make();
   await d2.activate(); await sleep(150);
   eq(w.calls.length, 1, 'after a reload the waiting save is sent');
   ok(w.copy.body.staff[0] === 'x', 'with the content that was saved');
@@ -69,7 +69,7 @@ function world() {
 
 // a dropped connection: waits, then goes through
 {
-  const w = world(); w.outbox = 'test-outbox-3'; const d = w.make();
+  const w = world(); w.outbox = 'test-outbox-3'; const d = await w.make();
   w.fail = Object.assign(new Error('offline'), { code: 'unavailable' });
   const r = await d.save('roster', 'd', { v: 1 }, 100);
   await sleep(200);
@@ -78,7 +78,7 @@ function world() {
 
 // someone saved first: nothing is overwritten; the user chooses
 {
-  const w = world(); w.outbox = 'test-outbox-4'; const d = w.make();
+  const w = world(); w.outbox = 'test-outbox-4'; const d = await w.make();
   let err = null;
   try { await d.save('roster', 'd', { v: 1 }, 50); } catch (e) { err = e; }
   ok(err instanceof Conflict && err.key && err.current.updatedAt === 100, 'a copy that moved on throws the app\'s Conflict with the other copy and a key');
@@ -96,7 +96,7 @@ function world() {
 // a save whose answer was lost: the team's copy already has it, so it is not a conflict
 {
   const w = world(); w.outbox = 'test-outbox-5';
-  const d = w.make({ already: async (kind, body) => (w.copy.body && w.copy.body.v === body.v ? { at: w.copy.at } : null) });
+  const d = await w.make({ already: async (kind, body) => (w.copy.body && w.copy.body.v === body.v ? { at: w.copy.at } : null) });
   w.copy = { at: 200, body: { v: 7 } };
   const r = await d.save('roster', 'd', { v: 7 }, 100);
   ok(r.sent && r.result.at === 200, 'identical content already there counts as sent');
@@ -104,28 +104,28 @@ function world() {
 
 // sign-out when nothing is unsent: allowed, and the outbox is forgotten (the extra step runs)
 {
-  const w = world(); w.outbox = 'test-outbox-6'; const d = w.make(); let extra = 0;
+  const w = world(); w.outbox = 'test-outbox-6'; const d = await w.make(); let extra = 0;
   await d.save('roster', 'd', { v: 1 }, 100);
   ok(Object.keys(storage).some(k => k.startsWith('test-outbox-6-outbox:')) || true, 'outbox holds the finished save');
   ok(await d.signOut({ extra: async () => { extra++; } }) === true && extra === 1, 'sign-out goes ahead with nothing unsent and runs the app\'s own clean-up');
   ok(!Object.keys(storage).some(k => k.startsWith('test-outbox-6-outbox:')), 'the outbox is forgotten at sign-out');
   ok(signedOut.length === 1, 'and the account is signed out, after the clean-up');
-  const gone = await w.make().save('roster', 'd', { v: 3 }, 101);
+  const gone = await (await w.make()).save('roster', 'd', { v: 3 }, 101);
   ok(gone.sent, 'the next sign-in starts clean');
 }
 
 // a different account does not see or send the first one's waiting saves
 {
   const w = world(); w.online = false; w.outbox = 'test-outbox-7';
-  await w.make().save('roster', 'd', { v: 1 }, 100);
-  w.user = 'b@x.sg'; w.online = true; const d = w.make(); await d.activate(); await sleep(100);
+  await (await w.make()).save('roster', 'd', { v: 1 }, 100);
+  w.user = 'b@x.sg'; w.online = true; const d = await w.make(); await d.activate(); await sleep(100);
   eq(w.calls.length, 0, 'another account\'s outbox is not sent');
 }
 
 // two offline saves of one document: the second carries the same seen copy as the first, but the first moved the copy
 // on; it must not conflict with the device's own save
 {
-  const w = world(); w.online = false; w.outbox = 'test-outbox-8'; const d = w.make();
+  const w = world(); w.online = false; w.outbox = 'test-outbox-8'; const d = await w.make();
   const a = await d.save('roster', 'd', { v: 1 }, 100);
   const b = await d.save('roster', 'd', { v: 2 }, 100);
   ok(a.sent === false && b.sent === false, 'both offline saves are kept');

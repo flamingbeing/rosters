@@ -45,10 +45,9 @@ repo; never copy anything from there into this repo, a PR or an issue (neutral p
 node .devkit/tools/check.mjs                          # repo checks + Worker tests
 for f in */test/*.test.mjs; do node "$f" || break; done   # unit tests
 node .devkit/tools/proofread.mjs                      # page and doc mistakes
-python3 -m http.server 8080 &                 # then the touched app's browser tests, e.g.
-node ntf-roster/test/e2e.mjs                  # (PLAYWRIGHT_PATH=... CHROMIUM_PATH=... in a cloud session)
-bash tools/test-rules.sh                      # when a firestore.rules changes
 ```
+
+Locally only those (plus the one browser test being fixed: `python3 -m http.server 8080 &`, then e.g. `node ntf-roster/test/e2e.mjs`). PR Checks on GitHub run the quick set (about 1.7 minutes: Chromium phone-size browser tests in parallel, rules, unit, proof-read) and gate merge and deploy; there is no WebKit, Firefox or jank gate here, so no separate full-checks workflow. Run the rest there, not locally first.
 
 `.devkit/` (git-ignored) holds the kit's tools; CI copies it with `app-devkit/setup-tools@v1.6.0`. Locally:
 `git clone --depth 1 --branch v1.6.0 https://github.com/flamingbeing/app-devkit /tmp/devkit && mkdir -p .devkit && cp -R /tmp/devkit/{tools,playwright,rules,worker} .devkit/`.

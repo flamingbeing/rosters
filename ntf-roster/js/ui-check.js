@@ -7,6 +7,7 @@ import * as M from './model.js';
 import { RULE_TYPES, describeRule } from './rules.js';
 import { whoMatches, whenMatches, chipStyle } from './ui-rules.js';
 import { renderAps, renderLeave } from './ui-aps.js';
+import { rosterGrid } from '../../lib/roster-core/kit.js';
 
 const PAGE = 6;   // problems shown per rule before "Show all"
 
@@ -155,7 +156,7 @@ export function mount(el, app) {
     const keys = [...cols.map(d => ({ k: d.code, label: d.code, du: d, title: d.name })), { k: 'we', label: 'Wk', title: 'Weekend days with any of these duties (Wk, as on the roster)' }, { k: 'hol', label: 'PH', title: 'Public holidays with any of these duties' }, { k: 'total', label: 'Total', title: 'All of these duties' }];
     panel.append(h('p', { class: 'bx-help' }, `Counts for ${M.fmtMonth(app.month)}. Highlighted: well above or below the group's average, per FTE (part-timers are compared on their share).`),
       h('p', { class: 'cv-legend' }, h('span', { class: 'cv-hi-k' }, 'More than average'), h('span', { class: 'cv-lo-k' }, 'Less than average')));
-    const table = h('table', { class: 'cv-table cv-fair' });
+    const table = h('table', { class: 'cv-table cv-fair ui-data-grid', 'data-size': 'extra', 'aria-label': 'Fairness' });
     table.append(h('thead', null, h('tr', null, h('th', { scope: 'col', class: 'cv-name' }, 'Name'),
       keys.map(k => h('th', { scope: 'col', title: k.title }, k.du ? h('span', { class: 'chip', style: chipStyle(k.du) }, k.label) : k.label)))));
     const tb = h('tbody');
@@ -181,6 +182,7 @@ export function mount(el, app) {
       tb.append(h('tr', { class: 'cv-mean' }, h('th', { scope: 'row', class: 'cv-name' }, 'Average'), keys.map(k => h('td', null, mean[k.k] ? mean[k.k].toFixed(1) : '·'))));
     }
     table.append(tb);
+    rosterGrid(table);   // the kit's data grid: one Tab stop in the table, arrows move between cells
     panel.append(h('div', { class: 'cv-scroll', tabindex: '0', role: 'region', 'aria-label': 'Fairness table' }, table));
   }
 
@@ -220,7 +222,7 @@ export function mount(el, app) {
       }
       return;
     }
-    const table = h('table', { class: 'cv-table cv-cov' });
+    const table = h('table', { class: 'cv-table cv-cov ui-data-grid', 'data-size': 'extra', 'aria-label': 'Coverage' });
     table.append(h('thead', null, h('tr', null, h('th', { scope: 'col', class: 'cv-name' }, 'Rule'),
       days.map(s => h('th', { scope: 'col', class: `${M.isWeekend(s) ? 'we' : ''}${M.isHoliday(st, s) ? ' hol' : ''}`, title: M.fmtDay(s) + (M.isHoliday(st, s) ? `, ${M.holidayName(st, s)}` : '') },
         h('span', { class: 'cv-dn' }, String(Number(s.slice(8)))), h('span', { class: 'cv-dw' }, 'SMTWTFS'[M.weekday(s)]))),
@@ -234,6 +236,7 @@ export function mount(el, app) {
           : h('td', { class: c.status }, h('button', { type: 'button', class: 'cv-cellbtn', title: `${M.fmtDay(c.s)}: ${c.n}, ${c.status === 'under' ? `needs ${c.min}` : `at most ${c.max}`}`,
             'aria-label': `${M.fmtDay(c.s)}: ${c.n}, ${c.status === 'under' ? `needs ${c.min}` : `at most ${c.max}`}. Show`, onclick: () => goDay(c.s) }, String(c.n)))),
       h('td', { class: `cv-tot${row.under.length + row.over.length ? ' bad' : ''}` }, String(row.under.length + row.over.length))))));
+    rosterGrid(table);
     panel.append(h('div', { class: 'cv-scroll', tabindex: '0', role: 'region', 'aria-label': 'Coverage table' }, table));
   }
 

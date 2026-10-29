@@ -9,6 +9,10 @@ let R = null;      // rules.js (may be missing while it is being built)
 let CS = null;     // cloudstate.js: what the header's cloud button shows (null while the cloud is off)
 let G = null;      // guide.js: Getting started, Help, the tour (tour.js) and "Try it yourself"
 
+// the UI kit: this device's look, theme and density (lib/roster-core/kit.js), in NUHS navy; loaded on demand, the app
+// opens on its own styles when core is out of reach
+import('../../lib/roster-core/kit.js').then(k => k.startKit({ accent: '#002f6c' })).catch(e => console.warn('UI kit not loaded', e));
+
 const TABS = {
   roster: { label: 'Roster', icon: 'grid', mod: './ui-roster.js' },
   day: { label: 'Day', icon: 'day', mod: './ui-day.js' },

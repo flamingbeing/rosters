@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { KIT, KIT_SHELL, KIT_VERSION } from '../../lib/roster-core/kit.js';
 import { loadAppSync } from '../../tools/app-sync-for-tests.mjs';
 
 const APP_SYNC_VERSION = '1.4.0';
@@ -29,4 +30,10 @@ ok(/update\/1\.4\.0\/register\.js/.test(app) && sw.includes('https://core.anawj.
 ok(!/update\/0\.1\.0/.test(sw + app), 'no older update module left');
 ok(/canReload/.test(app), 'the page gives register a canReload');
 for (const f of ['js/unsent.js', '../lib/roster-core/docsync.js']) ok(sw.includes(`'${f}'`), `${f} is in the shell`);
+// the UI kit: the page links the same version, and the shell holds every kit file the page or kit.js loads
+const html = read('index.html');
+for (const f of ['theme/early.js', 'theme/theme.css', 'ui/layout.css']) ok(html.includes(`${KIT}${f}`), `index.html loads kit ${f} at ${KIT_VERSION}`);
+ok((html.match(/core\.anawj\.com\/ui\/([^/]+)\//g) || []).every(u => u.includes(KIT_VERSION)), 'one kit version in index.html');
+for (const u of KIT_SHELL) ok(sw.includes(`'${u}'`), `sw.js precaches ${u.slice(KIT.length)}`);
+for (const f of ['../lib/roster-core/kit.js', 'css/kit.css']) ok(sw.includes(`'${f}'`), `${f} is in the shell`);
 console.log(`ntf-roster precache: ${n} checks passed`);

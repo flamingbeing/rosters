@@ -32,7 +32,12 @@ if (top === self && /^(www\.)?anawj\.com$/.test(location.hostname)) (function ()
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&display=swap">
+<!-- the UI kit (app-ui, exact version; lib/roster-core/kit.js): this device's look, theme and density, before the app's styles -->
+<script src="https://core.anawj.com/ui/1.0.0-rc.29/theme/early.js"></script>
+<!-- in a cascade layer, so the kit's base rules (button, h1, body) never win over style.css -->
+<style>@import url("https://core.anawj.com/ui/1.0.0-rc.29/theme/theme.css") layer(kit); @import url("https://core.anawj.com/ui/1.0.0-rc.29/ui/layout.css") layer(kit);</style>
 <link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/kit.css">
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="css/rules.css">
 </head>

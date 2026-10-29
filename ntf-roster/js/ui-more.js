@@ -7,6 +7,7 @@ import * as io from './io.js';
 import * as R from './rotations.js';
 import { pullFromPeople } from './people-pull.js';
 import { SG_HOLIDAYS } from './demo.js';
+import { kitSwitch } from '../../lib/roster-core/kit.js';
 
 const slug = s => String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'person';
 
@@ -423,6 +424,13 @@ export function mount(el, app) {
       h('span', { class: 'lc-go', html: icon('right') })));
   }
 
+  // ---------- look ----------
+  // this device's look and density (the UI kit's switch): not a team setting; at the page end, so the screen reads as it
+  // did before the switch was added. Light only (css/kit.css).
+  const kitHost = h('div', { class: 'kit-switch' });
+  kitSwitch(kitHost);
+  const lookSec = section('more-look', 'Look', 'Kept on this device only.', kitHost);
+
   // ---------- version lines ----------
   const foot = h('div', { class: 'more-foot' });
   import('./version.js').then(mod => {
@@ -431,7 +439,7 @@ export function mount(el, app) {
     if (out instanceof Node && !out.parentNode) foot.append(out);
   }).catch(() => { /* version helper not there yet: show nothing */ });
 
-  root.append(importSec, rotSec, exportSec, backupSec, settingsSec, teamSec, helpSec, startSec, foot);
+  root.append(importSec, rotSec, exportSec, backupSec, settingsSec, teamSec, helpSec, startSec, lookSec, foot);
 
   return {
     update(state) {

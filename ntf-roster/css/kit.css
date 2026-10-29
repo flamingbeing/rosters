@@ -1,0 +1,49 @@
+/* The UI kit's look choice (app-ui; lib/roster-core/kit.js) for this app's own palette (style.css). Loaded after
+   css/tokens.css, before style.css. Look A (the default) keeps the app's own NUHS colours, greys, status colours and
+   face, as it looked before the kit; only the brand colour (--navy) follows the accent (NUHS navy unless changed). Any
+   other look takes the whole palette, ground and face. The app's own custom properties carry an r- prefix where the
+   kit's palette sets the plain name (--r-muted, --r-line, ...).
+   Light only, as the app is (its roster colours are fixed light values): the bridge is off when the kit paints dark,
+   and the page keeps its own light colours. Each rule pair is the same list: the first for Auto on a light phone, the
+   second for Light picked. Only under html[data-look]: before the kit paints they would be circular. */
+@media not (prefers-color-scheme: dark) {
+  :root[data-look]:not([data-theme="dark"]) {
+    --navy: var(--accent); --r-focus: var(--focus);
+  }
+  :root[data-look]:not([data-look="a"], [data-theme="dark"]) {
+    --r-font: var(--font); --r-bg: var(--bg); --r-surface: var(--surface);
+    --ink: var(--text); --r-muted: var(--muted); --r-link: var(--accent);
+    --r-line: color-mix(in srgb, var(--text) 12%, var(--surface));
+    --line-strong: color-mix(in srgb, var(--text) 22%, var(--surface));
+    --grid-line: color-mix(in srgb, var(--text) 9%, var(--surface));
+    --navy-soft: oklch(from var(--accent) .94 .02 h);
+    --hard: var(--danger); --hard-bg: color-mix(in srgb, var(--danger) 12%, var(--surface));
+    --r-ok: var(--ok); --ok-bg: color-mix(in srgb, var(--ok) 14%, var(--surface));
+    --soft: var(--warn); --soft-bg: color-mix(in srgb, var(--warn) 16%, var(--surface));
+  }
+}
+:root[data-look][data-theme="light"] {
+  --navy: var(--accent); --r-focus: var(--focus);
+}
+:root[data-look]:not([data-look="a"])[data-theme="light"] {
+  --r-font: var(--font); --r-bg: var(--bg); --r-surface: var(--surface);
+  --ink: var(--text); --r-muted: var(--muted); --r-link: var(--accent);
+  --r-line: color-mix(in srgb, var(--text) 12%, var(--surface));
+  --line-strong: color-mix(in srgb, var(--text) 22%, var(--surface));
+  --grid-line: color-mix(in srgb, var(--text) 9%, var(--surface));
+  --navy-soft: oklch(from var(--accent) .94 .02 h);
+  --hard: var(--danger); --hard-bg: color-mix(in srgb, var(--danger) 12%, var(--surface));
+  --r-ok: var(--ok); --ok-bg: color-mix(in srgb, var(--ok) 14%, var(--surface));
+  --soft: var(--warn); --soft-bg: color-mix(in srgb, var(--warn) 16%, var(--surface));
+}
+/* The kit's base rules on bare elements (theme.css: body face and size, h1-h3 line height, h1 heading face, button and
+   field boxes, link colour, focus ring) are off: index.html imports the kit into layer kit, and this later layer puts
+   those elements back to the browser's defaults under it. style.css (not in a layer) still wins. */
+@layer kit-base-off {
+  body, h1, h2, h3, button, input, select, textarea, a, :focus-visible, ::selection { all: revert; }
+}
+/* the kit's Look switch on the More screen (its row layout is in the kit's ui.css, which this app does not load) */
+.kit-switch .theme-switch { display: flex; flex-wrap: wrap; gap: 10px 18px; }
+.kit-switch .theme-switch label { display: inline-flex; align-items: center; gap: 8px; }
+/* light only: no Theme or Dark style picker (the app's fixed light colours would not follow them) */
+.kit-switch .theme-switch label:has(> :is(#theme-pick, #dark-pick)) { display: none; }

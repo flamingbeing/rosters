@@ -95,7 +95,7 @@ export function mount(el, app) {
         h('p', { class: 'muted' }, 'Plan each person\'s posting by the week (Monday to Sunday). It fills every day of that week: the roster shows it as the cell colour, and rules use it ("a cardiac call only on a cardiac day"). Leave and calls already in a cell stay.'),
         h('div', { class: 'pv-tools' }, search, pick,
           h('button', { type: 'button', class: 'btn', onclick: () => pasteDialog() }, 'Paste rotations…'),
-          h('button', { type: 'button', class: 'btn', onclick: () => pullFromPeople(app, text => pasteDialog(text)) }, 'Pull from APMES People…'))));
+          M.PEOPLE_LINKS ? h('button', { type: 'button', class: 'btn', onclick: () => pullFromPeople(app, text => pasteDialog(text)) }, 'Pull from APMES People…') : null)));
 
     const table = h('table', { class: 'pv-table' });
     const thead = h('thead', null, h('tr', null, h('th', { scope: 'col', class: 'pv-name' }, 'Name'),

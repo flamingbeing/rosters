@@ -212,8 +212,14 @@ const noSideScroll = async (page, label) => {
   await page.waitForTimeout(600);
   const after = await hard(page);
   ok(after <= 3 && after < before, `auto-fill fixes the cover (${before} -> ${after} must-fix problems)`);
-  // the staff list for APMES People: More › Export copies it
+  // the staff list for APMES People: More › Export copies it (the People links can be hidden: model.js PEOPLE_LINKS)
   await go(page, '#more');
+  const peopleLinks = await page.evaluate(async () => (await import('./js/model.js')).PEOPLE_LINKS);
+  if (!peopleLinks) {
+    ok(await page.getByRole('button', { name: 'Copy the staff list for APMES People' }).count() === 0, 'People links hidden on More');
+    await go(page, '#postings');
+    ok(await page.getByRole('button', { name: 'Pull from APMES People' }).count() === 0, 'People links hidden on Postings');
+  } else {
   await page.getByRole('button', { name: 'Copy the staff list for APMES People' }).click();
   await page.waitForTimeout(200);
   ok(/^NUH Junior Monthly staff, roster month \d{4}-\d{2}.*\nGrade\tName\tFrom\tUntil\n/.test(await page.evaluate(() => navigator.clipboard.readText())), 'APMES People list copied');
@@ -227,6 +233,7 @@ const noSideScroll = async (page, label) => {
   await dlg.getByRole('button', { name: 'Cancel' }).click();
   await page.waitForTimeout(300);
   ok(!/send=apmes/.test(page.url()), 'the link forgets send=apmes');
+  }
   await page.close();
 }
 // ---------- phone ----------

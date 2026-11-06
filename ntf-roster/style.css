@@ -819,6 +819,40 @@ body[data-tab="people"] .ctx-row { display: none; }   /* the month and Auto-fill
    NUHS: square panels with a navy top rule; only controls are rounded (5 px), badges 3 px.
    ====================================================================== */
 .guide-slot { flex: none; padding: 12px 12px 0; }
+.steps-slot { flex: none; padding: 12px 12px 0; }
+/* the junior roster in three steps (ui-steps.js) */
+.jsteps { padding: 0; border-top: 3px solid var(--navy); }
+.jsteps-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; padding: 10px 12px 6px 16px; }
+.jsteps-head h2 { margin: 0; font-size: 16px; color: var(--navy); }
+.js-steps { list-style: none; margin: 0; padding: 0; }
+.js-step { display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; align-items: center; gap: 4px 12px; padding: 10px 12px 10px 16px; border-top: 1px solid var(--r-line); }
+.js-step.is-now { background: var(--navy-soft); }
+.js-n { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 50%; border: 2px solid var(--navy); color: var(--navy); font-weight: 700; font-size: 13px; }
+.js-step.is-done .js-n { background: var(--r-ok); border-color: var(--r-ok); color: #fff; }
+.js-n .ic { width: 16px; height: 16px; }
+.js-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.js-status { font-size: 13px; color: var(--r-muted); }
+.js-acts { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+@media (max-width: 560px) { .js-step { grid-template-columns: 28px minmax(0, 1fr); } .js-acts { grid-column: 2; justify-content: flex-start; } }
+.jp-row.is-guess { border-color: var(--navy); background: var(--navy-soft); }
+.jp-guess { display: inline-block; margin-left: 6px; padding: 0 6px; border-radius: 8px; background: var(--navy); color: #fff; font-size: 11px; font-weight: 600; }
+.jcall .jp-row { grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, .7fr); }
+.jcall h3, .jreport h3 { margin: 16px 0 4px; font-size: 14px; }
+.jr-list, .jr-aps { list-style: none; margin: 0; padding: 0; border: 1px solid var(--r-line); border-radius: var(--radius-sm); }
+.jr-list > li, .jr-aps > li { border-top: 1px solid var(--r-line); }
+.jr-list > li:first-child, .jr-aps > li:first-child { border-top: 0; }
+.jr-line, .jr-row summary, .jr-aps li { display: flex; align-items: center; gap: 8px; min-height: 40px; padding: 6px 10px; }
+.jr-aps li { justify-content: space-between; }
+.jr-row summary { cursor: pointer; }
+.jr-name { flex: 1; min-width: 0; }
+.jr-n { font-weight: 700; color: var(--hard); }
+.jr-ic { display: inline-flex; flex: none; }
+.jr-ic .ic { width: 18px; height: 18px; }
+.jr-row.is-ok .jr-ic { color: var(--r-ok); }
+.jr-row.is-bad .jr-ic { color: var(--hard); }
+.jr-msgs { margin: 0 0 8px; padding: 0 12px 0 38px; font-size: 13px; }
+.af-aps-picks { list-style: none; margin: 4px 0 8px; padding: 0 0 0 12px; font-size: 13px; }
+.af-aps-picks li { display: flex; justify-content: space-between; gap: 8px; padding: 2px 0; }
 .welcome .guide-slot { padding: 0; }
 .welcome-card.has-guide { max-width: 640px; }
 .welcome-intro { text-align: center; }
@@ -962,7 +996,7 @@ body.has-taskcard .sheet { max-height: calc(100vh - var(--task-h, 0px) - 64px); 
 .task-stop:hover { color: var(--navy); }
 
 @media (max-width: 720px) {
-  .guide-slot { padding: 8px 8px 0; }
+  .guide-slot, .steps-slot { padding: 8px 8px 0; }
   .gs-head { padding: 6px 4px 6px 12px; gap: 4px 8px; flex-wrap: nowrap; }
   .gs-headtext { flex: 1 1 auto; }
   .gs-next { display: none; }
@@ -994,7 +1028,7 @@ body.has-taskcard .sheet { max-height: calc(100vh - var(--task-h, 0px) - 64px); 
   body.has-taskcard .sheet { max-height: calc(100dvh - var(--task-h, 0px) - 40px); border-radius: 16px; }
   body.has-taskcard .toasts { bottom: calc(68px + var(--task-h, 0px) + 10px + env(safe-area-inset-bottom)); }
 }
-@media print { .tour, .tour-spot, .task-card, .guide-slot { display: none !important; } }
+@media print { .tour, .tour-spot, .task-card, .guide-slot, .steps-slot { display: none !important; } }
 
 /* pool switch (junior / senior / all) beside the month */
 .pool-sw { display: inline-flex; border: 1px solid var(--r-line); border-radius: 999px; padding: 2px; background: var(--r-surface); }

@@ -14,6 +14,7 @@ import { specFromState } from './sheetgen-state.js';
 import { toWorkbook } from './sheetgen-xlsx.js';
 import { toSpreadsheetBody } from './sheetgen-gsheets.js';
 import { SG_HOLIDAYS } from './demo.js';
+import { masterSection } from './ui-master.js';
 
 const slug = s => String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'person';
 
@@ -162,6 +163,8 @@ export function mount(el, app) {
       }],
     });
   }
+
+  const masterSec = masterSection(app, { section, btn, fileButton, monthOptions });
 
   // ---- Make the month's sheet from scratch (trial, owner 17 Oct 2026): the whole form with its formulas, for the people and
   // days the app has. As an Excel file, or straight into a new Google Sheet (the Sheets scope the app already has).
@@ -666,7 +669,7 @@ export function mount(el, app) {
     if (out instanceof Node && !out.parentNode) foot.append(out);
   }).catch(() => { /* version helper not there yet: show nothing */ });
 
-  root.append(teamSec, importSec, exportSheetSec, genSec, exportSec, backupSec, settingsSec, helpSec, startSec, lookSec, foot);   // the look switch last: the screen reads as before it was added
+  root.append(teamSec, importSec, masterSec, exportSheetSec, genSec, exportSec, backupSec, settingsSec, helpSec, startSec, lookSec, foot);   // the look switch last: the screen reads as before it was added
 
   return {
     update(state) {

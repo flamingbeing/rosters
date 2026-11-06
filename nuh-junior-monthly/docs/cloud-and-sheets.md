@@ -11,7 +11,8 @@ block and checking every name and day cell is still exactly what was read (a mov
 back. The write is recorded (`sheets[month].lastWrite`) so "Undo" puts back what was there, but only in cells that still hold what
 was written. It acts as the signed-in person, so the sheet's sharing and protected ranges still apply. A month read from a paste or
 .xlsx has no Google source and keeps the copy-and-paste way. Needs the Sheets API on the Google Cloud project and the scope on the consent screen
-(In production, unverified-app notice, 100-user limit): see `OPERATIONS.md`. Untested against real Google in CI (a fake Sheets API in the unit and browser tests).
+(In production, unverified-app notice, 100-user limit): see `OPERATIONS.md`. Since 6 Nov 2026 the same pop-up also asks for `drive.file` (only
+files and folders the app made: the sheet maker's folder, [sheetgen.md](sheetgen.md)), which needs the Google Drive API on the project too. Untested against real Google in CI (a fake Sheets API in the unit and browser tests).
 
 **Lock a month** (16 Oct 2026): the Lock button at the top sets the month's status to `published`, which the team copy already
 stores (no rules change). While locked, `store.commit` refuses any change to that month's days (calls, Auto-fill, import, copy back)

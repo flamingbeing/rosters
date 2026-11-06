@@ -1,6 +1,6 @@
 // NUH Junior Monthly: the More screen's "Start a month from the master rotations" section and its review. The master is
 // read from Google (the link) or a downloaded .xlsx; the review lists every change for the chosen month, ticked, and only
-// the ticked ones are applied (one Undo puts it all back). Then "Make this month's sheet from scratch" builds the sheet.
+// the ticked ones are applied (one Undo puts it all back). Then "Make blank month sheets" builds the sheets.
 import * as M from './model.js';
 import * as io from './io.js';
 import * as G from './gsheets.js';
@@ -109,7 +109,7 @@ export function masterSection(app, { section, btn, fileButton, monthOptions }) {
           store.commit(`${M.fmtMonth(month)} from the master rotations`, draft => { res = applyMaster(draft, plan, { off, on, as }); });
           app.setMonth(month);
           const parts = [`${res.people} people`, res.added && `${res.added} new`, res.moved && `${res.moved} moved grade`, res.promoted && `${res.promoted} promoted`, res.dated && `${res.dated} dates`, res.ended && `${res.ended} ended`, `${res.cells} cells`].filter(Boolean);
-          app.toast(`${M.fmtMonth(month)} from the master: ${parts.join(', ')}. Next: "Make this month's sheet from scratch" below.`, { action: { label: 'Undo', fn: () => store.undo() }, ms: 10000 });
+          app.toast(`${M.fmtMonth(month)} from the master: ${parts.join(', ')}. Next: "Make blank month sheets" below.`, { action: { label: 'Undo', fn: () => store.undo() }, ms: 10000 });
         },
       }],
     });

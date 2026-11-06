@@ -123,11 +123,13 @@ let appOf = async () => null;
 export const useApp = fn => { appOf = fn; };
 
 // An access token for the Google Sheets API (the person's own, valid about an hour, kept in memory by gsheets.js only).
-// Asks Google in a pop-up for the Sheets scope; works for any Google account, whether or not it is on the team list.
+// Asks Google in a pop-up for the Sheets scope, and drive.file (only the files the app itself makes: the sheet maker's
+// folder); works for any Google account, whether or not it is on the team list.
 export async function getSheetsToken() {
   const { auth, A } = await sdk();
   const provider = new A.GoogleAuthProvider();
   provider.addScope('https://www.googleapis.com/auth/spreadsheets');
+  provider.addScope('https://www.googleapis.com/auth/drive.file');
   const u = auth.currentUser;
   provider.setCustomParameters(u && u.email ? { login_hint: u.email } : { prompt: 'select_account' });
   const res = await A.signInWithPopup(auth, provider);

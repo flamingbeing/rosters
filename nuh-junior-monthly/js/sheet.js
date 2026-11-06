@@ -191,10 +191,12 @@ export function applyImport(draft, plan, grid, { addUnknown = true, tab = '', so
   if (source) layout.source = { id: String(source.id), gid: source.gid == null ? null : String(source.gid), title: String(source.title || tab) };
   let added = 0, cells = 0;
   layout.grades = {};   // the grade (group) each person has in this month's sheet
+  layout.gradeTexts = {};   // the grade as typed in each row, seniors' rows too (the sheet maker carries the seniors over)
   const inSheet = new Set();   // everyone the sheet lists, even a row left alone (someone listed twice)
   for (const row of plan.people) {
     layout.orig[row.row] = [...row.texts, row.next];
     layout.names[row.row] = row.name;
+    layout.gradeTexts[row.row] = String(row.grade || '').trim();
     if (row.skip) { if (row.match) inSheet.add(row.match); continue; }
     let id = row.match;
     if (!id) {

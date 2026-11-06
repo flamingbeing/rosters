@@ -322,7 +322,20 @@ for (const w of [320, 360, 390, 430]) {
   const colIdx = L => [...L].reduce((x, ch) => x * 26 + ch.charCodeAt(0) - 64, 0) - 1;
   const writes = [];
   let created = null;   // the body of a new-spreadsheet request
-  const CORS = { 'access-control-allow-origin': '*', 'access-control-allow-headers': 'authorization,content-type', 'access-control-allow-methods': 'GET,POST,OPTIONS' };
+  const drive = [], locks = [];   // the Drive calls (folder, sharing, move) and the Open / Lock requests the sheet maker sends
+  const CORS = { 'access-control-allow-origin': '*', 'access-control-allow-headers': 'authorization,content-type', 'access-control-allow-methods': 'GET,POST,PATCH,OPTIONS' };
+  await page.context().route('https://www.googleapis.com/drive/**', route => {
+    const req = route.request(), u = decodeURIComponent(req.url());
+    const json = o => route.fulfill({ status: 200, headers: CORS, contentType: 'application/json', body: JSON.stringify(o) });
+    if (req.method() === 'OPTIONS') return route.fulfill({ status: 204, headers: CORS });
+    if (!/^Bearer test-token$/.test(req.headers().authorization || '')) return route.fulfill({ status: 401, headers: CORS, body: '{}' });
+    drive.push({ m: req.method(), u, b: req.postData() ? JSON.parse(req.postData()) : null });
+    if (req.method() === 'POST' && /\/files\?/.test(u)) return json({ id: 'FOLDER1', webViewLink: 'https://drive.google.com/drive/folders/FOLDER1' });
+    if (req.method() === 'GET' && /\/permissions\?/.test(u)) return json({ permissions: [] });
+    if (/\/about\?/.test(u)) return json({ user: { emailAddress: 'maker@example.org' } });
+    if (req.method() === 'GET' && /fields=parents/.test(u)) return json({ parents: ['ROOT'] });
+    return json({ id: 'X' });
+  });
   await page.context().route('https://sheets.googleapis.com/**', route => {
     const req = route.request(), u = decodeURIComponent(req.url());
     const json = o => route.fulfill({ status: 200, headers: CORS, contentType: 'application/json', body: JSON.stringify(o) });
@@ -338,6 +351,8 @@ for (const w of [320, 360, 390, 430]) {
     if (/values\/'Request'!A1:/.test(u)) return json({ values: sheet.map(r => r.slice()) });
     if (/values:batchGet/.test(u)) return json({ valueRanges: [...u.matchAll(/ranges='Request'!([A-Z]+)(\d+)/g)].map(m => ({ values: [[(sheet[+m[2] - 1] || [])[colIdx(m[1])] ?? '']] })) });
     if (req.method() === 'POST' && /\/v4\/spreadsheets\?fields=/.test(u)) { created = JSON.parse(req.postData()); return json({ spreadsheetId: 'NEWSHEET', spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/NEWSHEET/edit', sheets: [{ properties: { sheetId: 0 } }] }); }
+    if (/\/spreadsheets\/NEWSHEET\?fields/.test(u)) return json({ sheets: [{ properties: { sheetId: 0, title: 'Request' }, protectedRanges: [{ protectedRangeId: 5, range: { sheetId: 0 }, unprotectedRanges: [{ sheetId: 0, startRowIndex: 6 }] }] }] });
+    if (/NEWSHEET:batchUpdate/.test(u)) { locks.push(JSON.parse(req.postData())); return json({}); }
     if (/values:batchUpdate/.test(u)) {
       const body = JSON.parse(req.postData());
       for (const d of body.data) { const m = d.range.match(/!([A-Z]+)(\d+)$/); sheet[+m[2] - 1][colIdx(m[1])] = d.values[0][0]; writes.push(m[1] + m[2]); }
@@ -443,15 +458,28 @@ for (const w of [320, 360, 390, 430]) {
   await page.getByRole('button', { name: 'Import', exact: true }).click();
   await page.waitForTimeout(300);
   ok(await page.evaluate(() => window.jmApp.store.get().staff.find(p => p.name === 'Icu Example').group) === 'res3', 'Import moved them to the new group');
-  // make the month's sheet from scratch: a new Google Sheet with the whole form and its formulas (a fake Sheets API)
+  // make the month's sheets: the whole sheet as a new Google Sheet in the app's Drive folder, locked for the rosterers
+  // (a fake Sheets and Drive API)
   await page.goto(BASE + '#more');
   await page.waitForTimeout(500);
-  await page.getByRole('button', { name: 'Create a new Google Sheet' }).click();
-  await page.waitForSelector('a:has-text("open the new Google Sheet")');
-  ok((await page.locator('a:has-text("open the new Google Sheet")').getAttribute('href')).endsWith('/NEWSHEET/edit'), 'Create a new Google Sheet gives the link to the new file');
+  await page.getByRole('textbox', { name: 'Rosterers who can edit the locked tabs' }).fill('rosterer.one@example.org, rosterer.two@example.org');
+  await page.getByRole('textbox', { name: 'Daily rosterers named in the Leave Waitlist' }).fill('Dr Example');
+  await page.getByRole('textbox', { name: 'Daily rosterers named in the Leave Waitlist' }).press('Tab');
+  await page.waitForTimeout(200);
+  await page.getByRole('button', { name: 'Make the Google Sheets' }).click();
+  await page.waitForSelector('a:has-text("the app\'s Drive folder")');
   const sh = created && created.sheets[0], vals = sh ? sh.data[0].rowData.flatMap(r => r.values) : [];
   ok(sh && vals.filter(v => v.userEnteredValue && v.userEnteredValue.formulaValue).length > 100 && sh.merges.length === 3 && sh.conditionalFormats.length > 20, 'the new sheet carries the formulas, merges and colour rules');
   ok(vals.some(v => v.userEnteredValue && v.userEnteredValue.stringValue === 'Icu Example'), 'and the people the app has');
+  ok(created.sheets.length === 4 && /Junior Call Roster$/.test(created.sheets[1].properties.title) && created.sheets[3].properties.title === 'Leave Waitlist', 'with the Junior Call Roster, WR / Premed and Leave Waitlist tabs');
+  ok(sh.protectedRanges[0].editors.users.join() === 'maker@example.org,rosterer.one@example.org,rosterer.two@example.org' && sh.protectedRanges[0].unprotectedRanges.length === 1 && !created.sheets[3].protectedRanges, 'locked to the rosterers, open for requests, the waitlist open');
+  ok(drive.some(d => d.m === 'POST' && d.b && d.b.mimeType === 'application/vnd.google-apps.folder') && drive.some(d => d.m === 'PATCH' && /addParents=FOLDER1/.test(d.u)) && drive.filter(d => d.m === 'POST' && /permissions/.test(d.u)).length === 3, 'the folder is made, shared with the two rosterers and the link, and the sheet moved into it');
+  const madeLink = page.locator('.ri-list a[href$="/NEWSHEET/edit"]');
+  ok(await madeLink.count() === 1, 'the made sheet is listed with its link');
+  await page.getByRole('button', { name: /^Lock .* requests$/ }).click();
+  await page.waitForTimeout(400);
+  ok(locks.length === 1 && locks[0].requests[0].updateProtectedRange.protectedRange.unprotectedRanges.length === 0, 'Lock requests closes the request block');
+  ok(await page.getByRole('button', { name: /^Open .* for requests$/ }).count() === 1, 'and offers to open it again');
   // the Excel file
   const [dl] = await Promise.all([page.waitForEvent('download'), page.getByRole('button', { name: 'Download as an Excel file' }).click()]);
   const path = await dl.path();

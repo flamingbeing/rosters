@@ -1,13 +1,16 @@
 // Dry run of "Create a new Google Sheet" against the real Google Sheets API, for made-up people (no real data).
 // Builds the same request the app sends, creates a throwaway spreadsheet, reads it back and checks that Google calculated
 // every right-hand total and every count under the names the way the day cells say (the same checks as
-// tools/sheetgen-verify.py), and that the merges, colour rules and frozen corner arrived.
+// tools/sheetgen-verify.py), that the merges, colour rules and frozen corner arrived, that the Junior Call Roster and
+// WR / Premed tabs show who has each call, and that the locks are there and Open / Lock for requests works.
 //
 //   SHEETS_TOKEN=<an OAuth access token with the Sheets scope> node nuh-junior-monthly/tools/sheetgen-dryrun.mjs [2026-12] [14]
 //   node nuh-junior-monthly/tools/sheetgen-dryrun.mjs --print-body 2026-12 14 > body.json     (just the request body)
 //
-// It makes one new file in the signed-in person's Drive, named "DRY RUN ... (delete me)"; nothing else is touched.
+// It makes one new file in the signed-in person's Drive, named "DRY RUN ... (delete me)", locked to that person only (no
+// sharing, no other editors); nothing else is touched. With --delete (and a token with a Drive scope) it deletes it after.
 import { buildSheet, daysIn, weekdayOf, colName } from '../js/sheetgen.js';
+import { buildTabs, requestBlock, offRuns } from '../js/sheetgen-tabs.js';
 import { toSpreadsheetBody } from '../js/sheetgen-gsheets.js';
 
 const args = process.argv.slice(2).filter(a => !a.startsWith('--'));
@@ -20,11 +23,14 @@ const people = Array.from({ length: count }, (_, i) => {
   for (let d = 1; d <= n; d++) if (weekdayOf(month, d) % 6 === 0) days[d] = 'WE';
   days[3 + (i % 5)] = ['R1', 'R2', 'R3', 'R1B', 'C3', 'S1', 'OGN', 'ICU', 'AL', 'X/NP'][i % 10];
   days[10 + (i % 4)] = ['R1', 'R2', 'S1B', 'OGC'][i % 4];
+  for (const [a, b] of offRuns(month)) { if (i === a % count) days[a] = 'WR'; if (i === (b + 1) % count) days[b] = 'P1'; }
   return { grade: grades[i % grades.length], name: 'Person ' + (i + 1), days, next: 'Z' };
 });
 const model = buildSheet({ month, people, holidays: [] });
-const body = toSpreadsheetBody(model, { title: `DRY RUN ${month} (delete me)`, sheetName: 'Request' });
-if (printBody) { await new Promise(res => process.stdout.write(JSON.stringify(body) + '\n', res)); process.exit(0); }
+const tabs = buildTabs(model, { dailyRosterers: 'the daily rosterers' });
+const block = requestBlock(model, people);
+const bodyFor = me => toSpreadsheetBody(model, { title: `DRY RUN ${month} (delete me)`, sheetName: 'Request', tabs, protect: { editors: me ? [me] : [], me, open: block } });
+if (printBody) { await new Promise(res => process.stdout.write(JSON.stringify(bodyFor('')) + '\n', res)); process.exit(0); }
 
 const token = process.env.SHEETS_TOKEN;
 if (!token) { console.error('Set SHEETS_TOKEN to an access token with the Sheets scope (https://www.googleapis.com/auth/spreadsheets).'); process.exit(2); }
@@ -34,6 +40,9 @@ const api = async (url, init = {}) => {
   if (!r.ok) throw new Error(`${r.status} ${j.error ? j.error.message : ''}`);
   return j;
 };
+// the lock's editors: the person running it only (as the app does with no rosterers it adds the maker; nobody else)
+const me = await api('https://www.googleapis.com/drive/v3/about?fields=user(emailAddress)').then(j => j.user.emailAddress).catch(() => '');
+const body = bodyFor(me);
 const made = await api('https://sheets.googleapis.com/v4/spreadsheets?fields=spreadsheetId,spreadsheetUrl', { method: 'POST', body: JSON.stringify(body) });
 console.log('created:', made.spreadsheetUrl);
 const L = model.layout;
@@ -65,7 +74,32 @@ for (let r = L.countStart; r <= L.countEnd; r++) {
 const meta = await api(`https://sheets.googleapis.com/v4/spreadsheets/${made.spreadsheetId}?fields=sheets(properties.gridProperties,merges,conditionalFormats)`);
 const sh = meta.sheets[0];
 const shape = (sh.merges || []).length === model.merges.length && (sh.conditionalFormats || []).length === model.cf.length && sh.properties.gridProperties.frozenRowCount === model.freeze.row && sh.properties.gridProperties.frozenColumnCount === model.freeze.col;
+// the roster tabs: each cell is the person with that code on that day (or blank)
+const tabVals = async t => (await api(`https://sheets.googleapis.com/v4/spreadsheets/${made.spreadsheetId}/values/${encodeURIComponent(`'${t}'!A1:H${n}`)}?valueRenderOption=UNFORMATTED_VALUE`)).values || [];
+const who = (d, code) => { const p = people.find(x => x.days[d] === code); return p ? p.name : ''; };
+const jc = await tabVals(tabs[0].name), wr = await tabVals(tabs[1].name);
+for (const [addr, c] of [...tabs[0].cells, ...tabs[1].cells]) {
+  if (!c.f) continue;
+  const m = /^([A-Z]+)(\d+)$/.exec(addr), d = Number(m[2]), code = /MATCH\("([^"]+)"/.exec(c.f)[1];
+  const g = ((tabs[0].cells.get(addr) === c ? jc : wr)[d - 1] || [])[m[1].charCodeAt(0) - 65] ?? '';
+  checked++; if (g !== who(d, code)) { bad++; if (bad <= 12) console.log('MISMATCH', addr, code, 'got', g, 'expected', who(d, code)); }
+}
+// the locks: Request and the two roster tabs locked, the request block open; then Lock and Open again
+const prs = async () => (await api(`https://sheets.googleapis.com/v4/spreadsheets/${made.spreadsheetId}?fields=sheets(properties(sheetId,title),protectedRanges(protectedRangeId,range,unprotectedRanges))`)).sheets;
+let ps = await prs();
+const lockOk = ps[0].protectedRanges && ps[0].protectedRanges[0].unprotectedRanges && ps[0].protectedRanges[0].unprotectedRanges.length === 1 && ps[1].protectedRanges && ps[2].protectedRanges && !ps[3].protectedRanges;
+const setOpen = async open => api(`https://sheets.googleapis.com/v4/spreadsheets/${made.spreadsheetId}:batchUpdate`, { method: 'POST', body: JSON.stringify({ requests: [{ updateProtectedRange: { protectedRange: { protectedRangeId: ps[0].protectedRanges[0].protectedRangeId, unprotectedRanges: open ? [ps[0].protectedRanges[0].unprotectedRanges[0]] : [] }, fields: 'unprotectedRanges' } }] }) });
+const keepOpen = ps[0].protectedRanges[0].unprotectedRanges;
+await setOpen(false);
+const lockedNow = !((await prs())[0].protectedRanges[0].unprotectedRanges || []).length;
+ps[0].protectedRanges[0].unprotectedRanges = keepOpen; await setOpen(true);
+const openAgain = ((await prs())[0].protectedRanges[0].unprotectedRanges || []).length === 1;
+console.log(`locks: ${lockOk ? 'as made' : 'WRONG'}; Lock ${lockedNow ? 'works' : 'FAILED'}; Open ${openAgain ? 'works' : 'FAILED'} (block ${block}).`);
+if (!lockOk || !lockedNow || !openAgain) bad++;
 console.log(`checked ${checked} values: ${bad} wrong. Merges ${(sh.merges || []).length}/${model.merges.length}, colour rules ${(sh.conditionalFormats || []).length}/${model.cf.length}, frozen ${sh.properties.gridProperties.frozenRowCount} rows ${sh.properties.gridProperties.frozenColumnCount} columns.`);
 console.log(bad || !shape ? 'DRY RUN FAILED' : 'DRY RUN PASSED: Google calculated every formula as expected and kept the merges, colour rules and frozen corner.');
-console.log('Delete the throwaway file when done:', made.spreadsheetUrl);
+if (process.argv.includes('--delete')) {
+  const r = await fetch(`https://www.googleapis.com/drive/v3/files/${made.spreadsheetId}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+  console.log(r.ok ? 'deleted the throwaway file' : `could not delete it (${r.status}): ${made.spreadsheetUrl}`);
+} else console.log('Delete the throwaway file when done:', made.spreadsheetUrl);
 process.exit(bad || !shape ? 1 : 0);

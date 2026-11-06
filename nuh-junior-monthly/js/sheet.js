@@ -49,7 +49,12 @@ export function parseGrid(rows, { rowOffset = 0, colOffset = 0 } = {}) {
     const name = norm(row[nameCol]);
     const sn = snCol >= 0 ? norm(row[snCol]) : '';
     const grade = gradeCol >= 0 ? norm(row[gradeCol]) : '';
-    if (!name) { if (people.length && rows.slice(r + 1, r + 3).every(x => !norm((x || [])[nameCol]))) break; continue; }
+    // an empty name, or only a department in brackets ("(GS)"), with a grade or S/N is a row kept for someone not named yet
+    // (new MOPEXes, external residents): skipped, and the people below it are still read
+    if (!name || /^\([^)]*\)$/.test(name)) {
+      if (!grade && !/^\d+$/.test(sn) && people.length && rows.slice(r + 1, r + 3).every(x => !norm((x || [])[nameCol]))) break;
+      continue;
+    }
     if (people.length && !grade && !/^\d+$/.test(sn)) break;   // the count rows ("R1", "Total Jnr") have neither
     people.push({ row: r + 1 + rowOffset, sn, grade, name, texts: days.map(c => (row[c] == null ? '' : String(row[c]))), next: row[nextCol] == null ? '' : String(row[nextCol]) });
   }

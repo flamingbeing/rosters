@@ -132,6 +132,11 @@ const ids = (s, rule) => evalM(s).violations.filter(v => v.ruleId === rule);
     [], ['', '', 'R1', ...days.map(() => '1')]];
   const grid = S.parseGrid(rows);
   ok(grid && grid.people.length === 4 && grid.month === MONTH && S.monthFits(grid, MONTH), 'grid found, month read');
+  // rows kept for people not named yet (an empty name, or only "(GS)") are skipped, and the rows below them still read
+  const held = [...rows.slice(0, 10), row(5, 'MOPEX', '', () => 'Z'), row(6, 'MOPEX', '', () => 'Z'), row(7, 'MOPEX', '', () => 'Z'),
+    row(8, 'RR', '(GS)', () => 'Z'), row(9, 'Fellow', 'Fellow Example (C)', () => 'C'), [], ['', '', 'R1', ...days.map(() => '1')]];
+  const heldGrid = S.parseGrid(held);
+  ok(heldGrid.people.length === 5 && heldGrid.people[4].name === 'Fellow Example (C)', 'rows held for new people do not end the list');
   let s = M.defaultState();
   const plan = S.planImport(s, grid, MONTH);
   ok(plan.people[0].skip && !plan.people[1].skip, 'senior rows are left alone');

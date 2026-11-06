@@ -26,7 +26,7 @@ for (const f of [...entries.app, ...entries.auth, ...entries.sync]) ok(sw.includ
 ok(['createApp', 'auth', 'sync', 'recordSignature'].every(k => typeof sync[k] === 'function'), 'app-sync gives what docsync.js and unsent.js use');
 ok(sync.VERSION === APP_SYNC_VERSION, 'the pinned tag is the version it says');
 
-ok(/update\/1\.4\.0\/register\.js/.test(app) && sw.includes('https://core.anawj.com/update/1.4.0/register.js') && sw.includes("importScripts('https://core.anawj.com/update/1.4.0/sw-core.js')"), 'update module 1.4.0 in page and worker');
+ok(/ui\/1\.0\.0-rc\.108\/update\/register\.js/.test(app) && sw.includes('https://core.anawj.com/ui/1.0.0-rc.108/update/register.js') && sw.includes("importScripts('https://core.anawj.com/ui/1.0.0-rc.108/update/sw-core.js')"), 'update module rc.108 in page and worker');
 ok(!/update\/0\.1\.0/.test(sw + app), 'no older update module left');
 ok(/canReload/.test(app), 'the page gives register a canReload');
 // the UI kit: the page links the same version, and the shell holds every kit file the page or kit.js loads

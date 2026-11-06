@@ -19,14 +19,14 @@ for (const f of ['https://design.anawj.com/v1/tokens.css', 'https://design.anawj
 // every app's worker is on app-update (one exact version), with register.js of the same version in SHELL and on the page
 for (const app of ['nuh-roster', 'ntf-roster', 'nuh-junior-monthly']) {
   const w = fs.readFileSync(new URL(`../../${app}/sw.js`, import.meta.url), 'utf8');
-  const core = w.match(/importScripts\('https:\/\/core\.anawj\.com\/update\/(\d+\.\d+\.\d+)\/sw-core\.js'\)/)?.[1];
+  const core = w.match(/importScripts\('https:\/\/core\.anawj\.com\/ui\/(\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?)\/update\/sw-core\.js'\)/)?.[1];
   assert.ok(core, `${app}/sw.js loads sw-core.js from an exact version`);
   assert.match(w, new RegExp(`AppUpdate\\.init\\(\\{\\s*app: '${app}'`), `${app}: AppUpdate.init with its own prefix`);
   assert.match(w, /^const MANIFEST = \{\};$/m, `${app}: MANIFEST stays empty in git (the deploy fills it)`);
   assert.ok(!w.includes("'index.html'"), `${app}: pages are kept by the folder (./), never index.html`);
-  assert.ok(w.includes(`'https://core.anawj.com/update/${core}/register.js'`), `${app}: register.js of the same version in SHELL`);
+  assert.ok(w.includes(`'https://core.anawj.com/ui/${core}/update/register.js'`), `${app}: register.js of the same version in SHELL`);
   const page = fs.readFileSync(new URL(`../../${app}/js/${app === 'nuh-roster' ? 'app' : 'version'}.js`, import.meta.url), 'utf8');
-  assert.ok(page.includes(`'https://core.anawj.com/update/${core}/register.js'`), `${app}: the page loads the same register.js`);
+  assert.ok(page.includes(`'https://core.anawj.com/ui/${core}/update/register.js'`), `${app}: the page loads the same register.js`);
   assert.ok(!/skipWaiting|Update available/.test(page), `${app}: no update toast or skipWaiting message left`);
 }
 

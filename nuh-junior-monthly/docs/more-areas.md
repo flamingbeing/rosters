@@ -100,7 +100,9 @@ after a name only mention a gap that is over **Only point it out above** (1 poin
 average of 2 is 50%), and a gap of 2 on an average of 10 does not. Set the percentage to 0 for points only. The R1 to R3 share (off
 until confirmed) compares each grade with itself (`byGroup`). Saved rosters get this once (`rulesVersion` 16).
 
-## Rotations from People (built 16 Oct 2026)
+## Rotations from People (built 16 Oct 2026; hidden since 6 Nov 2026)
+
+Hidden for now (`PEOPLE_LINKS = false` in `js/model.js`): the master rotations are read in this app directly (More › "Start a month from the master rotations", [sheetgen.md](sheetgen.md)). Set it to true to show the People links again.
 
 APMES People will hold the department's rotations (who is placed where, week by week), read at first from the master
 block rotation sheet (plan and decisions: `people/STATUS.md`, Next and decisions log). The owner wants **this app to pull** them, to help plan future months, not People to push them:

@@ -49,7 +49,7 @@ the scripts that read them are in the owner's private notes.
   another group (the July change-over, RES1 → RES2) moves to the end of that group on Import. The review lists each move,
   ticked; untick anyone who should stay. Only from the newest month imported so far (`latestImported`): an older month
   never moves anyone back (the review says who differs). Someone listed twice moves to the grade of the row that is kept.
-- **Staff list for APMES People** (`js/apmes.js`; 16 Oct 2026): APMES People (`apmes.anawj.com/people/` › Import from
+- **Staff list for APMES People** (`js/apmes.js`; 16 Oct 2026; hidden since 6 Nov 2026 with the other People links, `PEOPLE_LINKS` in `js/model.js`): APMES People (`apmes.anawj.com/people/` › Import from
   roster) opens this app with `?send=apmes`; a sheet asks, then sends Grade, Name, From, Until for everyone in post (no
   roster, no notes) to the tab that opened it by `postMessage` (to `apmes.anawj.com` or this origin only) and closes.
   More › Export › Copy the staff list for APMES People gives the same text to paste there. The grade is the group's

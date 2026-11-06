@@ -7,6 +7,9 @@ import {
   dutyMap, groupMap, staffMap, staffActiveOn, getCell, createCells, staffInMonth as coreStaffInMonth,
 } from '../../lib/roster-core/model.js';   // /lib/ is the shared folder on every host (worker/routes.js SHARED)
 
+// The links with APMES People (Postings › Pull from APMES People, More › Staff list for APMES People, ?send=apmes) are
+// hidden for now (owner, 6 Nov 2026): the master rotations are read here directly. true shows them again.
+export const PEOPLE_LINKS = false;
 export const STORE_KEY = 'nuhjm-v1';
 export const DEMO_KEY = 'nuhjm-demo';
 

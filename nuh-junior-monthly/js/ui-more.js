@@ -492,9 +492,9 @@ export function mount(el, app) {
       io.download(new Blob([io.csvForMonth(store.get(), app.month)], { type: 'text/csv;charset=utf-8' }), `nuhjm-${io.fileStamp(app.month)}.csv`);
       app.onboard?.('shared');
     })),
-    h('h3', { class: 'more-sub' }, 'Staff list for APMES People'),
-    h('p', { class: 'more-p' }, 'APMES People (the resident list the logbook and evals share) can bring its residents’ years up to date from this list: names and grades only. There, Import from roster gets it in one tap; if that doesn’t work, copy it here and paste it there.'),
-    h('div', { class: 'more-row' }, btn('Copy the staff list for APMES People', () => import('./apmes.js').then(m => m.copyForApmes(app)))),
+    ...(M.PEOPLE_LINKS ? [h('h3', { class: 'more-sub' }, 'Staff list for APMES People'),
+      h('p', { class: 'more-p' }, 'APMES People (the resident list the logbook and evals share) can bring its residents’ years up to date from this list: names and grades only. There, Import from roster gets it in one tap; if that doesn’t work, copy it here and paste it there.'),
+      h('div', { class: 'more-row' }, btn('Copy the staff list for APMES People', () => import('./apmes.js').then(m => m.copyForApmes(app))))] : []),
     h('h3', { class: 'more-sub' }, 'Calendar for one person'),
     h('p', { class: 'more-p' }, 'Their shifts this month as all-day events (.ics). Open the file on a phone to add it to the calendar.'),
     h('div', { class: 'more-row' }, h('label', { class: 'more-lbl', for: 'more-person' }, 'Person'), personSel,

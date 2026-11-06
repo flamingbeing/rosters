@@ -802,7 +802,7 @@ async function start() {
 
   // Opened by APMES People (People › Import from the monthly roster): offer to send it the staff list (apmes.js)
   const sendApmes = new URLSearchParams(location.search).get('send') === 'apmes';
-  if (sendApmes) import('./apmes.js').then(m => m.offerSend(app)).catch(e => console.warn('apmes.js not loaded', e));
+  if (sendApmes && M.PEOPLE_LINKS) import('./apmes.js').then(m => m.offerSend(app)).catch(e => console.warn('apmes.js not loaded', e));
 
   // Practice: the tour opens by itself once per device (Not now is right there). Links from your own roster's Help ask
   // for the tour (?demo&tour) or the guided tasks (?demo&try); the extra word comes off the address straight away.

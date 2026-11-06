@@ -133,7 +133,7 @@ export function openCallList(app, { fresh = 0, then = null } = {}) {
     const guesses = people.filter(S.isGuessed).length;
     body.innerHTML = '';
     body.append(h('p', null, fresh
-      ? `The sheet brought ${fresh} people new to the call list. Their level is guessed from their section (resident physicians and R2+ junior residents MO2; R1s, MOs and locums MO1). Change any that are wrong, then press Looks right. You only do this once per person.`
+      ? `The sheet brought ${fresh} people new to the call list. Their level is guessed from their section (resident physicians and R2+ junior residents MO2; R1s and MOs MO1; locums not on the call list). Change any that are wrong, then press Looks right. You only do this once per person.`
       : 'MO2 is the senior MO on call, MO1 the junior MO on call. A weak MO2 is never on call with a weak MO1. Set it once; new people from a later sheet are guessed and shown here.'));
     const order = [['mo2', 'MO2'], ['mo1', 'MO1'], ['nocall', 'No calls'], ['', 'Not on the call list']];
     for (const [lv, title] of order) {

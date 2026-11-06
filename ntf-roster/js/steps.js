@@ -8,13 +8,14 @@ import { levelOf, tagsFor, installJuniorPool } from './jpool.js';
 // ---------- call list guesses ----------
 
 // A person's call level guessed from their section in the sheet: resident physicians (senior and not) and junior
-// residents from R2 up are the senior MO on call (MO2); R1s, medical officers and locums are the junior MO on call
-// (MO1). Senior sections, nurses and anyone else: not on the call list. Only a guess: the rosterer checks it once.
+// residents from R2 up are the senior MO on call (MO2); R1s and medical officers are the junior MO on call (MO1).
+// Locums (they take no calls, PM shifts or half calls), senior sections, nurses and anyone else: not on the call list.
+// Only a guess: the rosterer checks it once.
 export function guessLevel(p) {
   const g = p && p.group;
   if (g === 'srp' || g === 'rp') return 'mo2';
   if (g === 'jr') return /\bR1\b/i.test(`${p.note || ''} ${p.name || ''}`) ? 'mo1' : 'mo2';
-  if (g === 'mo' || g === 'locum') return 'mo1';
+  if (g === 'mo') return 'mo1';
   return '';
 }
 

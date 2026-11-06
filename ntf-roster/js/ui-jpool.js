@@ -1,5 +1,5 @@
 // NTF Roster: People > Junior pool. Who is in the junior pool (from a chosen person down), their call level
-// (MO2 / MO1 / no calls) and whether they are strong or weak. Setting the first level also adds the junior rules.
+// (MO1 / MO2 / no calls) and whether they are strong or weak. Setting the first level also adds the junior rules.
 
 import * as M from './model.js';
 import { openRequest } from './ui-requests.js';
@@ -13,7 +13,7 @@ export function renderPool(app, body) {
   const inPool = people.filter(p => M.poolOf(state, p) === 'junior');
   const gmap = M.groupMap(state);
 
-  body.append(h('p', { class: 'bx-sub' }, 'The junior pool is rostered here: set where it starts, then each person\'s call level (MO2 is the senior MO on call, MO1 the junior MO on call) and whether they are strong or weak. A weak MO2 is never on call with a weak MO1; two strong ones are avoided.'));
+  body.append(h('p', { class: 'bx-sub' }, 'The junior pool is rostered here: set where it starts, then each person\'s call level (MO1 is the senior MO on call, MO2 the junior MO on call) and whether they are strong or weak. A weak MO1 is never on call with a weak MO2; two strong ones are avoided.'));
 
   // where the pool starts
   const startSel = h('select', { id: 'jp-start', 'aria-label': 'The junior pool starts at' },

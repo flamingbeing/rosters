@@ -121,7 +121,7 @@ export function openReport(app) {
 
 // ---------- the call list ----------
 
-// Everyone in the junior pool with their call level (MO2 senior MO on call, MO1 junior MO on call, no calls, not on the
+// Everyone in the junior pool with their call level (MO1 senior MO on call, MO2 junior MO on call, no calls, not on the
 // call list) and strong or weak; guesses from the sheet are marked until "Looks right".
 export function openCallList(app, { fresh = 0, then = null } = {}) {
   const { h } = app;
@@ -133,9 +133,9 @@ export function openCallList(app, { fresh = 0, then = null } = {}) {
     const guesses = people.filter(S.isGuessed).length;
     body.innerHTML = '';
     body.append(h('p', null, fresh
-      ? `The sheet brought ${fresh} people new to the call list. Their level is guessed from their section (resident physicians and R2+ junior residents MO2; R1s and MOs MO1; locums not on the call list). Change any that are wrong, then press Looks right. You only do this once per person.`
-      : 'MO2 is the senior MO on call, MO1 the junior MO on call. A weak MO2 is never on call with a weak MO1. Set it once; new people from a later sheet are guessed and shown here.'));
-    const order = [['mo2', 'MO2'], ['mo1', 'MO1'], ['nocall', 'No calls'], ['', 'Not on the call list']];
+      ? `The sheet brought ${fresh} people new to the call list. Their level is guessed from their section (resident physicians and R2+ junior residents MO1; R1s and MOs MO2, Baby MOs a weak MO2; locums not on the call list). Change any that are wrong, then press Looks right. You only do this once per person.`
+      : 'MO1 is the senior MO on call, MO2 the junior MO on call. A weak MO1 is never on call with a weak MO2. Set it once; new people from a later sheet are guessed and shown here.'));
+    const order = [['mo2', 'MO1'], ['mo1', 'MO2'], ['nocall', 'No calls'], ['', 'Not on the call list']];
     for (const [lv, title] of order) {
       const grp = people.filter(p => levelOf(p) === lv);
       if (!grp.length) continue;

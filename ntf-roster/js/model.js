@@ -27,16 +27,16 @@ export const DEFAULT_GROUPS = [
   { id: 'nurse', name: 'Nurses (PACU / pain APN)', kind: 'other' },
 ];
 
-// Junior pool tags (jpool.js sets them from the Junior pool setup screen): the call level (MO2 = the senior MO on call,
-// MO1 = the junior MO on call) with a strong or weak mark, 'nocall' (never on call), and which pool a person is in.
+// Junior pool tags (jpool.js sets them from the Junior pool setup screen): the call level (MO1 = the senior MO on call,
+// MO2 = the junior MO on call) with a strong or weak mark, 'nocall' (never on call), and which pool a person is in.
 function POOL_TAGS_DEFS() {
   return [
-    { id: 'mo2strong', name: 'Strong MO2', help: 'Senior MO on call, strong' },
-    { id: 'mo2weak', name: 'Weak MO2', help: 'Senior MO on call, still learning: not with a weak MO1' },
-    { id: 'mo2', name: 'MO2', help: 'Senior MO on call, strong or weak not set' },
-    { id: 'mo1strong', name: 'Strong MO1', help: 'Junior MO on call, strong' },
-    { id: 'mo1weak', name: 'Weak MO1', help: 'Junior MO on call, still learning: not with a weak MO2' },
-    { id: 'mo1', name: 'MO1', help: 'Junior MO on call, strong or weak not set' },
+    { id: 'mo2strong', name: 'Strong MO1', help: 'Senior MO on call, strong' },
+    { id: 'mo2weak', name: 'Weak MO1', help: 'Senior MO on call, still learning: not with a weak MO2' },
+    { id: 'mo2', name: 'MO1', help: 'Senior MO on call, strong or weak not set' },
+    { id: 'mo1strong', name: 'Strong MO2', help: 'Junior MO on call, strong' },
+    { id: 'mo1weak', name: 'Weak MO2', help: 'Junior MO on call, still learning: not with a weak MO1' },
+    { id: 'mo1', name: 'MO2', help: 'Junior MO on call, strong or weak not set' },
     { id: 'nocall', name: 'No calls', help: 'In the pool but never on call (PM shifts and a last-resort half call only)' },
     { id: 'jpool', name: 'Junior pool', help: 'Rostered by the junior roster owner' },
     { id: 'spool', name: 'Senior pool', help: 'Rostered with the seniors, even if in a junior section' },
@@ -144,7 +144,7 @@ const clone = o => JSON.parse(JSON.stringify(o));
 export function defaultState() {
   return migrate({
     v: 1,
-    settings: { dept: 'NTFGH Department of Anaesthesia', holidays: {} },
+    settings: { dept: 'NTFGH Department of Anaesthesia', holidays: {}, moNames: 1 },
     groups: clone(DEFAULT_GROUPS),
     tags: clone(DEFAULT_TAGS),
     staff: [],
@@ -289,6 +289,18 @@ export function migrate(s) {
       Object.assign(old, { name: 'No calls people: avoid half calls (only if the day cannot be filled any other way)', hard: false, weight: 90, params: { ...old.params, codes: ['HC'], max: 0 } });
     }
     s.settings.jpNch = 1;
+  }
+  // owner, 6 Nov 2026: NTF says MO1 for the senior MO on call and MO2 for the junior (the app had them the other way).
+  // Once, built-in tag and junior rule wording still in the old naming is flipped; the tag ids stay, your own edits stay.
+  if (!s.settings.moNames) {
+    const flip = t => t.replace(/MO([12])/g, (_, d) => `MO${3 - d}`);
+    for (const def of POOL_TAGS_DEFS()) {
+      const t = s.tags.find(x => x.id === def.id);
+      if (t && t.name === flip(def.name)) t.name = def.name;
+      if (t && t.help === flip(def.help)) t.help = def.help;
+    }
+    for (const r of s.rules) if (/^r-jp-/.test(r.id) && typeof r.name === 'string' && /MO[12]/.test(r.name)) r.name = flip(r.name);
+    s.settings.moNames = 1;
   }
   if (!Array.isArray(s.rulesLog)) s.rulesLog = [];
   s.rulesLog = s.rulesLog.filter(isObj);

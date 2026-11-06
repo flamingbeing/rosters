@@ -14,7 +14,7 @@ const SHELL = [
   './', 'style.css', 'css/rules.css', 'manifest.webmanifest',
   'https://design.anawj.com/v1/tokens.css', 'https://design.anawj.com/v1/app.css', 'https://design.anawj.com/v1/app.js',
   'js/app.js', 'js/store.js', 'js/model.js', 'js/rules.js', '../lib/roster-core/model.js', '../lib/roster-core/rules.js', 'js/solver.js', '../lib/roster-core/solver.js', 'js/solver-worker.js',
-  'js/ui-roster.js', 'js/ui-day.js', 'js/ui-rules.js', 'js/ui-people.js', 'js/ui-check.js', 'js/ui-more.js', 'js/ui-leave.js', 'js/waitlist.js', 'js/pools.js', 'js/sheetgen.js', 'js/sheetgen-state.js', 'js/sheetgen-xlsx.js', 'js/sheetgen-gsheets.js', 'js/gsheets.js', 'js/sheet.js', 'js/master.js', 'js/ui-master.js',
+  'js/ui-roster.js', 'js/ui-day.js', 'js/ui-rules.js', 'js/ui-people.js', 'js/ui-check.js', 'js/ui-more.js', 'js/ui-leave.js', 'js/waitlist.js', 'js/pools.js', 'js/sheetgen.js', 'js/sheetgen-state.js', 'js/sheetgen-xlsx.js', 'js/sheetgen-gsheets.js', 'js/sheetgen-tabs.js', 'js/ui-sheetmaker.js', 'js/gsheets.js', 'js/sheet.js', 'js/master.js', 'js/ui-master.js',
   'js/io.js', 'js/unsent.js', '../lib/roster-core/docsync.js', '../lib/roster-core/kit.js', '../lib/roster-core/kit.css', 'js/demo.js', 'js/cloud.js', 'js/firebase-config.js', 'js/ui-team.js', 'js/version.js', 'js/guide.js', 'js/tour.js', 'js/apmes.js', 'js/people-pull.js',
   'icons/icon-192.png', 'icons/icon-512.png', 'icons/maskable-512.png', 'icons/apple-touch-icon.png', 'icons/favicon-32.png', 'icons/icon.svg',
   // the UI kit (lib/roster-core/kit.js KIT_SHELL: its styles, early.js and the modules the page imports)

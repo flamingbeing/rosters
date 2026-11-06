@@ -12,6 +12,9 @@ import { colName } from './sheet.js';
 
 const API = 'https://sheets.googleapis.com/v4/spreadsheets/';
 export const SCOPE = 'https://www.googleapis.com/auth/spreadsheets';
+// drive.file: only the files and folders the app itself makes (the sheet maker's folder and the sheets it moves into it)
+export const DRIVE_SCOPE = 'https://www.googleapis.com/auth/drive.file';
+const DRIVE = 'https://www.googleapis.com/drive/v3/files';
 
 // The sign-in (cloud.js asks Google for the Sheets scope in a pop-up). Replaceable so tests need no Google account.
 export const hooks = {
@@ -65,7 +68,8 @@ async function call(url, { method = 'GET', body = null } = {}) {
 }
 
 function friendly(status, message = '', reason = '') {
-  if (reason === 'SERVICE_DISABLED' || /has not been used|is disabled/i.test(message)) return "The Google Sheets API isn't switched on for this app's project yet. Ask the owner.";
+  if (reason === 'SERVICE_DISABLED' || /has not been used|is disabled/i.test(message)) return `The Google ${/drive/i.test(message) ? 'Drive' : 'Sheets'} API isn't switched on for this app's project yet. Ask the owner.`;
+  if (reason === 'insufficientPermissions' || /insufficient authentication scopes/i.test(message)) return 'Google did not give the app access to its Drive folder. Try again and tick every box Google shows.';
   if (status === 401) return 'Google sign-in expired. Try again.';
   if (status === 403) return "Google says this account can't open or edit that sheet. Ask the sheet's owner to share it with you.";
   if (status === 404) return 'That sheet was not found. Check the link, and that you can open it.';
@@ -205,4 +209,75 @@ export async function undoChanges(source, lay, changes) {
 export async function createSpreadsheet(body) {
   const j = await call(`${API.replace(/\/$/, '')}?fields=${encodeURIComponent('spreadsheetId,spreadsheetUrl,sheets.properties.sheetId')}`, { method: 'POST', body });
   return { id: j.spreadsheetId, url: j.spreadsheetUrl, gid: String((j.sheets && j.sheets[0] && j.sheets[0].properties.sheetId) || 0) };
+}
+
+// The signed-in Google account's email (the person making the sheets: Google wants them among a lock's editors).
+export async function whoAmI() {
+  const j = await call('https://www.googleapis.com/drive/v3/about?fields=user(emailAddress)');
+  return ((j.user && j.user.emailAddress) || '').toLowerCase();
+}
+
+// ---- The sheet maker's Drive folder (drive.file scope: the app sees only what it made) ----
+
+// The folder `id` if it is still there and not in the bin, else a new one called `name`. Returns { id, url, made }.
+export async function ensureFolder(id, name) {
+  if (id) {
+    try {
+      const f = await call(`${DRIVE}/${encodeURIComponent(id)}?fields=id,trashed,webViewLink`);
+      if (f && !f.trashed) return { id: f.id, url: f.webViewLink || `https://drive.google.com/drive/folders/${f.id}`, made: false };
+    } catch (e) { if (!(e instanceof SheetsError) || ![403, 404].includes(e.status)) throw e; }
+  }
+  const f = await call(`${DRIVE}?fields=id,webViewLink`, { method: 'POST', body: { name, mimeType: 'application/vnd.google-apps.folder' } });
+  return { id: f.id, url: f.webViewLink || `https://drive.google.com/drive/folders/${f.id}`, made: true };
+}
+
+// Move a file the app made into the folder (out of My Drive's top level).
+export async function moveToFolder(fileId, folderId) {
+  const f = await call(`${DRIVE}/${encodeURIComponent(fileId)}?fields=parents`);
+  const from = (f.parents || []).filter(p => p !== folderId).join(',');
+  const q = new URLSearchParams({ addParents: folderId, fields: 'id,parents' });
+  if (from) q.set('removeParents', from);
+  return call(`${DRIVE}/${encodeURIComponent(fileId)}?${q}`, { method: 'PATCH', body: {} });
+}
+
+// Share the folder (every sheet in it follows): `editors` as editors without an email from Google, and, with `anyone`,
+// everyone with the link as an editor (how the juniors open the month's sheet to type their requests).
+export async function shareFolder(folderId, { editors = [], anyone = false } = {}) {
+  const have = await call(`${DRIVE}/${encodeURIComponent(folderId)}/permissions?fields=${encodeURIComponent('permissions(id,type,role,emailAddress)')}`);
+  const list = have.permissions || [];
+  const has = (type, email) => list.some(p => p.type === type && ['writer', 'owner', 'organizer', 'fileOrganizer'].includes(p.role) && (!email || String(p.emailAddress || '').toLowerCase() === email));
+  let added = 0;
+  for (const e of [...new Set(editors.map(x => String(x).trim().toLowerCase()).filter(Boolean))]) {
+    if (has('user', e)) continue;
+    await call(`${DRIVE}/${encodeURIComponent(folderId)}/permissions?sendNotificationEmail=false`, { method: 'POST', body: { type: 'user', role: 'writer', emailAddress: e } });
+    added++;
+  }
+  if (anyone && !has('anyone')) { await call(`${DRIVE}/${encodeURIComponent(folderId)}/permissions`, { method: 'POST', body: { type: 'anyone', role: 'writer', allowFileDiscovery: false } }); added++; }
+  return { added };
+}
+
+// ---- Open the Request tab for requests, or lock it again ----
+
+// The lock on the Request tab (the protected range covering the whole tab), with what it leaves open.
+export async function requestLock(id) {
+  const j = await call(`${API}${id}?fields=${encodeURIComponent('sheets(properties(sheetId,title),protectedRanges(protectedRangeId,range,unprotectedRanges))')}`);
+  const sh = (j.sheets || []).find(s => /request/i.test(s.properties.title)) || (j.sheets || [])[0];
+  const pr = sh && (sh.protectedRanges || []).find(p => p.range && p.range.startRowIndex == null && p.range.startColumnIndex == null);
+  if (!pr) return null;
+  return { sheetId: sh.properties.sheetId, protectedRangeId: pr.protectedRangeId, open: (pr.unprotectedRanges || []).length > 0 };
+}
+
+// open: the request block (A1, e.g. 'D72:AH202') left open to everyone, or null to lock the whole tab. Returns the new state.
+export async function setRequestsOpen(id, block) {
+  const lock = await requestLock(id);
+  if (!lock) throw new SheetsError('This sheet has no lock on its Request tab (it was not made by the app).', 0);
+  const unprotectedRanges = block ? [a1Grid(lock.sheetId, block)] : [];
+  await call(`${API}${id}:batchUpdate`, { method: 'POST', body: { requests: [{ updateProtectedRange: { protectedRange: { protectedRangeId: lock.protectedRangeId, unprotectedRanges }, fields: 'unprotectedRanges' } }] } });
+  return { ...lock, open: !!block };
+}
+
+function a1Grid(sheetId, ref) {
+  const one = a => { const m = /^([A-Z]+)(\d+)$/.exec(a); let c = 0; for (const ch of m[1]) c = c * 26 + ch.charCodeAt(0) - 64; return { row: Number(m[2]) - 1, col: c - 1 }; };
+  const [a, b] = ref.split(':'); const s = one(a), e = one(b || a);
+  return { sheetId, startRowIndex: s.row, endRowIndex: e.row + 1, startColumnIndex: s.col, endColumnIndex: e.col + 1 };
 }

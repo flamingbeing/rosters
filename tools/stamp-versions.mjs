@@ -57,7 +57,7 @@ for (const app of fs.readdirSync(ROOT).filter(d => fs.existsSync(path.join(ROOT,
   if (MANIFEST_RE.test(plain)) {
     const manifest = {};
     for (const u of [...shellSrc.matchAll(/'([^']+)'/g)].map(x => x[1])) {
-      if (/^https?:/.test(u)) manifest[u] = /\/\d+\.\d+\.\d+\//.test(new URL(u).pathname) ? 'pinned' : `deploy-${h8}`;
+      if (/^https?:/.test(u)) manifest[u] = /\/\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?\//.test(new URL(u).pathname) ? 'pinned' : `deploy-${h8}`;
       else manifest[u] = sha12(fs.readFileSync(path.join(ROOT, app, u === './' ? 'index.html' : u.split(/[?#]/)[0])));
     }
     out = out.replace(MANIFEST_RE, () => `const MANIFEST = ${JSON.stringify(manifest)};`);

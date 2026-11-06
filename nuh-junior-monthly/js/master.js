@@ -275,6 +275,9 @@ export function applyMaster(draft, plan, { off = new Set(), on = new Set(), as =
       if ((!e.match || e.match.id !== id || e.match.how === 'close') && !(p.aliases || []).includes(e.name)) p.aliases = [...(p.aliases || []), e.name];
     }
     res.people++;
+    // a month whose sheet was imported shows only the people on it (M.notInSheet); the master has this person this month
+    const lay = draft.sheets && draft.sheets[plan.month];
+    if (lay && Array.isArray(lay.inSheet) && !lay.inSheet.includes(id)) lay.inSheet.push(id);
     // the month's days: the master's posting (or Z, or ML) replaces the last one it set; calls, leave and requests stay
     for (const d of days) {
       if (!(d in e.cells)) continue;

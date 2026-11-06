@@ -23,7 +23,7 @@ the scripts that read them are in the owner's private notes.
 
 - One spreadsheet per month with a grid tab: a header row `S/N | Grade | Name | 1 … 30 | 1st of next month` (weekday
   names in the row above), one row per person, one code per day, then the 1st of next month (for carrying post call
-  over). Below: count rows (each call should be 1 a day) and manpower totals; to the right, points and totals per
+  over). Rows kept for people not named yet (a grade and S/N with an empty name, or only "(GS)") are skipped, not the end of the list. Below: count rows (each call should be 1 a day) and manpower totals; to the right, points and totals per
   person. The other tabs are formulas over this grid and the day cells hold values only, so pasting values back over
   them is safe. (Exact layout in the owner's private notes; the app finds the header row itself.)
 - Grades: AC, R, RES3, RES2, RES1, NHG (TTSH cardiac residents), RP, HC, LOC, MOPEX, RR (rotating residents, the home

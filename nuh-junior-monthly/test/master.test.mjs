@@ -94,6 +94,14 @@ ok(!M.getCell(draft, '2027-01-05', 'c'), 'a person left out is not touched');
 ok(M.getCell(draft, '2027-01-10', byName('Ann Example').id) === null || !(M.getCell(draft, '2027-01-10', 'a').a || []).length, 'the general list has no posting');
 ok(findPerson(draft.staff, 'Ben Sample').how === 'exact', 'next time the master name matches at once');
 
+// a month whose sheet was imported hides people not on it; the master's people for the month are shown
+{
+  const d3 = structuredClone(state);
+  d3.sheets = { '2027-01': { inSheet: ['a'], known: ['a', 'b', 'c', 'g'] } };
+  applyMaster(d3, plan, {});
+  ok(!M.notInSheet(d3, '2027-01').has('b') && M.notInSheet(d3, '2027-01').has('g'), 'people in the master join the imported month; others stay hidden');
+}
+
 // a second pull changes nothing more; calls typed on top stay
 M.setCell(draft, '2027-01-06', 'b', { a: ['LI', 'R1'] });
 const again = applyMaster(draft, planMaster(draft, master, '2027-01'), { off: new Set(['e:' + normKey('Cara Test Lim')]) });

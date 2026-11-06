@@ -17,7 +17,7 @@ eq(S.guessLevel({ group: 'rp' }), 'mo2', 'resident physician: MO2');
 eq(S.guessLevel({ group: 'jr', note: 'R2-JR' }), 'mo2', 'R2 junior resident: MO2');
 eq(S.guessLevel({ group: 'jr', note: 'R1-JR' }), 'mo1', 'R1 junior resident: MO1');
 eq(S.guessLevel({ group: 'mo' }), 'mo1', 'medical officer: MO1');
-eq(S.guessLevel({ group: 'locum' }), 'mo1', 'locum: MO1');
+eq(S.guessLevel({ group: 'locum' }), '', 'locum: not on the call list (no calls, PM shifts or half calls)');
 eq(S.guessLevel({ group: 'cons' }), '', 'consultant: not on the call list');
 
 // a made-up department after an import
@@ -26,7 +26,7 @@ function dept() {
   const st = M.defaultState();
   st.staff = [
     person('c1', 'cons'), person('r1', 'rp'), person('r2', 'rp', { tags: ['nocall'] }), person('j1', 'jr', { note: 'R3-JR' }),
-    person('j2', 'jr', { note: 'R1-JR' }), person('m1', 'mo'), person('m2', 'mo', { pool: 'senior' }), person('n1', 'nurse'),
+    person('j2', 'jr', { note: 'R1-JR' }), person('m1', 'mo'), person('m2', 'mo', { pool: 'senior' }), person('n1', 'nurse'), person('l1', 'locum'),
   ];
   return st;
 }
@@ -39,6 +39,8 @@ eq([lv('r1'), lv('r2'), lv('j1'), lv('j2'), lv('m1')], ['mo2', 'nocall', 'mo2', 
 eq(lv('c1'), '', 'consultants untouched');
 eq(lv('m2'), '', 'someone moved to the senior roster by hand is left alone');
 eq(lv('n1'), '', 'nurses are never on the call list');
+eq(lv('l1'), '', 'locums are not on the call list');
+ok(st.staff.find(p => p.id === 'l1').lvl === 'off', 'and it is remembered, so a later import does not guess them');
 ok(st.settings.jpRules === 1 && res.rulesAdded > 0, 'the junior rules are added the first time');
 ok(S.isGuessed(st.staff.find(p => p.id === 'r1')), 'a guess is marked');
 

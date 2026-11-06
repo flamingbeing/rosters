@@ -16,8 +16,8 @@ export function masterSection(app, { section, btn, fileButton, monthOptions }) {
   const linkIn = h('input', { type: 'url', class: 'sheet-link', 'aria-label': 'Master rotations sheet link', placeholder: 'Paste the master rotations sheet link', value: lastLink() });
   return section('more-master', 'Start a month from the master rotations',
     'Reads the year\'s block tab of the master rotations sheet ("26-27 Block") and shows what it would change for a month: new people with their first and last day, people who move grade, dates, and each week\'s posting. Nothing changes until you apply the ticked ones. It can be read again whenever the master changes.',
-    ...(cloud.enabled ? [h('div', { class: 'more-row' }, linkIn, btn('Read from Google', onGoogle, 'btn btn-primary'))] : []),
-    h('div', { class: 'more-row' }, fileButton(cloud.enabled ? 'Or a downloaded .xlsx' : 'Read a downloaded .xlsx', '.xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', onFile)));
+    ...(cloud.enabled ? [h('div', { class: 'more-row' }, linkIn, btn('Read the master', onGoogle, 'btn btn-primary'))] : []),
+    h('div', { class: 'more-row' }, fileButton(cloud.enabled ? 'Or a downloaded master (.xlsx)' : 'Read a downloaded master (.xlsx)', '.xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', onFile)));
 
   async function onGoogle() {
     const p = G.parseSheetUrl(linkIn.value);

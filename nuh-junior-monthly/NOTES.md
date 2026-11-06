@@ -104,7 +104,7 @@ in the Checks `rules` job.
 
 - [docs/rules.md](docs/rules.md): the Rules tab, rule types, what gives way to what, rule versions.
 - [docs/cloud-and-sheets.md](docs/cloud-and-sheets.md): reading and writing the Google Sheet, locking months, the cloud copy, earlier saves, roles.
-- [docs/sheetgen.md](docs/sheetgen.md): making the month's sheet from scratch (trial).
+- [docs/sheetgen.md](docs/sheetgen.md): making the month's sheet from scratch (trial), and starting a month from the master rotations.
 - [docs/more-areas.md](docs/more-areas.md): leave waitlist, R1 to R3 calls and requests, shared-call points, Fill options, carry-over, rotations from People.
 - [docs/screens.md](docs/screens.md): header, tabs, cell marks, colours, per-month grades and who is shown.
 

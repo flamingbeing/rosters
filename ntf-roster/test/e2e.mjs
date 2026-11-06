@@ -327,10 +327,15 @@ await page.waitForSelector('.imp', { timeout: 15000 });
 ok(/0 new/.test(await page.textContent('.imp')), 'every person in the exported sheet is matched');
 await axe(page, 'import review');
 await page.click('.sheet-foot .btn-primary:has-text("Apply import")');
+// the junior call list: levels guessed from the sheet's sections, checked once
+await page.waitForSelector('.sheet .jcall', { timeout: 5000 });
+ok(await page.locator('.jcall .jp-row.is-guess').count() > 0, 'after the import the call list shows the guessed levels');
+await page.click('.sheet-foot .btn-primary:has-text("Looks right")');
 await page.waitForTimeout(300);
+ok(await page.evaluate(() => !window.ntfApp.store.get().staff.some(p => p.lvl === 'guess')), 'Looks right confirms every guess');
 const afterImport = cellsOf(await stored(page), M0);
 ok(JSON.stringify(afterImport) === JSON.stringify(beforeImport), 'export then import gives the same cells');
-ok(/Import/.test(await page.evaluate(() => window.ntfApp.store.undoLabel())), 'the import is one undo step');
+ok(/Import|Call list/.test(await page.evaluate(() => window.ntfApp.store.undoLabel())), 'the import is one undo step');
 
 // (The pull of rotations from APMES People needs the People app, which lives in the apmes repo; its browser test of
 // the pull goes there with it.)
@@ -422,6 +427,22 @@ ok(s.rules.length >= 15 && s.duties.some(d => d.code === 'C'), 'a fresh roster s
 await go(page, '#roster');
 await page.waitForSelector('.cell');
 ok(await page.locator('.cell').count() >= 28, 'the roster grid shows the new person');
+// your own junior roster: importing the department sheet guesses the call list, then the three steps card takes
+// Getting started's place
+ok(await page.isVisible('.guide-slot .gs') && !(await page.isVisible('.jsteps')), 'before any sheet: Getting started, no steps card');
+await page.evaluate(m => window.ntfApp.setMonth(m), M0);
+await go(page, '#more');
+await page.setInputFiles('section[aria-labelledby="more-import"] input[type=file]', xlPath);
+await page.waitForSelector('.imp', { timeout: 15000 });
+await page.click('.sheet-foot .btn-primary:has-text("Apply import")');
+await page.waitForSelector('.sheet .jcall', { timeout: 5000 });
+await axe(page, 'call list check');
+await page.click('.sheet-foot .btn-primary:has-text("Looks right")');
+await go(page, '#roster');
+await page.waitForSelector('.jsteps', { timeout: 8000 });
+ok(/Import the department sheet/.test(await page.textContent('.jsteps')) && await page.locator('.js-step.is-done').count() === 1, 'the steps card shows the import done');
+ok(!(await page.isVisible('.guide-slot .gs')), 'Getting started is out of the way');
+await axe(page, 'junior steps');
 await go(page, '#more');
 await page.waitForSelector('.more-foot .appver');
 await page.waitForFunction(() => /Sign in with Google|could not start/.test(document.querySelector('section[aria-labelledby="more-team"]').textContent), null, { timeout: 15000 });

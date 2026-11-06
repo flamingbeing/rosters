@@ -1285,7 +1285,7 @@ export function chipVars(du) {
 // ---------- Auto-fill dialog ----------
 let runCount = 0;
 
-export function openAutofill(app, { quick = false } = {}) {
+export function openAutofill(app, { quick = false, aps = null, onApplied = null } = {}) {
   const { h } = app;
   const state = app.store.get();
   if (!(state.staff || []).length) { app.toast('Add staff first: People, or import the Excel sheet.', { kind: 'warn' }); return; }
@@ -1299,6 +1299,7 @@ export function openAutofill(app, { quick = false } = {}) {
   // what to fill, remembered on this device: codes (null = all), also assign the free APS weeks, apply when done
   let pref = { codes: null, aps: true, auto: true };
   try { pref = { ...pref, ...JSON.parse(localStorage.getItem('ntf-roster-af-pref') || '{}') }; } catch (e) { /* ignore */ }
+  if (aps !== null) pref.aps = !!aps;   // the junior steps card always assigns the free APS weeks
   const savePref = () => { try { localStorage.setItem('ntf-roster-af-pref', JSON.stringify(pref)); } catch (e) { /* ignore */ } };
   const chosenCodes = () => { const all = autoDuties.map(d => d.code); const c = Array.isArray(pref.codes) ? all.filter(x => pref.codes.includes(x)) : all; return c.length ? c : all; };
   const apsOpen = () => (state.settings && state.settings.pool) !== 'senior' ? suggestMonth(state, app.month).filter(w => !w.holder && w.pick) : [];
@@ -1359,6 +1360,9 @@ export function openAutofill(app, { quick = false } = {}) {
       const cb = h('input', { type: 'checkbox', id: 'af-aps', checked: !!pref.aps });
       cb.addEventListener('change', () => { pref.aps = cb.checked; savePref(); });
       wrap.append(h('label', { class: 'af-opt', for: 'af-aps' }, cb, h('span', { class: 'af-opt-l' }, `Also assign the ${nAps} free APS week${nAps > 1 ? 's' : ''}`), h('span', { class: 'af-opt-s' }, 'suggested people, fewest weeks first')));
+      // who each free week would go to (change them on Check > APS weeks)
+      const nm = id => ((state.staff || []).find(p => p.id === id) || {}).name || id;
+      wrap.append(h('ul', { class: 'af-aps-picks' }, apsOpen().map(w => h('li', null, h('span', null, `${M.fmtDay(w.monday)} week`), h('strong', null, nm(w.pick))))));
     }
     const ca = h('input', { type: 'checkbox', id: 'af-auto', checked: !!pref.auto });
     ca.addEventListener('change', () => { pref.auto = ca.checked; savePref(); });
@@ -1500,6 +1504,7 @@ export function openAutofill(app, { quick = false } = {}) {
     const applyIt = () => {
       app.store.commit(`Auto-fill ${M.fmtMonth(app.month)}`, draft => { for (const [m, id] of apsPicks) setWeek(draft, m, id); applyAssignments(draft, result, days, new Set((snapshot.staff || []).map(p => p.id))); });
       close();
+      if (typeof onApplied === 'function') onApplied();
       app.toast(`Auto-fill applied: ${changedTxt.toLowerCase()}${apsPicks.length ? `; ${apsPicks.length} APS week${apsPicks.length > 1 ? 's' : ''} assigned` : ''}`, { action: { label: 'Undo', fn: () => app.store.undo() } });
     };
     if (pref.auto && !unf.length && after.hard === 0) { applyIt(); return; }

@@ -95,6 +95,17 @@ notes, problems), People (staff, groups, tags, duty codes), Rules (list, schema-
 templates, rules log, rules JSON), Check (problems by rule, fairness, coverage), More (Excel import with a review,
 Excel/PDF/CSV/ICS export, backup and restore, settings and public holidays, team sharing, the app version lines).
 
+**Junior roster in three steps** (`js/steps.js`, `js/ui-steps.js`, 6 Nov 2026): once a department sheet has come in
+(or anyone has a call level), the junior view shows a card above the roster instead of Getting started: 1 Import the
+department sheet, 2 Fill (calls, PM shifts, half calls and the free APS weeks in one go, then a rule-by-rule report
+with the APS weeks by name), 3 Download the filled sheet (the imported file, kept in memory for the tab as
+`app.lastBook`). An import into the junior view guesses the call level of anyone new to the call list from their
+section (SRP, RP and R2+ JR: MO2; R1, MO and locum: MO1; `p.lvl = 'guess'`) and adds the junior rules the first
+time, then opens the call list check; "Looks right" drops the guess marks, "Not on the call list" is remembered
+(`p.lvl = 'off'`). Why: setting every person's level by hand before the junior rules or APS weeks applied was the
+step people missed. Import and fill-the-sheet code: `js/ui-import.js` (shared with More). Step times:
+`settings.jsteps[month] = { imported, exported }`.
+
 Hash routes (the month comes from `m`, else from `d`; changing month writes `m` into the link):
 `#roster?m=2026-11&p=<staffId>`, `#day?d=2026-11-03`, `#people?s=staff|groups|tags|codes`,
 `#rules?edit=<ruleId>|new`, `#check?rule=<ruleId>&v=fairness|coverage`, `#more`.

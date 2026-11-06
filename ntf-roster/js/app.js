@@ -147,6 +147,7 @@ function setMonth(m) {
   if (current.view && typeof current.view.update === 'function') {
     try { current.view.update(app.store.get(), { month: true }); } catch (e) { console.error(e); }
   }
+  renderGuide();
 }
 
 // ---------- rule check cache ----------
@@ -456,7 +457,7 @@ async function doRoute() {
   main.dataset.tab = tab;
   document.body.dataset.tab = tab;
   const state = app.store.get();
-  guideSlot = null;
+  guideSlot = null; stepsSlot = null; stepsShown = false;
   if (!(state.staff || []).length && (tab === 'roster' || tab === 'day' || tab === 'check')) {
     // the first screen of an empty roster: a welcome with the Getting started checklist (guide.js)
     if (G) {
@@ -472,7 +473,11 @@ async function doRoute() {
   if (tab === 'more' && isPhone()) el.append(phoneMoreLinks());
   // your own roster: Getting started sits above the grid until it is hidden or finished (and above Day on a phone,
   // where the app opens)
-  if ((tab === 'roster' || (tab === 'day' && isPhone())) && !app.isDemo && G) { guideSlot = h('div', { class: 'guide-slot', hidden: true }); guideWelcome = false; el.append(guideSlot); }
+  if ((tab === 'roster' || (tab === 'day' && isPhone())) && !app.isDemo) {
+    // the junior roster's three steps (ui-steps.js) take Getting started's place once a department sheet came in
+    stepsSlot = h('div', { class: 'steps-slot', hidden: true }); el.append(stepsSlot);
+    if (G) { guideSlot = h('div', { class: 'guide-slot', hidden: true }); guideWelcome = false; el.append(guideSlot); }
+  }
   const host = h('div', { class: 'view-host' });
   el.append(host);
   main.append(el);
@@ -545,7 +550,21 @@ function welcomeCard() {
 
 // ---------- first-time help (guide.js) ----------
 let guideSlot = null, guideWelcome = false;
+// The junior steps card: loaded the first time it is wanted (ui-steps.js), drawn again on every change.
+let stepsSlot = null, stepsShown = false, STP = null;
+function renderSteps() {
+  if (!stepsSlot || !stepsSlot.isConnected) { stepsShown = false; return; }
+  const want = !app.isDemo && (app.store.get().settings || {}).pool !== 'senior';
+  if (!want) { stepsSlot.hidden = true; stepsShown = false; return; }
+  if (!STP) {
+    import('./ui-steps.js').then(m => { STP = m; renderGuide(); }).catch(e => console.warn('ui-steps.js not loaded', e));
+    return;
+  }
+  try { STP.renderSteps(app, stepsSlot); stepsShown = !stepsSlot.hidden; } catch (e) { console.error(e); stepsShown = false; }
+}
 function renderGuide() {
+  renderSteps();
+  if (stepsShown && guideSlot && !guideWelcome) { guideSlot.hidden = true; return; }
   if (!G || !guideSlot || !guideSlot.isConnected) return;
   try { G.renderChecklist(app, guideSlot, { welcome: guideWelcome }); } catch (e) { console.error(e); }
 }
@@ -690,11 +709,11 @@ function doRedo() {
   if (label) toast(`Redone: ${label}`, { ms: 2500 });
 }
 
-async function openAutofill() {
+async function openAutofill(opts = {}) {
   if (M.isMonthLocked(app.store.get(), app.month)) { toast(`${M.fmtMonth(app.month)} is locked for the ${M.POOL_LABEL[viewPool()]}. Unlock it (the padlock at the top) to use Fill.`, { kind: 'warn', ms: 7000 }); return; }
   try {
     const mod = await import('./ui-roster.js');
-    mod.openAutofill(app);
+    mod.openAutofill(app, opts);
   } catch (e) {
     console.error(e);
     toast('Auto-fill could not start. Try reloading the page.', { kind: 'error' });
@@ -790,7 +809,7 @@ async function start() {
     if (viewPool() === k) return;
     app.store.commit(`Work on the ${k} roster`, d => { d.settings.pool = k; });
   });
-  $('#autofill').addEventListener('click', openAutofill);
+  $('#autofill').addEventListener('click', () => openAutofill());
   $('#cloudbtn').addEventListener('click', openCloud);
   document.addEventListener('keydown', onKeydown);
   window.addEventListener('hashchange', route);

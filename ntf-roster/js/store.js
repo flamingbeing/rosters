@@ -132,6 +132,14 @@ export function createStore({ demo = false, fallback } = {}) {
 
     // A Getting started tick or "hide the checklist" (merged into settings.onboarding): saved, backed up and shared
     // like any change, but not an undo step (it isn't an edit of the roster). Subscribers get source 'mark'.
+    // A quiet settings change (where a month's steps stand, say): saved, not an undo step.
+    setQuiet(key, value, label = 'Steps') {
+      state = { ...state, settings: { ...state.settings, [key]: value } };
+      store.save();
+      notify(label, 'mark');
+      return true;
+    },
+
     mark(patch, label = 'Getting started') {
       const ob = (state.settings && state.settings.onboarding) || {};
       if (Object.entries(patch).every(([k, v]) => ob[k] === v)) return false;

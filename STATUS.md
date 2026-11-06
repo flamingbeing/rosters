@@ -1,17 +1,16 @@
 # Status
 
 ## Now
-- Apps copied from anawj-site (21 Oct 2026). The three addresses are still served by anawj-site's Worker until the
-  cut-over; this repo's Worker takes them over on its first deploy.
+- Apps copied from anawj-site (21 Oct 2026). This repo's Worker is live and serves the three addresses (Deploy runs
+  from Actions on every merge to main). Still to confirm: anawj-site has dropped the three hosts and its copies.
 
 ## Waiting on the owner
 - nuh-roster claims: a service account in its Firebase project (Auth user admin + Firestore write), its email and key
   as the Worker secrets `ROSTER_SA_EMAIL` and `ROSTER_SA_KEY` (Cloudflare, Worker `rosters`); the same for ntf-roster
   (`NTF_SA_EMAIL`, `NTF_SA_KEY`). nuh-junior-monthly's (`JUNIOR_SA_*`) are set.
-- Connect this repo in Workers Builds and move the three custom domains here (the owner has the link).
 
 ## Next (in order)
-1. Cut-over: check each address serves this repo's copy and sign-in works (NTF through its own host).
+1. Check sign-in works on each address (NTF through its own host).
 2. anawj-site drops the three hosts and its copies.
 
 ## Recently done

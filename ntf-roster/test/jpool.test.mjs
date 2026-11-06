@@ -123,8 +123,8 @@ function pool() {
     nocallC += calls.filter(p => p.id === nocall.id).length;
     if (M.weekday(d) === 0 || d === '2026-11-08') eq(filled.staff.filter(p => (M.getCell(filled, d, p.id) || { a: [] }).a.includes('HC')).length, 1, 'one half call ' + d);
   }
-  ok(sat3 && sun, 'Saturday 3 on call, other days 1 MO2 + 1 MO1');
-  eq(weakPairs, 0, 'never a weak MO2 with a weak MO1');
+  ok(sat3 && sun, 'Saturday 3 on call, other days 1 MO1 + 1 MO2');
+  eq(weakPairs, 0, 'never a weak MO1 with a weak MO2');
   eq(nocallC, 0, 'the no-calls person is never on call');
   for (const d of ['2026-11-10', '2026-11-11', '2026-11-12', '2026-11-13', '2026-11-14', '2026-11-15']) eq(on(d, 'C', [senior[3]]).length, 0, 'request window kept ' + d);
   eq(on('2026-11-17', 'C', [junior[6]]).length + on('2026-11-17', 'P', [junior[6]]).length, 0, 'JR teaching day: no call or PM');
@@ -329,7 +329,7 @@ function pool() {
   t.staff.push({ id: 'cx', name: 'Con X', group: 'cons', tags: [] }, { id: 'mx', name: 'Mo X', group: 'mo', tags: [] });
   M.migrate(t);
   eq(M.guessRulePool(t, { id: 'q1', who: { staff: ['cx'] } }), 'senior', 'a rule naming a consultant: senior');
-  eq(M.guessRulePool(t, { id: 'q2', who: { tags: ['mo2'] } }), 'junior', 'MO2s: junior');
+  eq(M.guessRulePool(t, { id: 'q2', who: { tags: ['mo2'] } }), 'junior', 'MO1s: junior');
   eq(M.guessRulePool(t, { id: 'q3', who: { staff: ['cx', 'mx'] } }), '', 'both: split');
 }
 

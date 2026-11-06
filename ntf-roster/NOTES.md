@@ -100,7 +100,7 @@ Excel/PDF/CSV/ICS export, backup and restore, settings and public holidays, team
 department sheet, 2 Fill (calls, PM shifts, half calls and the free APS weeks in one go, then a rule-by-rule report
 with the APS weeks by name), 3 Download the filled sheet (the imported file, kept in memory for the tab as
 `app.lastBook`). An import into the junior view guesses the call level of anyone new to the call list from their
-section (SRP, RP and R2+ JR: MO2; R1 and MO: MO1; `p.lvl = 'guess'`; locums take no calls, PM shifts or half calls, so they start off the call list) and adds the junior rules the first
+section (SRP, RP and R2+ JR: MO1; R1 and MO: MO2, a Baby MO (`(B)` in the sheet) a weak MO2 with the `babymo` tag; `p.lvl = 'guess'`; locums take no calls, PM shifts or half calls, so they start off the call list) and adds the junior rules the first
 time, then opens the call list check; "Looks right" drops the guess marks, "Not on the call list" is remembered
 (`p.lvl = 'off'`). Why: setting every person's level by hand before the junior rules or APS weeks applied was the
 step people missed. Import and fill-the-sheet code: `js/ui-import.js` (shared with More). Step times:

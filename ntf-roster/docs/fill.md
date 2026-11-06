@@ -43,12 +43,14 @@ The junior roster is run by a different person from the senior one, from the sam
   scopes the rule check and Auto-fill to that pool (`scopeToPool` in `js/jpool.js`: the other pool's people are left out and a
   rule only about them is off, so a consultant call rule is not reported while viewing juniors). A person's pool is the tag
   `jpool` / `spool`, else their section's kind (`M.poolOf`). **People > Junior pool** sets where the pool starts (this person
-  and everyone below), each person's call level (MO2 = the senior MO on call, MO1 = the junior MO on call, No calls) and
-  strong / weak. Levels are tags (`mo2`, `mo2strong`, `mo2weak`, `mo1…`, `nocall`); setting the first one installs the junior rules.
-- **Junior rules** (`JUNIOR_RULES`, ids `r-jp-…`, `installJuniorPool`, one time per saved state via `settings.jpRules`): cover (1 MO2 and
-  1 MO1 on call, 3 on Saturday, a half call HC on Sundays and public holidays, a PM shift on weekdays), no calls for No calls
+  and everyone below), each person's call level (MO1 = the senior MO on call, MO2 = the junior MO on call, No calls) and
+  strong / weak. Levels are tags (`mo2`, `mo2strong`, `mo2weak`, `mo1…`, `nocall`); the ids predate the NTF naming, so `mo2…` is MO1
+  (senior) and `mo1…` is MO2 (junior): `settings.moNames` flipped older saves' wording once (6 Nov 2026). Setting the first
+  level installs the junior rules.
+- **Junior rules** (`JUNIOR_RULES`, ids `r-jp-…`, `installJuniorPool`, one time per saved state via `settings.jpRules`): cover (1 MO1 and
+  1 MO2 on call, 3 on Saturday, a half call HC on Sundays and public holidays, a PM shift on weekdays), no calls for No calls
   people (one half call a month at most, last resort), rest after calls and PM shifts, JR teaching day, at most 3 on AL (pointed
-  out, leave is never moved), pain service week (no calls, then the Monday PM shift), weak MO2 never with weak MO1 (strong with
+  out, leave is never moved), pain service week (no calls, then the Monday PM shift), weak MO1 never with weak MO2 (strong with
   strong is a preference), and a set marked **To confirm** (gap, weekend limit, no call before an APS week, fair spread, Nc means no
   PM or half call). Rules whose note starts "Predicted" show a To confirm badge; Confirm / Confirm all drops it (ported from
   the NUH junior monthly screen, with the priority-ordered Preferences list and the how-it-works panel). No new rule type was needed.

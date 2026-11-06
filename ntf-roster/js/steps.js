@@ -8,9 +8,14 @@ import { levelOf, tagsFor, installJuniorPool } from './jpool.js';
 // ---------- call list guesses ----------
 
 // A person's call level guessed from their section in the sheet: resident physicians (senior and not) and junior
-// residents from R2 up are the senior MO on call (MO2); R1s and medical officers are the junior MO on call (MO1).
+// residents from R2 up are the senior MO on call (MO1); R1s and medical officers are the junior MO on call (MO2).
 // Locums (they take no calls, PM shifts or half calls), senior sections, nurses and anyone else: not on the call list.
 // Only a guess: the rosterer checks it once.
+// A Baby MO (the "(B)" after the name in the sheet, or the Baby MO tag) is the junior MO on call, weak, and gets the
+// Baby MO tag so its pairing rules apply.
+export const isBabyMo = p => !!p && ((p.tags || []).includes('babymo') || /(^|[·,])\s*B\s*([·,]|$)/.test(p.note || ''));
+export const guessStrength = p => (guessLevel(p) === 'mo1' && isBabyMo(p) ? 'weak' : '');
+
 export function guessLevel(p) {
   const g = p && p.group;
   if (g === 'srp' || g === 'rp') return 'mo2';
@@ -33,7 +38,9 @@ export function autoSetupPool(draft, month) {
     if (!people.has(p.id) || p.group === 'nurse' || M.poolOf(draft, p) !== 'junior' || levelDecided(p)) continue;
     const lvl = guessLevel(p);
     if (!lvl) { p.lvl = 'off'; continue; }
-    p.tags = tagsFor(p.tags, lvl, '');
+    const strength = guessStrength(p);
+    p.tags = tagsFor(p.tags, lvl, strength);
+    if (strength && !p.tags.includes('babymo')) p.tags.push('babymo');
     p.lvl = 'guess';
     guessed.push(p.id);
   }

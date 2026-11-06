@@ -391,7 +391,7 @@ html body.a-app:has(.a-tabbar) .a-bar.top { margin-left: 0; }
 /* the days around the month: greyed and read-only, so you can see where people come from and go next */
 .grid th.dh.ctx { background: #ececf1; color: var(--r-muted); }
 .grid th.dh.ctx .dh-in .mo { font-size: 9px; font-weight: 700; text-transform: uppercase; color: var(--navy); }
-.grid td.c.ctx { background: #f3f3f7; opacity: .92; }
+.grid td.c.ctx { background: #f3f3f7; }
 .grid td.c.ctx .cro { display: flex; align-items: center; justify-content: center; gap: 2px; height: 100%; }
 .grid td.cov.ctx { background: #f3f3f7; }
 .grid th.dh.ctx + th.dh:not(.ctx), .grid td.c.ctx + td.c:not(.ctx), .grid th.dh:not(.ctx) + th.dh.ctx, .grid td.c:not(.ctx) + td.c.ctx { border-left: 2px solid var(--navy); }
